@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #ffffff;
+    --foreground: #171717;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Ensure all form elements have proper text color and background */
+input, textarea, select {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #9ca3af !important;
+}
+
+/* Ensure labels are visible */
+label {
+  color: #374151 !important;
+}
+
+/* Ensure text elements are visible */
+span, p, div {
+  color: inherit;
+}
+
+/* Specific overrides for form styling */
+.form-input {
+  color: #1f2937;
+  background-color: #ffffff;
+}
