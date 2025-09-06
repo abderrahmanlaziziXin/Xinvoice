@@ -91,7 +91,7 @@ export default function InvoicePage() {
             className="text-xl text-gray-600 max-w-3xl mx-auto mb-8"
           >
             Choose your preferred method to create professional invoices with AI assistance.
-            Whether you need one invoice or hundreds, we've got you covered.
+            Whether you need one invoice or hundreds, we&apos;ve got you covered.
           </motion.p>
         </div>
 
@@ -158,7 +158,7 @@ export default function InvoicePage() {
               Need Help Choosing?
             </h3>
             <p className="text-gray-600 mb-8">
-              Start with a single invoice if you're new to our platform, or jump straight to batch processing 
+              Start with a single invoice if you&apos;re new to our platform, or jump straight to batch processing 
               if you have multiple invoices to create.
             </p>
             

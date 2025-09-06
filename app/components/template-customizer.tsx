@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { PaintBrushIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 export interface TemplateSettings {
@@ -160,10 +161,12 @@ export function TemplateCustomizer({ isOpen, onClose, settings, onSettingsChange
             <div className="space-y-3">
               {localSettings.logo && (
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <img 
+                  <Image 
                     src={localSettings.logo} 
                     alt="Logo preview" 
-                    className="w-16 h-16 object-contain rounded"
+                    width={64}
+                    height={64}
+                    className="object-contain rounded"
                   />
                   <button
                     onClick={() => setLocalSettings(prev => ({ ...prev, logo: undefined }))}
