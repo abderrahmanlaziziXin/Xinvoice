@@ -1,5 +1,6 @@
 import './globals.css'
 import QueryProvider from './components/query-provider'
+import { ToastProvider } from './components/toast-provider'
 
 export default function RootLayout({
   children,
@@ -11,6 +12,7 @@ export default function RootLayout({
       <body>
         <QueryProvider>
           {children}
+          <ToastProvider />
         </QueryProvider>
       </body>
     </html>

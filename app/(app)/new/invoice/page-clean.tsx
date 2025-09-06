@@ -17,7 +17,7 @@ import { CompanySettings } from '../../../components/company-settings'
 import { FileUpload } from '../../../components/file-upload'
 import { LoadingSpinner } from '../../../components/loading'
 import { useUserContext } from '../../../lib/user-context'
-import { parseUploadedFile, convertFileDataToPrompt, FileParseResult } from '../../../lib/file-parser'
+import { parseUploadedFile, convertFileDataToPrompt } from '../../../lib/file-parser'
 import { Invoice } from '../../../../packages/core'
 
 export default function NewInvoicePage() {
@@ -29,19 +29,35 @@ export default function NewInvoicePage() {
   const [uploadedData, setUploadedData] = useState<{success: boolean, data: any[], headers: string[], rawData: string, fileName: string, fileType: 'csv' | 'excel'} | null>(null)
   const { context } = useUserContext()
 
-  const generateMutation = useGenerateDocument()
+  const generateMutation = useGenerateDocument({
+    onSuccess: (invoice: Partial<Invoice>) => {
+      setGeneratedInvoice(invoice)
+      setShowForm(true)
+      toast.success('🎉 Invoice generated successfully!')
+    },
+    onError: (error: Error) => {
+      toast.error('❌ Failed to generate invoice: ' + error.message)
+    }
+  })
 
   const handlePromptChange = (value: string) => {
     setPrompt(value)
   }
 
-  const handleFileProcessed = (result: FileParseResult) => {
-    setUploadedData(result)
-    toast.success('✅ File uploaded and processed successfully!')
-  }
+  const handleFileUpload = async (files: FileList) => {
+    const file = files[0]
+    if (!file) return
 
-  const handleFileError = (error: string) => {
-    toast.error(`❌ Failed to process file: ${error}`)
+    toast.loading('📄 Processing your file...', { id: 'file-upload' })
+    
+    try {
+      const result = await parseUploadedFile(file)
+      setUploadedData(result)
+      toast.success('✅ File uploaded and processed successfully!', { id: 'file-upload' })
+    } catch (error) {
+      console.error('File upload error:', error)
+      toast.error('❌ Failed to process file', { id: 'file-upload' })
+    }
   }
 
   const handleSubmit = async () => {
@@ -56,25 +72,14 @@ export default function NewInvoicePage() {
       return
     }
 
-    const request = {
-      prompt: context ? `${context}\n\n${finalPrompt}` : finalPrompt,
-      documentType: 'invoice' as const,
-      userContext: context ? context : undefined
-    }
+    const fullPrompt = context 
+      ? `${context}\n\n${finalPrompt}`
+      : finalPrompt
 
-    generateMutation.mutate(request, {
-      onSuccess: (response) => {
-        setGeneratedInvoice(response.document)
-        setShowForm(true)
-        toast.success('🎉 Invoice generated successfully!')
-      },
-      onError: (error: Error) => {
-        toast.error('❌ Failed to generate invoice: ' + error.message)
-      }
-    })
+    generateMutation.mutate(fullPrompt)
   }
 
-  const handleSaveInvoice = (updatedInvoice: Invoice) => {
+  const handleSaveInvoice = (updatedInvoice: Partial<Invoice>) => {
     console.log('Saving invoice:', updatedInvoice)
     toast.success('✅ Invoice saved successfully!')
   }
@@ -84,11 +89,11 @@ export default function NewInvoicePage() {
     !uploadedData || generateMutation.isPending
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-100/50 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
       {/* Animated Background Elements */}
       <motion.div
         animate={{ 
-          x: [0, 30, 0],
+          x: [0, 50, 0],
           y: [0, -30, 0],
           scale: [1, 1.1, 1],
         }}
@@ -105,7 +110,7 @@ export default function NewInvoicePage() {
         className="absolute bottom-20 left-20 w-80 h-80 bg-gradient-to-r from-blue-400/10 to-indigo-400/10 rounded-full blur-3xl"
       />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <AnimatePresence mode="wait">
           {!showForm ? (
             <motion.div
@@ -240,8 +245,9 @@ export default function NewInvoicePage() {
                         transition={{ duration: 0.4 }}
                       >
                         <FileUpload
-                          onFileProcessed={handleFileProcessed}
-                          onError={handleFileError}
+                          onFileUpload={handleFileUpload}
+                          uploadedData={uploadedData}
+                          disabled={generateMutation.isPending}
                         />
                       </motion.div>
                     )}
@@ -284,14 +290,13 @@ export default function NewInvoicePage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5 }}
-              className="min-h-[80vh] flex flex-col"
             >
               {/* Back Button */}
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowForm(false)}
-                className="flex items-center px-4 py-3 text-gray-600 hover:text-gray-800 bg-white/60 backdrop-blur-sm rounded-lg transition-all duration-200 mb-8 w-fit hover:bg-white/80"
+                className="flex items-center px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200 mb-6"
               >
                 <ArrowLeftIcon className="w-5 h-5 mr-2" />
                 Back to Input
@@ -300,53 +305,46 @@ export default function NewInvoicePage() {
               {/* Success Header */}
               <div className="text-center mb-8">
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="flex items-center justify-center mb-6"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4"
                 >
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full blur-lg opacity-30"></div>
-                    <CheckCircleIcon className="relative w-16 h-16 text-green-600" />
-                  </div>
+                  <CheckCircleIcon className="w-8 h-8 text-green-600" />
                 </motion.div>
-
-                <motion.h2
+                
+                <motion.h1
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 via-green-800 to-emerald-900 bg-clip-text text-transparent mb-4"
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                  className="text-3xl font-bold text-gray-900 mb-2"
                 >
                   Invoice Generated Successfully!
-                </motion.h2>
-
+                </motion.h1>
+                
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="text-lg text-gray-600 max-w-xl mx-auto"
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                  className="text-gray-600"
                 >
-                  Review and customize your invoice details below, then download as PDF.
+                  Review and edit your invoice details below
                 </motion.p>
               </div>
 
-              {/* Invoice Form Container */}
-              <div className="flex-1 max-w-5xl mx-auto w-full">
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/30 shadow-xl p-8"
-                >
-                  <InvoiceForm
-                    initialData={generatedInvoice || {}}
-                    onSubmit={(data) => {
-                      setGeneratedInvoice(data)
-                      toast.success('Invoice updated successfully!')
-                    }}
-                  />
-                </motion.div>
-              </div>
+              {/* Invoice Form */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
+              >
+                <InvoiceForm
+                  invoice={generatedInvoice!}
+                  onSubmit={handleSaveInvoice}
+                  isSubmitting={false}
+                />
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
