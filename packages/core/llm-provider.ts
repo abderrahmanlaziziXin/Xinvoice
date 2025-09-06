@@ -1,10 +1,18 @@
 import OpenAI from 'openai'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { DocumentType, UserContext } from './schemas'
+import { 
+  generateEnhancedSystemPrompt, 
+  generateEnhancedBatchSystemPrompt,
+  validateEnhancedResponse,
+  type EnhancedDocumentResponse 
+} from './enhanced-prompts'
 
 export interface LLMProvider {
   generateDocument(prompt: string, documentType: DocumentType, userContext?: UserContext): Promise<any>
   generateBatchDocuments?(prompts: string[], documentType: DocumentType, userContext?: UserContext): Promise<any[]>
+  generateEnhancedDocument?(prompt: string, documentType: DocumentType, userContext?: UserContext): Promise<EnhancedDocumentResponse>
+  generateEnhancedBatchDocuments?(prompts: string[], documentType: DocumentType, userContext?: UserContext): Promise<EnhancedDocumentResponse[]>
 }
 
 export class OpenAIProvider implements LLMProvider {
@@ -37,6 +45,34 @@ export class OpenAIProvider implements LLMProvider {
     return JSON.parse(content)
   }
 
+  async generateEnhancedDocument(prompt: string, documentType: DocumentType, userContext?: UserContext): Promise<EnhancedDocumentResponse> {
+    const systemPrompt = generateEnhancedSystemPrompt(documentType, userContext)
+    
+    const completion = await this.openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: prompt }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7
+    })
+
+    const content = completion.choices[0]?.message?.content
+    if (!content) {
+      throw new Error('No response from OpenAI')
+    }
+
+    const response = JSON.parse(content)
+    
+    // Validate the enhanced response
+    if (!validateEnhancedResponse(response, documentType)) {
+      throw new Error('Generated document does not meet quality standards')
+    }
+
+    return response as EnhancedDocumentResponse
+  }
+
   async generateBatchDocuments(prompts: string[], documentType: DocumentType, userContext?: UserContext): Promise<any[]> {
     const systemPrompt = this.getBatchSystemPrompt(documentType, userContext)
     
@@ -65,6 +101,46 @@ Return a JSON array where each element is a complete invoice object.`
     const result = JSON.parse(content)
     // Handle both array response and object with invoices array
     return Array.isArray(result) ? result : (result.invoices || [result])
+  }
+
+  async generateEnhancedBatchDocuments(prompts: string[], documentType: DocumentType, userContext?: UserContext): Promise<EnhancedDocumentResponse[]> {
+    const systemPrompt = generateEnhancedBatchSystemPrompt(documentType, userContext)
+    
+    const batchPrompt = `Generate ${documentType}s for the following requests:
+
+${prompts.map((prompt, index) => `Request ${index + 1}:
+${prompt}
+
+---`).join('\n')}
+
+Process each request and return the structured batch response format.`
+
+    const completion = await this.openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: batchPrompt }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7
+    })
+
+    const content = completion.choices[0]?.message?.content
+    if (!content) {
+      throw new Error('No response from OpenAI')
+    }
+
+    const result = JSON.parse(content)
+    
+    // Extract documents from batch response
+    if (result.documents && Array.isArray(result.documents)) {
+      return result.documents.filter((doc: any) => 
+        validateEnhancedResponse(doc, documentType)
+      )
+    }
+    
+    // Fallback to single document array
+    return Array.isArray(result) ? result : [result]
   }
 
   private getSystemPrompt(documentType: DocumentType, userContext?: UserContext): string {
@@ -313,6 +389,67 @@ export class GeminiProvider implements LLMProvider {
     }
     
     return JSON.parse(jsonMatch[0])
+  }
+
+  async generateEnhancedDocument(prompt: string, documentType: DocumentType, userContext?: UserContext): Promise<EnhancedDocumentResponse> {
+    const systemPrompt = generateEnhancedSystemPrompt(documentType, userContext)
+    const fullPrompt = `${systemPrompt}\n\nUser request: ${prompt}`
+    
+    const result = await this.model.generateContent(fullPrompt)
+    const response = await result.response
+    const text = response.text()
+    
+    // Extract JSON from response
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) {
+      throw new Error('No valid JSON found in Gemini response')
+    }
+    
+    const parsedResponse = JSON.parse(jsonMatch[0])
+    
+    // Validate the enhanced response
+    if (!validateEnhancedResponse(parsedResponse, documentType)) {
+      throw new Error('Generated document does not meet quality standards')
+    }
+
+    return parsedResponse as EnhancedDocumentResponse
+  }
+
+  async generateEnhancedBatchDocuments(prompts: string[], documentType: DocumentType, userContext?: UserContext): Promise<EnhancedDocumentResponse[]> {
+    const systemPrompt = generateEnhancedBatchSystemPrompt(documentType, userContext)
+    
+    const batchPrompt = `Generate ${documentType}s for the following requests:
+
+${prompts.map((prompt, index) => `Request ${index + 1}:
+${prompt}
+
+---`).join('\n')}
+
+Process each request and return the structured batch response format.`
+
+    const fullPrompt = `${systemPrompt}\n\n${batchPrompt}`
+    
+    const result = await this.model.generateContent(fullPrompt)
+    const response = await result.response
+    const text = response.text()
+    
+    // Extract JSON from response
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) {
+      throw new Error('No valid JSON found in Gemini response')
+    }
+    
+    const parsedResult = JSON.parse(jsonMatch[0])
+    
+    // Extract documents from batch response
+    if (parsedResult.documents && Array.isArray(parsedResult.documents)) {
+      return parsedResult.documents.filter((doc: any) => 
+        validateEnhancedResponse(doc, documentType)
+      )
+    }
+    
+    // Fallback to single document array
+    return Array.isArray(parsedResult) ? parsedResult : [parsedResult]
   }
 
   private getSystemPrompt(documentType: DocumentType, userContext?: UserContext): string {

@@ -145,6 +145,21 @@ export function Hero() {
                 </div>
               </motion.button>
             </Link>
+
+            <Link href="/test/enhanced">
+              <motion.button
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300"
+              >
+                <div className="flex items-center justify-center">
+                  <SparklesIcon className="w-5 h-5 mr-2" />
+                  Test Enhanced AI
+                  <ArrowRightIcon className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-30 group-hover:opacity-50 transition-opacity" />
+              </motion.button>
+            </Link>
           </motion.div>
 
           {/* Features Grid */}

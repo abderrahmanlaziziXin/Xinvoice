@@ -1,53 +1,62 @@
-# Document Generator MVP
+# Document Generator MVP - Enhanced AI System
 
-A Next.js 14 application for generating documents (invoices, NDAs) using AI assistance.
+A Next.js 14 application for generating professional documents (invoices, NDAs) using advanced AI assistance with enhanced structured prompts.
 
 ## Features
 
-- 🤖 AI-powered document generation (GPT-4o or Google Gemini)
-- 📄 Single and batch invoice generation
-- 🚀 Create multiple invoices simultaneously with unique numbering
-- ✏️ Bulk editing interface for batch-generated invoices
-- 📦 Bulk PDF download for multiple invoices
-- 📝 Form-based editing with live validation
-- 📊 Automatic calculations for invoices
-- 🏢 Company settings and context saving
-- 📧 Email validation with warnings
-- 📅 Smart date handling (AI calculates due dates)
-- 📄 **Professional PDF Export**: Multi-template system (Modern/Classic/Minimal)
-- 🔍 **PDF Preview**: Real-time preview with customization options
-- 💾 Session-based history (in-memory)
-- 🎨 Modern, responsive design with animations
-- 💰 **Multi-Currency Support**: 28+ currencies (USD, EUR, GBP, DZD, MAD, TND, etc.)
-- 🌍 **Localization**: 32+ locales with regional formatting
-- 📁 **File Upload**: CSV/Excel upload with intelligent AI parsing
-- 🔄 **Dual Input Modes**: Text and file upload for batch processing
-- ✨ **Professional UI**: Glass morphism design with Framer Motion animations
-- 🛡️ **Type Safety**: Full TypeScript coverage with Zod validation
+- 🤖 **Enhanced AI-powered document generation** (GPT-4o or Google Gemini with structured prompts)
+- ✨ **Enhanced Prompt System**: Structured AI responses with validation and professional formatting
+- 📄 **Multi-Document Support**: Invoices, NDAs, and extensible architecture for more document types
+- 🚀 **Batch Processing**: Create multiple documents simultaneously with unique numbering and intelligent parsing
+- ✏️ **Bulk Editing Interface**: Edit batch-generated documents with comprehensive management tools
+- 📦 **Bulk PDF Download**: Download multiple documents with various templates
+- 📝 **Advanced Form Validation**: Live validation with enhanced error handling and fallbacks
+- 📊 **Automatic Calculations**: Smart invoice calculations with multi-currency support
+- 🏢 **Company Settings**: Context saving with AI-powered pre-filling
+- 📧 **Email Validation**: Enhanced validation with warnings and error recovery
+- 📅 **Smart Date Handling**: AI calculates due dates with context awareness
+- 📄 **Professional PDF Export**: Multi-template system (Modern/Classic/Minimal) with real-time preview
+- 🔍 **PDF Preview Modal**: Real-time preview with blob URL fallback and error handling
+- 💾 **Session-based History**: In-memory document management
+- 🎨 **Modern UI/UX**: Glass morphism design with Framer Motion animations and 3D effects
+- 💰 **Multi-Currency Support**: 28+ currencies (USD, EUR, GBP, DZD, MAD, TND, etc.) with RTL locale support
+- 🌍 **Enhanced Localization**: 32+ locales with regional formatting including Arabic variants
+- 📁 **Advanced File Upload**: CSV/Excel upload with intelligent AI parsing and multi-item support
+- 🔄 **Dual Input Modes**: Text and file upload for both single and batch processing
+- ✨ **Professional Toast System**: Glass morphism notifications with smooth animations
+- 🛡️ **Enhanced Type Safety**: Full TypeScript coverage with Zod validation and error boundaries
+- 🧪 **Interactive Testing**: Built-in test page for enhanced AI features (`/test/enhanced`)
 
 ## Tech Stack
 
 - **Framework**: Next.js 14 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Forms**: React Hook Form + Zod validation
-- **State**: TanStack Query
-- **AI**: OpenAI API (GPT-4o) or Google Gemini API
+- **Language**: TypeScript with enhanced type safety
+- **Styling**: Tailwind CSS with glass morphism and 3D effects
+- **Forms**: React Hook Form + Zod validation with enhanced error handling
+- **State**: TanStack Query with optimized caching
+- **AI**: OpenAI API (GPT-4o) or Google Gemini API with enhanced structured prompts
+- **PDF**: jsPDF with multiple professional templates
+- **Animation**: Framer Motion with advanced effects
+- **File Processing**: Enhanced CSV/Excel parsing with AI interpretation
+- **Validation**: Comprehensive Zod schemas with fallback mechanisms
 
 ## Quick Start
 
 1. **Clone and install dependencies**
+
    ```bash
    npm install
    ```
 
 2. **Set up environment variables**
+
    ```bash
    cp .env.example .env.local
    # Edit .env.local with your API keys
    ```
 
 3. **Run development server**
+
    ```bash
    npm run dev
    ```
@@ -62,34 +71,109 @@ OPENAI_API_KEY=sk-proj-...
 GEMINI_API_KEY=AIz...
 ```
 
-## Key Features
+## Enhanced Features
+
+### ✨ Enhanced AI Prompt System
+
+- **Structured Prompts**: Professional document generation with detailed formatting instructions
+- **Validation**: JSON schema validation for AI responses with fallback mechanisms
+- **Rich Responses**: Structured AI outputs with metadata, assumptions, and professional formatting
+- **Multi-Document Support**: Extensible architecture for invoices, NDAs, and future document types
 
 ### 🏢 Company Settings
+
 - Save your company details (name, address, email, phone)
 - Set default tax rates and payment terms
 - AI uses your context to pre-fill invoices
 - Accessible via ⚙️ Company Settings button
 
 ### 📧 Email Validation
+
 - Warns when invoice parties are missing email addresses
 - Modal popup with option to continue anyway
 - Prevents common delivery issues
 
 ### 📅 Smart Date Handling
+
 - AI understands relative dates ("due in 30 days", "net 15")
 - Uses current date when none specified
 - Calculates due dates based on payment terms
 
-### 🚀 Batch Invoice Processing
-- **Multiple Input Fields**: Add as many invoice requests as needed
-- **Smart Processing**: Single request uses standard API, multiple requests use batch processing
-- **Bulk Generation**: Generate all invoices simultaneously with GPT-4o
-- **Unique Numbering**: Each invoice gets unique numbers (INV-001, INV-002, etc.)
-- **Bulk Editing**: Edit each invoice individually in a unified interface
-- **Bulk Download**: Download all PDFs together (framework ready)
-- **Consistent Branding**: Company settings apply to all invoices automatically
+### 🚀 Enhanced Batch Processing
+
+- **Multiple Input Fields**: Add as many invoice requests as needed with enhanced validation
+- **Smart Processing**: Intelligent routing between single and batch APIs
+- **Enhanced Bulk Generation**: Generate all documents simultaneously with structured prompts
+- **Unique Numbering**: Each document gets unique numbers (INV-001, INV-002, etc.)
+- **Advanced Bulk Editing**: Edit each document individually with comprehensive validation
+- **Multi-Template PDF Export**: Download all PDFs with template selection
+- **Enhanced CSV/Excel Support**: Multi-item invoices with intelligent parsing
+- **Consistent Branding**: Company settings apply to all documents automatically
+
+### 📄 NDA Document Support
+
+- **Legal Document Structure**: Professional NDA templates with proper formatting
+- **Confidentiality Levels**: Support for different NDA types and confidentiality requirements
+- **Rich Schema Validation**: Comprehensive validation for legal document fields
+- **Batch NDA Generation**: Create multiple NDAs from structured data
+
+### 🧪 Interactive Testing
+
+- **Enhanced Test Page**: Access via "Test Enhanced AI" button on homepage (`/test/enhanced`)
+- **Real-time Validation**: Live testing of enhanced prompt system
+- **Example Prompts**: Pre-built examples for invoices and NDAs
+- **Response Visualization**: Detailed display of AI responses with metadata and assumptions
 
 ## API Usage
+
+### Generate Enhanced Document (NEW)
+
+```bash
+POST /api/generate-enhanced
+Content-Type: application/json
+
+{
+  "prompt": "Invoice ACME Corp $1500 for web design, due in 14 days",
+  "documentType": "invoice",
+  "useEnhancedPrompts": true,
+  "userContext": {
+    "companyName": "Your Company Inc",
+    "companyEmail": "billing@yourcompany.com",
+    "defaultCurrency": "USD",
+    "defaultTaxRate": 0.08
+  }
+}
+```
+
+### Enhanced Response Format
+
+```json
+{
+  "success": true,
+  "enhanced": true,
+  "document": {
+    "type": "invoice",
+    "metadata": {
+      "generation_method": "enhanced_ai",
+      "template_version": "2.0",
+      "ai_confidence": 0.95
+    }
+  },
+  "content": {
+    "structured_data": {
+      /* Rich document structure */
+    },
+    "formatting": {
+      /* Professional formatting rules */
+    }
+  },
+  "formatted_document": "Professional PDF-ready content with enhanced formatting",
+  "assumptions": [
+    "Used current date for invoice date",
+    "Applied default tax rate from company settings"
+  ]
+}
+```
 
 ### Generate Single Document
 
@@ -172,14 +256,14 @@ Content-Type: application/json
       "total": 1500
     },
     {
-      "type": "invoice", 
+      "type": "invoice",
       "invoiceNumber": "INV-002",
       "to": { "name": "XYZ Company" },
       "total": 2500
     },
     {
       "type": "invoice",
-      "invoiceNumber": "INV-003", 
+      "invoiceNumber": "INV-003",
       "to": { "name": "Tech Solutions" },
       "total": 800
     }
@@ -193,41 +277,79 @@ Content-Type: application/json
 ```
 ├── app/
 │   ├── api/
-│   │   ├── generate/          # Single document generation API
-│   │   └── generate-batch/    # Batch document generation API
-│   ├── (app)/new/
-│   │   ├── invoice/           # Single invoice creation page
-│   │   └── invoice-batch/     # Batch invoice creation page
+│   │   ├── generate/              # Single document generation API
+│   │   ├── generate-batch/        # Batch document generation API
+│   │   └── generate-enhanced/     # NEW: Enhanced AI generation API
+│   ├── (app)/
+│   │   ├── new/
+│   │   │   ├── invoice/           # Single invoice creation page
+│   │   │   └── invoice-batch/     # Batch invoice creation page
+│   │   └── test/
+│   │       └── enhanced/          # NEW: Enhanced AI testing page
 │   ├── components/
-│   │   ├── company-settings.tsx    # Company configuration modal
-│   │   └── invoice-form.tsx         # Invoice editing form
+│   │   ├── company-settings.tsx       # Company configuration modal
+│   │   ├── invoice-form.tsx            # Invoice editing form
+│   │   ├── pdf-preview-modal.tsx       # ENHANCED: PDF preview with fallbacks
+│   │   ├── file-upload.tsx             # ENHANCED: Advanced file processing
+│   │   └── toast.tsx                   # ENHANCED: Glass morphism notifications
 │   ├── hooks/
-│   │   ├── use-generate-document.ts       # Single generation hook
-│   │   └── use-generate-batch-documents.ts # Batch generation hook
+│   │   ├── use-generate-document.ts           # Single generation hook
+│   │   ├── use-generate-batch-documents.ts    # Batch generation hook
+│   │   └── use-generate-enhanced-document.ts  # NEW: Enhanced generation hook
 │   ├── lib/
-│   │   └── user-context.ts          # User settings management
-│   ├── globals.css           # Global styles
-│   ├── layout.tsx            # Root layout
-│   └── page.tsx              # Home page
-├── packages/core/            # Shared logic
-│   ├── schemas.ts            # Zod schemas
-│   ├── llm-provider.ts       # AI provider adapters with batch support
-│   └── index.ts              # Exports
-├── docs/                     # Documentation
-│   ├── roadmap.md            # Project roadmap
-│   ├── status.md             # Current status
-│   └── steps/                # Step-by-step docs
-└── README.md
+│   │   ├── user-context.ts             # User settings management
+│   │   ├── currency.ts                 # ENHANCED: Multi-currency with RTL support
+│   │   ├── csv-template-enhanced.ts    # NEW: Advanced CSV processing
+│   │   └── pdf-generator.ts            # ENHANCED: Multi-template PDF system
+│   ├── globals.css                     # Enhanced global styles
+│   ├── layout.tsx                      # Root layout
+│   └── page.tsx                        # Enhanced home page
+├── packages/core/                      # Shared logic
+│   ├── schemas.ts                      # ENHANCED: Rich schemas with NDA support
+│   ├── llm-provider.ts                 # ENHANCED: Enhanced AI methods
+│   ├── enhanced-prompts.ts             # NEW: Structured prompt system
+│   └── index.ts                        # Exports
+├── docs/                               # Documentation
+│   ├── roadmap.md                      # Updated project roadmap
+│   ├── status.md                       # Current status
+│   ├── BUG-FIXES-COMPLETE.md          # Bug fix documentation
+│   └── steps/                          # Step-by-step docs
+└── README.md                           # ENHANCED: Updated documentation
 ```
 
 ## Development Steps
 
 - ✅ **STEP 00**: Project scaffold and API setup
-- ✅ **STEP 01**: Single invoice editor interface  
+- ✅ **STEP 01**: Single invoice editor interface
 - ✅ **STEP 01.5**: Batch invoice generation with GPT-4o
-- 📋 **STEP 02**: PDF export functionality
-- 📋 **STEP 03**: NDA document support
-- 📋 **STEP 04**: Polish and demo prep
+- ✅ **STEP 02**: PDF export functionality with multi-template system
+- ✅ **STEP 02.5**: Enhanced prompt system and NDA document support
+- ✅ **BUG FIXES**: Arabic locale validation, PDF preview rendering, batch enhancements
+- ✅ **ENHANCEMENTS**: Multi-currency support, file upload system, enhanced UI/UX
+- � **STEP 03**: Complete NDA document implementation with UI components
+- �📋 **STEP 04**: Advanced features and polish (authentication, payment integration)
+
+## Recent Updates (September 2025)
+
+### ✨ Enhanced Prompt System Implementation
+
+- **Structured AI Prompts**: Professional document generation with validation
+- **Rich Response Format**: JSON responses with metadata and assumptions
+- **Multi-Document Support**: Invoices and NDAs with extensible architecture
+- **Interactive Testing**: `/test/enhanced` page for real-time validation
+
+### 🐛 Critical Bug Fixes
+
+- **Arabic Locale Support**: Fixed RTL currency formatting and validation
+- **PDF Preview Rendering**: Implemented blob URL fallback for browser compatibility
+- **Batch Processing**: Enhanced CSV parsing for multi-item invoices
+
+### 🎨 UI/UX Enhancements
+
+- **Glass Morphism Design**: Modern visual effects with backdrop blur
+- **Toast Notifications**: Smooth animations with professional styling
+- **Loading States**: Enhanced loading components with spinners
+- **Hero Section**: Updated with 3D effects and floating animations
 
 ## Legal Disclaimer
 

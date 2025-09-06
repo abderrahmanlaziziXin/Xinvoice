@@ -94,7 +94,7 @@ export function PDFPreviewModal({ isOpen, onClose, invoice, onDownload }: PDFPre
         URL.revokeObjectURL(pdfBlobUrl)
       }
     }
-  }, [isOpen, pdfOptions, generatePreview])
+  }, [isOpen, pdfOptions, generatePreview, pdfBlobUrl])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -103,7 +103,7 @@ export function PDFPreviewModal({ isOpen, onClose, invoice, onDownload }: PDFPre
         URL.revokeObjectURL(pdfBlobUrl)
       }
     }
-  }, [])
+  }, [pdfBlobUrl])
 
   if (!isOpen) return null
 

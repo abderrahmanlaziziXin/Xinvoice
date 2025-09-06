@@ -83,23 +83,46 @@ export const InvoiceSchema = z.object({
   status: z.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']).default('draft').optional()
 })
 
-// NDA schemas (basic for now)
+// Enhanced NDA schemas for rich document support
 export const NDAPartySchema = z.object({
   name: z.string().min(1, 'Name is required'),
   title: z.string().optional(),
-  company: z.string().optional()
+  company: z.string().optional(),
+  address: z.string().optional(),
+  email: z.string().email().optional(),
+  phone: z.string().optional()
+})
+
+export const NDASectionSchema = z.object({
+  title: z.string().min(1, 'Section title is required'),
+  body: z.string().min(1, 'Section body is required'),
+  subsections: z.array(z.object({
+    title: z.string(),
+    content: z.string()
+  })).optional()
 })
 
 export const NDASchema = z.object({
   type: z.literal('nda'),
   title: z.string().min(1, 'Title is required'),
-  date: z.string().min(1, 'Date is required'),
+  effectiveDate: z.string().min(1, 'Effective date is required'),
+  terminationDate: z.string().optional(),
   disclosingParty: NDAPartySchema,
   receivingParty: NDAPartySchema,
   purpose: z.string().min(1, 'Purpose is required'),
   termMonths: z.number().min(1, 'Term must be at least 1 month'),
   jurisdiction: z.string().min(1, 'Jurisdiction is required'),
-  mutualNda: z.boolean().default(false)
+  mutualNda: z.boolean().default(false),
+  sections: z.array(NDASectionSchema).optional(),
+  governingLaw: z.string().optional(),
+  currency: CurrencySchema.default('USD'),
+  locale: LocaleSchema.default('en-US'),
+  // Additional fields for enhanced documents
+  confidentialityLevel: z.enum(['standard', 'high', 'critical']).default('standard'),
+  penalties: z.string().optional(),
+  exceptions: z.array(z.string()).optional(),
+  returnOfMaterials: z.boolean().default(true),
+  survivingClauses: z.array(z.string()).optional()
 })
 
 // Union type for all documents
@@ -117,5 +140,6 @@ export type InvoiceItem = z.infer<typeof InvoiceItemSchema>
 export type InvoiceParty = z.infer<typeof InvoicePartySchema>
 export type Invoice = z.infer<typeof InvoiceSchema>
 export type NDAParty = z.infer<typeof NDAPartySchema>
+export type NDASection = z.infer<typeof NDASectionSchema>
 export type NDA = z.infer<typeof NDASchema>
 export type Document = z.infer<typeof DocumentSchema>

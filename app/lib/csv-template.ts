@@ -184,6 +184,49 @@ Create a complete, valid invoice structure with all necessary fields populated.`
 
   return prompt
 }
+
+/**
+ * CSV template for invoice fields
+ */
+export const INVOICE_CSV_TEMPLATE = [
+  {
+    name: 'client_name',
+    description: 'Client company or person name',
+    example: 'ACME Corporation',
+    required: true
+  },
+  {
+    name: 'client_email',
+    description: 'Client email address',
+    example: 'billing@acme.com',
+    required: false
+  },
+  {
+    name: 'client_address',
+    description: 'Client address',
+    example: '123 Business St, City, State 12345',
+    required: false
+  },
+  {
+    name: 'description',
+    description: 'Service or product description',
+    example: 'Web Development Services',
+    required: true
+  },
+  {
+    name: 'amount',
+    description: 'Total amount for the service',
+    example: '1500.00',
+    required: true
+  },
+  {
+    name: 'quantity',
+    description: 'Quantity (defaults to 1)',
+    example: '1',
+    required: false
+  },
+  {
+    name: 'rate',
     description: 'Hourly rate (optional)',
     example: '75.00',
     required: false
