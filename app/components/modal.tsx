@@ -77,7 +77,7 @@ export function EmailWarningModal({ isOpen, onClose, onContinue, missingEmails }
                 </h3>
                 <div className="mt-2">
                   <p className="text-sm text-gray-500">
-                    The following parties don't have email addresses:
+                    The following parties don&apos;t have email addresses:
                   </p>
                   <ul className="mt-2 list-disc list-inside text-sm text-gray-600">
                     {missingEmails.map((email, index) => (

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Invoice } from '../../packages/core'
 import { InvoicePDFGenerator, previewInvoicePDF } from '../lib/pdf-generator'
 
@@ -26,7 +26,7 @@ export function PDFPreviewModal({ isOpen, onClose, invoice, onDownload }: PDFPre
   const [pdfDataUri, setPdfDataUri] = useState<string>('')
   const [isGenerating, setIsGenerating] = useState(false)
 
-  const generatePreview = async () => {
+  const generatePreview = useCallback(async () => {
     setIsGenerating(true)
     try {
       const dataUri = previewInvoicePDF(invoice, {
@@ -40,7 +40,7 @@ export function PDFPreviewModal({ isOpen, onClose, invoice, onDownload }: PDFPre
     } finally {
       setIsGenerating(false)
     }
-  }
+  }, [invoice, pdfOptions])
 
   const handleDownloadWithOptions = () => {
     const generator = new InvoicePDFGenerator({
@@ -57,7 +57,7 @@ export function PDFPreviewModal({ isOpen, onClose, invoice, onDownload }: PDFPre
     if (isOpen) {
       generatePreview()
     }
-  }, [isOpen, pdfOptions])
+  }, [isOpen, pdfOptions, generatePreview])
 
   if (!isOpen) return null
 
@@ -152,7 +152,7 @@ export function PDFPreviewModal({ isOpen, onClose, invoice, onDownload }: PDFPre
                   onChange={(e) => setPDFOptions({ ...pdfOptions, includeWatermark: e.target.checked })}
                   className="text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-700">Include "DRAFT" watermark</span>
+                <span className="text-sm text-gray-700">Include &quot;DRAFT&quot; watermark</span>
               </label>
             </div>
 
@@ -209,7 +209,7 @@ export function PDFPreviewModal({ isOpen, onClose, invoice, onDownload }: PDFPre
                   <svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  <p>Click "Refresh Preview" to generate PDF</p>
+                  <p>Click &quot;Refresh Preview&quot; to generate PDF</p>
                 </div>
               </div>
             )}
