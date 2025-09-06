@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useUserContext } from '../lib/user-context'
 import { UserContext, Currency, Locale } from '../../packages/core/schemas'
 import { getPopularCurrencies, getRegionalCurrencies, getCurrencySymbol, getSuggestedCurrency } from '../lib/currency'
+import { usePersistedUserSettings, usePersistedCurrency, usePersistedLocale } from '../hooks/use-persisted-settings'
 
 interface CompanySettingsProps {
   isOpen: boolean
@@ -12,16 +13,63 @@ interface CompanySettingsProps {
 
 export function CompanySettings({ isOpen, onClose }: CompanySettingsProps) {
   const { context, updateContext } = useUserContext()
+  const { settings, setSettings } = usePersistedUserSettings()
+  const [lastUsedCurrency, setLastUsedCurrency] = usePersistedCurrency()
+  const [lastUsedLocale, setLastUsedLocale] = usePersistedLocale()
   const [formData, setFormData] = useState<Partial<UserContext>>({})
 
   useEffect(() => {
     if (isOpen) {
-      setFormData(context || {})
+      // Merge persisted settings with context
+      const mergedData = {
+        ...context,
+        ...settings,
+        defaultCurrency: (settings.defaultCurrency as Currency) || (lastUsedCurrency as Currency),
+        defaultLocale: (settings.defaultLocale as Locale) || (lastUsedLocale as Locale)
+      }
+      setFormData(mergedData)
     }
-  }, [isOpen, context])
+  }, [isOpen, context, settings, lastUsedCurrency, lastUsedLocale])
+
+  // Handle keyboard events for accessibility
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        onClose()
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown)
+      return () => document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isOpen, onClose])
 
   const handleSave = () => {
+    // Save to both context and localStorage
     updateContext(formData)
+    setSettings({
+      companyName: formData.companyName,
+      companyAddress: formData.companyAddress,
+      companyEmail: formData.companyEmail,
+      companyPhone: formData.companyPhone,
+      defaultCurrency: formData.defaultCurrency,
+      defaultLocale: formData.defaultLocale,
+      defaultTaxRate: formData.defaultTaxRate,
+      logoUrl: formData.logoUrl,
+      website: formData.website,
+      taxNumber: formData.taxNumber,
+      bankDetails: formData.bankDetails
+    })
+    
+    // Update last used preferences
+    if (formData.defaultCurrency) {
+      setLastUsedCurrency(formData.defaultCurrency)
+    }
+    if (formData.defaultLocale) {
+      setLastUsedLocale(formData.defaultLocale)
+    }
+    
     onClose()
   }
 
@@ -29,27 +77,27 @@ export function CompanySettings({ isOpen, onClose }: CompanySettingsProps) {
 
   return (
     <div className="fixed inset-0 z-[9999] overflow-y-auto">
-      <div className="flex min-h-full items-center justify-center p-4">
+      <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" 
           onClick={onClose} 
         />
-        <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl">
-          {/* Header */}
-          <div className="flex justify-between items-center p-6 border-b border-gray-200">
+        <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+          {/* Header - Fixed */}
+          <div className="flex justify-between items-center p-6 border-b border-gray-200 flex-shrink-0">
             <h3 className="text-xl font-bold text-gray-900">
               Company Settings
             </h3>
             <button 
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"
+              className="text-gray-400 hover:text-gray-600 text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
             >
               ×
             </button>
           </div>
 
-          {/* Form */}
-          <div className="p-6">
+          {/* Form - Scrollable */}
+          <div className="flex-1 overflow-y-auto p-6">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -252,18 +300,18 @@ export function CompanySettings({ isOpen, onClose }: CompanySettingsProps) {
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
+          {/* Footer - Sticky */}
+          <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50 flex-shrink-0 rounded-b-xl">
             <button
               type="button"
-              className="px-6 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-6 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
               onClick={onClose}
             >
               Cancel
             </button>
             <button
               type="button"
-              className="px-6 py-3 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-6 py-3 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
               onClick={handleSave}
             >
               Save Settings

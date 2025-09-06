@@ -104,14 +104,21 @@ Please generate comprehensive legal sections including Purpose, Definitions, Con
       }
     }, {
       onSuccess: (response) => {
-        // Store the AI response and navigate to editor
+        // Store the AI response and redirect directly to editor
         localStorage.setItem('aiGeneratedNDA', JSON.stringify({
           ...response,
           inputData: data,
           inputType: 'guided'
         }))
-        router.push('/nda/editor?from=ai')
-        toast.success('✨ AI-generated NDA created!')
+        
+        // Show loading toast and redirect immediately
+        toast.loading('Generating NDA document...', { duration: 1000 })
+        
+        // Redirect to editor with loading state
+        setTimeout(() => {
+          router.push('/nda/editor?from=ai')
+          toast.success('✨ AI-generated NDA created!')
+        }, 500)
       },
       onError: (error: Error) => {
         setIsGenerating(false)
@@ -147,14 +154,21 @@ Please create comprehensive legal sections and make reasonable assumptions for a
       }
     }, {
       onSuccess: (response) => {
-        // Store the AI response and navigate to editor
+        // Store the AI response and redirect directly to editor
         localStorage.setItem('aiGeneratedNDA', JSON.stringify({
           ...response,
           inputData: { freeTextInput },
           inputType: 'freetext'
         }))
-        router.push('/nda/editor?from=ai')
-        toast.success('✨ AI-generated NDA created!')
+        
+        // Show loading toast and redirect immediately
+        toast.loading('Generating NDA document...', { duration: 1000 })
+        
+        // Redirect to editor with loading state
+        setTimeout(() => {
+          router.push('/nda/editor?from=ai')
+          toast.success('✨ AI-generated NDA created!')
+        }, 500)
       },
       onError: (error: Error) => {
         setIsGenerating(false)

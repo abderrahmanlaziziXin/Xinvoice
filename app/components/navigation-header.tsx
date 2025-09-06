@@ -77,7 +77,6 @@ export function NavigationHeader() {
     const routeMap: { [key: string]: string } = {
       '/invoice/single': '/new/invoice',
       '/invoice/batch': '/new/invoice-batch',
-      '/nda/new': '/new/nda',
       '/history': '/',
       '/settings': '/'
     }

@@ -76,7 +76,7 @@ function NDAEditorContent() {
       disclosingParty: { name: '', address: '' },
       receivingParty: { name: '', address: '' },
       title: 'Non-Disclosure Agreement',
-      effectiveDate: new Date().toISOString().split('T')[0],
+      effectiveDate: '', // Don't default to today - let it be filled from form data or user input
       terminationDate: '',
       governingLaw: 'State of California',
       purpose: '',
@@ -106,25 +106,52 @@ function NDAEditorContent() {
             setAssumptions(data.assumptions)
           }
           
-          // Pre-fill form with AI data
+          // First, populate from original input data if available (takes priority)
+          if (data.inputData) {
+            const inputData = data.inputData
+            
+            // Map form input data to editor fields
+            setValue('disclosingParty.name', inputData.disclosingParty?.name || '')
+            setValue('disclosingParty.address', inputData.disclosingParty?.address || '')
+            setValue('receivingParty.name', inputData.receivingParty?.name || '')
+            setValue('receivingParty.address', inputData.receivingParty?.address || '')
+            setValue('effectiveDate', inputData.effectiveDate || new Date().toISOString().split('T')[0])
+            setValue('terminationDate', inputData.terminationDate || '')
+            setValue('governingLaw', inputData.governingLaw || 'State of California')
+            
+            // Calculate termination date from duration if provided
+            if (inputData.termDuration && !inputData.terminationDate) {
+              const effectiveDate = new Date(inputData.effectiveDate)
+              if (inputData.termDuration.includes('year')) {
+                const years = parseInt(inputData.termDuration.match(/\d+/)?.[0] || '1')
+                effectiveDate.setFullYear(effectiveDate.getFullYear() + years)
+              } else if (inputData.termDuration.includes('month')) {
+                const months = parseInt(inputData.termDuration.match(/\d+/)?.[0] || '12')
+                effectiveDate.setMonth(effectiveDate.getMonth() + months)
+              }
+              setValue('terminationDate', effectiveDate.toISOString().split('T')[0])
+            }
+          }
+          
+          // Then populate AI-generated content if available
           if (data.document) {
             const doc = data.document
             
-            // Map AI data to form fields
-            if (doc.disclosingParty) {
+            // Only override if not already set from input data
+            if (!data.inputData?.disclosingParty?.name && doc.disclosingParty) {
               setValue('disclosingParty.name', doc.disclosingParty.name || '')
               setValue('disclosingParty.address', doc.disclosingParty.address || '')
             }
             
-            if (doc.receivingParty) {
+            if (!data.inputData?.receivingParty?.name && doc.receivingParty) {
               setValue('receivingParty.name', doc.receivingParty.name || '')
               setValue('receivingParty.address', doc.receivingParty.address || '')
             }
             
             if (doc.title) setValue('title', doc.title)
-            if (doc.effectiveDate) setValue('effectiveDate', doc.effectiveDate)
-            if (doc.terminationDate) setValue('terminationDate', doc.terminationDate)
-            if (doc.governingLaw) setValue('governingLaw', doc.governingLaw)
+            if (!data.inputData?.effectiveDate && doc.effectiveDate) setValue('effectiveDate', doc.effectiveDate)
+            if (!data.inputData?.terminationDate && doc.terminationDate) setValue('terminationDate', doc.terminationDate)
+            if (!data.inputData?.governingLaw && doc.governingLaw) setValue('governingLaw', doc.governingLaw)
             
             // Map sections if available
             if (doc.sections) {

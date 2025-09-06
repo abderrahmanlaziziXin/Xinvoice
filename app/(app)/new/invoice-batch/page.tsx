@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
+import { useRouter } from 'next/navigation'
 import { 
   DocumentDuplicateIcon, 
   CloudArrowUpIcon,
@@ -13,13 +14,15 @@ import {
   TrashIcon,
   DocumentArrowDownIcon,
   EyeIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  DocumentTextIcon
 } from '@heroicons/react/24/outline'
 import { useGenerateBatchDocuments } from '../../../hooks/use-generate-batch-documents'
 import { CompanySettings } from '../../../components/company-settings'
 import { FileUpload } from '../../../components/file-upload'
 import { LoadingSpinner } from '../../../components/loading'
 import { useUserContext } from '../../../lib/user-context'
+import { usePersistedUserSettings, usePersistedCurrency, usePersistedLocale } from '../../../hooks/use-persisted-settings'
 import { convertFileDataToPrompt, FileParseResult } from '../../../lib/file-parser'
 import { generateMultiItemPrompt, detectTemplateType } from '../../../lib/csv-template-enhanced'
 import { downloadMultiplePDFs } from '../../../lib/pdf-generator'
@@ -27,6 +30,7 @@ import { downloadCSVTemplate, getTemplateFieldDescriptions } from '../../../lib/
 import { Invoice } from '../../../../packages/core'
 
 export default function BatchInvoicePage() {
+  const router = useRouter()
   const [uploadedData, setUploadedData] = useState<FileParseResult | null>(null)
   const [generatedInvoices, setGeneratedInvoices] = useState<Invoice[]>([])
   const [showForm, setShowForm] = useState(false)
@@ -35,6 +39,9 @@ export default function BatchInvoicePage() {
   const [editData, setEditData] = useState<Invoice | null>(null)
   const [detectedTemplate, setDetectedTemplate] = useState<string>('Simple Invoice')
   const { context } = useUserContext()
+  const { settings } = usePersistedUserSettings()
+  const [lastUsedCurrency, setLastUsedCurrency] = usePersistedCurrency()
+  const [lastUsedLocale, setLastUsedLocale] = usePersistedLocale()
 
   const generateMutation = useGenerateBatchDocuments()
 
@@ -124,6 +131,23 @@ export default function BatchInvoicePage() {
   const handleCancel = () => {
     setEditingIndex(null)
     setEditData(null)
+  }
+
+  const handleOpenEditor = (index: number) => {
+    const invoice = generatedInvoices[index]
+    
+    // Store invoice data with persisted settings for the editor
+    localStorage.setItem('editingInvoice', JSON.stringify({
+      invoice,
+      fromBatch: true,
+      batchIndex: index,
+      defaultCurrency: settings.defaultCurrency || lastUsedCurrency,
+      defaultLocale: settings.defaultLocale || lastUsedLocale
+    }))
+    
+    // Navigate to single invoice editor
+    router.push('/new/invoice?edit=true')
+    toast.success('Opening invoice in full editor...')
   }
 
   const handleDelete = (index: number) => {
@@ -811,18 +835,27 @@ export default function BatchInvoicePage() {
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
                               onClick={() => handleEdit(index)}
-                              className="flex-1 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm flex items-center justify-center"
+                              className="flex-1 px-2 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-xs flex items-center justify-center"
                             >
-                              <PencilIcon className="w-4 h-4 mr-1" />
-                              Edit
+                              <PencilIcon className="w-3 h-3 mr-1" />
+                              Quick Edit
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => handleOpenEditor(index)}
+                              className="flex-1 px-2 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors text-xs flex items-center justify-center"
+                            >
+                              <DocumentTextIcon className="w-3 h-3 mr-1" />
+                              Open Editor
                             </motion.button>
                             <motion.button
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
                               onClick={() => handleDelete(index)}
-                              className="flex-1 px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm flex items-center justify-center"
+                              className="flex-1 px-2 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-xs flex items-center justify-center"
                             >
-                              <TrashIcon className="w-4 h-4 mr-1" />
+                              <TrashIcon className="w-3 h-3 mr-1" />
                               Delete
                             </motion.button>
                           </div>

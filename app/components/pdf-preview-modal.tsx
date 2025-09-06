@@ -105,10 +105,38 @@ export function PDFPreviewModal({ isOpen, onClose, invoice, onDownload }: PDFPre
     }
   }, [pdfBlobUrl])
 
+  // Handle escape key and overlay click
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape)
+      document.body.style.overflow = 'hidden'
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen, onClose])
+
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose()
+    }
+  }
+
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={handleOverlayClick}
+    >
       <div className="bg-white rounded-xl shadow-2xl max-w-7xl w-full max-h-[95vh] overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
@@ -119,7 +147,8 @@ export function PDFPreviewModal({ isOpen, onClose, invoice, onDownload }: PDFPre
             </div>
             <button
               onClick={onClose}
-              className="text-white hover:text-gray-200 transition-colors p-2"
+              className="text-white hover:text-gray-200 transition-colors p-2 hover:bg-white/10 rounded-lg"
+              aria-label="Close preview"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -263,12 +292,33 @@ export function PDFPreviewModal({ isOpen, onClose, invoice, onDownload }: PDFPre
                   src={pdfBlobUrl || pdfDataUri}
                   className="w-full h-full border-2 border-gray-300 rounded-lg shadow-lg"
                   title="PDF Preview"
-                  onLoad={() => console.log('PDF iframe loaded successfully')}
+                  onLoad={() => {
+                    console.log('PDF iframe loaded successfully')
+                    setPreviewError('')
+                  }}
                   onError={(e) => {
                     console.error('PDF iframe failed to load:', e)
-                    setPreviewError('Failed to load PDF preview. Try downloading instead.')
+                    setPreviewError('Failed to load PDF preview in iframe')
                   }}
                 />
+                {/* Fallback download link if iframe fails */}
+                {previewError && (
+                  <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
+                    <div className="text-center">
+                      <svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <p className="text-gray-600 mb-4">Preview not available</p>
+                      <p className="text-sm text-gray-500 mb-4">{previewError}</p>
+                      <button
+                        onClick={handleDownloadWithOptions}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Download PDF Instead
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex items-center justify-center h-full">

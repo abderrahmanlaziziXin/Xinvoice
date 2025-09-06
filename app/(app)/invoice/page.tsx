@@ -158,10 +158,10 @@ export default function InvoicePage() {
               Need Help Choosing?
             </h3>
             <p className="text-gray-600 mb-8">
-              Start with a single invoice if you&apos;re new to our platform, or jump straight to batch processing 
+              Start with a single invoice if you&apos;re new to our platform, or jump straight to batch processing
               if you have multiple invoices to create.
             </p>
-            
+
             <div className="grid md:grid-cols-2 gap-4">
               <Link href="/new/invoice">
                 <motion.div
@@ -206,7 +206,7 @@ export default function InvoicePage() {
               Powered by Enhanced AI
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Our advanced GPT-4o integration automatically handles calculations, formatting, 
+              Our advanced GPT-4o integration automatically handles calculations, formatting,
               and professional document creation.
             </p>
           </div>

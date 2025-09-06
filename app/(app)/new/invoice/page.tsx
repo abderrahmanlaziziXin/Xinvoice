@@ -13,6 +13,7 @@ import {
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
 import { useGenerateDocument } from '../../../hooks/use-generate-document'
+import { usePersistedUserSettings, usePersistedCurrency, usePersistedLocale } from '../../../hooks/use-persisted-settings'
 import InvoiceForm from '../../../components/invoice-form'
 import { CompanySettings } from '../../../components/company-settings'
 import { FileUpload } from '../../../components/file-upload'
@@ -32,6 +33,7 @@ export default function NewInvoicePage() {
 function NewInvoiceContent() {
   const searchParams = useSearchParams()
   const fromAI = searchParams.get('from') === 'ai'
+  const editMode = searchParams.get('edit') === 'true'
   
   const [prompt, setPrompt] = useState('')
   const [generatedInvoice, setGeneratedInvoice] = useState<Partial<Invoice> | null>(null)
@@ -41,7 +43,11 @@ function NewInvoiceContent() {
   const [uploadedData, setUploadedData] = useState<{success: boolean, data: any[], headers: string[], rawData: string, fileName: string, fileType: 'csv' | 'excel'} | null>(null)
   const [aiData, setAiData] = useState<any>(null)
   const [aiAssumptions, setAiAssumptions] = useState<string[]>([])
+  const [editingData, setEditingData] = useState<any>(null)
   const { context } = useUserContext()
+  const { settings } = usePersistedUserSettings()
+  const [lastUsedCurrency, setLastUsedCurrency] = usePersistedCurrency()
+  const [lastUsedLocale, setLastUsedLocale] = usePersistedLocale()
 
   // Load AI-generated data if coming from enhanced generator
   useEffect(() => {
@@ -72,7 +78,35 @@ function NewInvoiceContent() {
         }
       }
     }
-  }, [fromAI])
+    
+    // Load editing data if in edit mode
+    if (editMode) {
+      const editingData = localStorage.getItem('editingInvoice')
+      if (editingData) {
+        try {
+          const data = JSON.parse(editingData)
+          setEditingData(data)
+          setGeneratedInvoice(data.invoice)
+          setShowForm(true)
+          
+          // Load persisted settings if available
+          if (data.defaultCurrency) {
+            setLastUsedCurrency(data.defaultCurrency)
+          }
+          if (data.defaultLocale) {
+            setLastUsedLocale(data.defaultLocale)
+          }
+          
+          toast.success('📝 Invoice loaded for editing!')
+          // Clear the data after loading
+          localStorage.removeItem('editingInvoice')
+        } catch (error) {
+          console.error('Error loading editing data:', error)
+          toast.error('Failed to load invoice for editing')
+        }
+      }
+    }
+  }, [fromAI, editMode, setLastUsedCurrency, setLastUsedLocale])
 
   const generateMutation = useGenerateDocument()
 
@@ -386,6 +420,12 @@ function NewInvoiceContent() {
                   <InvoiceForm
                     initialData={generatedInvoice || {}}
                     aiAssumptions={aiAssumptions}
+                    defaultCurrency={settings.defaultCurrency || lastUsedCurrency}
+                    defaultLocale={settings.defaultLocale || lastUsedLocale}
+                    persistSettings={(currency, locale) => {
+                      setLastUsedCurrency(currency)
+                      setLastUsedLocale(locale)
+                    }}
                     onSubmit={(data) => {
                       setGeneratedInvoice(data)
                       toast.success('Invoice updated successfully!')

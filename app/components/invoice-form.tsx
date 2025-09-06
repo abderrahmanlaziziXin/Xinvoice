@@ -15,9 +15,20 @@ interface InvoiceFormProps {
   onSubmit: (data: Invoice) => void
   isSubmitting?: boolean
   aiAssumptions?: string[]
+  defaultCurrency?: string
+  defaultLocale?: string
+  persistSettings?: (currency: string, locale: string) => void
 }
 
-export default function InvoiceForm({ initialData, onSubmit, isSubmitting, aiAssumptions }: InvoiceFormProps) {
+export default function InvoiceForm({ 
+  initialData, 
+  onSubmit, 
+  isSubmitting, 
+  aiAssumptions,
+  defaultCurrency = 'USD',
+  defaultLocale = 'en-US',
+  persistSettings
+}: InvoiceFormProps) {
   const [showEmailWarning, setShowEmailWarning] = useState(false)
   const [showPDFPreview, setShowPDFPreview] = useState(false)
   const [formData, setFormData] = useState<Invoice | null>(null)
@@ -46,8 +57,8 @@ export default function InvoiceForm({ initialData, onSubmit, isSubmitting, aiAss
       taxRate: 0,
       taxAmount: 0,
       total: 0,
-      currency: 'USD',
-      locale: 'en-US',
+      currency: defaultCurrency as any,
+      locale: defaultLocale as any,
       terms: '',
       notes: '',
     },
@@ -79,8 +90,8 @@ export default function InvoiceForm({ initialData, onSubmit, isSubmitting, aiAss
         taxRate: initialData.taxRate || 0,
         taxAmount: initialData.taxAmount || 0,
         total: initialData.total || 0,
-        currency: initialData.currency || 'USD',
-        locale: initialData.locale || 'en-US',
+        currency: (initialData.currency || defaultCurrency) as any,
+        locale: (initialData.locale || defaultLocale) as any,
         terms: initialData.terms || '',
         notes: initialData.notes || '',
       }
@@ -216,7 +227,7 @@ export default function InvoiceForm({ initialData, onSubmit, isSubmitting, aiAss
           <input
             {...register('date')}
             type="date"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white transition-colors sm:text-base text-sm"
             aria-describedby="date-help"
           />
           {errors.date && (
@@ -234,7 +245,7 @@ export default function InvoiceForm({ initialData, onSubmit, isSubmitting, aiAss
           <input
             {...register('dueDate')}
             type="date"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white transition-colors sm:text-base text-sm"
             aria-describedby="due-date-help"
           />
           {errors.dueDate && (
