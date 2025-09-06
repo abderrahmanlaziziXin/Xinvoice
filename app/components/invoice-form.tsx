@@ -14,9 +14,10 @@ interface InvoiceFormProps {
   initialData?: Partial<Invoice>
   onSubmit: (data: Invoice) => void
   isSubmitting?: boolean
+  aiAssumptions?: string[]
 }
 
-export default function InvoiceForm({ initialData, onSubmit, isSubmitting }: InvoiceFormProps) {
+export default function InvoiceForm({ initialData, onSubmit, isSubmitting, aiAssumptions }: InvoiceFormProps) {
   const [showEmailWarning, setShowEmailWarning] = useState(false)
   const [showPDFPreview, setShowPDFPreview] = useState(false)
   const [formData, setFormData] = useState<Invoice | null>(null)
@@ -157,6 +158,31 @@ export default function InvoiceForm({ initialData, onSubmit, isSubmitting }: Inv
       />
       
       <form onSubmit={handleSubmit(validateEmailsAndSubmit)} className="space-y-8">
+        {/* AI Assumptions Display */}
+        {aiAssumptions && aiAssumptions.length > 0 && (
+          <div className="bg-blue-50/80 backdrop-blur-sm border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="flex items-start">
+              <InformationCircleIcon className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
+              <div>
+                <h3 className="text-sm font-medium text-blue-800 mb-2">
+                  AI Generated Content - Assumptions Made
+                </h3>
+                <ul className="text-sm text-blue-700 space-y-1">
+                  {aiAssumptions.map((assumption, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                      {assumption}
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-xs text-blue-600 mt-2 italic">
+                  Please review and modify the generated content as needed to ensure accuracy.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
       {/* Header Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>

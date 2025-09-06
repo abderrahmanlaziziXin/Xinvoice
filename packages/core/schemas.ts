@@ -21,15 +21,15 @@ export const DocumentTypeSchema = z.enum(['invoice', 'nda'])
 export const UserContextSchema = z.object({
   companyName: z.string().optional(),
   companyAddress: z.string().optional(),
-  companyEmail: z.string().email().optional(),
+  companyEmail: z.preprocess(val => val === '' ? undefined : val, z.string().email().optional()),
   companyPhone: z.string().optional(),
   defaultCurrency: CurrencySchema.default('USD'),
   defaultLocale: LocaleSchema.default('en-US'),
   defaultTaxRate: z.number().min(0).max(1).default(0.08),
   defaultTerms: z.string().optional(),
   jurisdiction: z.string().optional(),
-  logoUrl: z.string().url().optional(),
-  website: z.string().url().optional(),
+  logoUrl: z.preprocess(val => val === '' ? undefined : val, z.string().url().optional()),
+  website: z.preprocess(val => val === '' ? undefined : val, z.string().url().optional()),
   taxNumber: z.string().optional(),
   bankDetails: z.object({
     accountName: z.string().optional(),

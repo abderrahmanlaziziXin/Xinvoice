@@ -1,17 +1,80 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { useGenerateEnhancedDocument } from '../../../hooks/use-generate-enhanced-document'
 import { LoadingSpinner } from '../../../components/loading'
+import { ChevronDownIcon, ChevronRightIcon, ClipboardDocumentIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Currency, Locale } from '../../../../packages/core/schemas'
+
+interface CompanySettings {
+  companyName: string
+  companyAddress: string
+  companyEmail: string
+  companyPhone: string
+  defaultCurrency: string
+  defaultLocale: string
+}
+
+interface OptionalParams {
+  companyName: string
+  companyAddress: string
+  clientName: string
+  clientAddress: string
+  currency: string
+  locale: string
+  effectiveDate: string
+  terminationDate: string
+}
 
 export default function EnhancedTestPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [prompt, setPrompt] = useState('')
   const [documentType, setDocumentType] = useState<'invoice' | 'nda'>('invoice')
   const [response, setResponse] = useState<any>(null)
+  const [expandedSections, setExpandedSections] = useState<string[]>(['formatted'])
+  const [optionalParams, setOptionalParams] = useState<OptionalParams>({
+    companyName: '',
+    companyAddress: '',
+    clientName: '',
+    clientAddress: '',
+    currency: 'USD',
+    locale: 'en-US',
+    effectiveDate: '',
+    terminationDate: ''
+  })
   
   const generateMutation = useGenerateEnhancedDocument()
+
+  // Set document type from URL parameter
+  useEffect(() => {
+    const typeParam = searchParams.get('type')
+    if (typeParam === 'nda' || typeParam === 'invoice') {
+      setDocumentType(typeParam)
+    }
+  }, [searchParams])
+
+  // Load company settings from localStorage on mount
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('companySettings')
+    if (savedSettings) {
+      try {
+        const settings: CompanySettings = JSON.parse(savedSettings)
+        setOptionalParams(prev => ({
+          ...prev,
+          companyName: settings.companyName || '',
+          companyAddress: settings.companyAddress || '',
+          currency: settings.defaultCurrency || 'USD',
+          locale: settings.defaultLocale || 'en-US'
+        }))
+      } catch (error) {
+        console.error('Error loading company settings:', error)
+      }
+    }
+  }, [])
 
   const handleSubmit = async () => {
     if (!prompt.trim()) {
@@ -19,19 +82,118 @@ export default function EnhancedTestPage() {
       return
     }
 
+    // Build enhanced prompt with optional parameters
+    const enhancedPrompt = buildEnhancedPrompt(prompt, optionalParams, documentType)
+
     generateMutation.mutate({
-      prompt,
+      prompt: enhancedPrompt,
       documentType,
-      useEnhancedPrompts: true
+      useEnhancedPrompts: true,
+      userContext: {
+        companyName: optionalParams.companyName,
+        companyEmail: '', // Will be filled from settings if available
+        defaultCurrency: optionalParams.currency as Currency,
+        defaultLocale: optionalParams.locale as Locale,
+        defaultTaxRate: 0.08 // Default tax rate
+      }
     }, {
       onSuccess: (response) => {
         setResponse(response)
+        setExpandedSections(['formatted', 'metadata'])
         toast.success('✨ Enhanced document generated!')
       },
       onError: (error: Error) => {
         toast.error('❌ Failed: ' + error.message)
       }
     })
+  }
+
+  const buildEnhancedPrompt = (basePrompt: string, params: OptionalParams, type: 'invoice' | 'nda'): string => {
+    let enhancedPrompt = basePrompt
+
+    // Add context based on provided parameters
+    const contextParts = []
+    
+    if (params.companyName) contextParts.push(`Company: ${params.companyName}`)
+    if (params.companyAddress) contextParts.push(`Company Address: ${params.companyAddress}`)
+    if (params.clientName) contextParts.push(`Client: ${params.clientName}`)
+    if (params.clientAddress) contextParts.push(`Client Address: ${params.clientAddress}`)
+    if (params.currency !== 'USD') contextParts.push(`Currency: ${params.currency}`)
+    if (params.locale !== 'en-US') contextParts.push(`Locale: ${params.locale}`)
+    
+    if (type === 'nda') {
+      if (params.effectiveDate) contextParts.push(`Effective Date: ${params.effectiveDate}`)
+      if (params.terminationDate) contextParts.push(`Termination Date: ${params.terminationDate}`)
+    }
+
+    if (contextParts.length > 0) {
+      enhancedPrompt = `${basePrompt}\n\nAdditional Context:\n${contextParts.join('\n')}`
+    }
+
+    return enhancedPrompt
+  }
+
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => 
+      prev.includes(section) 
+        ? prev.filter(s => s !== section)
+        : [...prev, section]
+    )
+  }
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast.success(`${label} copied to clipboard!`)
+    }).catch(() => {
+      toast.error('Failed to copy to clipboard')
+    })
+  }
+
+  const handleUseAsInvoice = () => {
+    if (!response?.document) {
+      toast.error('No document data available')
+      return
+    }
+
+    // Store the AI-generated data in localStorage for the invoice editor
+    localStorage.setItem('aiGeneratedInvoice', JSON.stringify({
+      document: response.document,
+      content: response.content,
+      assumptions: response.assumptions || []
+    }))
+
+    toast.success('Redirecting to invoice editor...')
+    router.push('/new/invoice?from=ai')
+  }
+
+  const handleUseAsNDA = () => {
+    if (!response?.document) {
+      toast.error('No document data available')
+      return
+    }
+
+    // Store the AI-generated data in localStorage for the NDA editor
+    localStorage.setItem('aiGeneratedNDA', JSON.stringify({
+      document: response.document,
+      content: response.content,
+      assumptions: response.assumptions || []
+    }))
+
+    toast.success('Redirecting to NDA editor...')
+    router.push('/new/nda?from=ai')
+  }
+
+  const downloadJSON = () => {
+    if (!response) return
+    
+    const dataStr = JSON.stringify(response, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${documentType}-response.json`
+    link.click()
+    URL.revokeObjectURL(url)
   }
 
   const examplePrompts = {
@@ -41,7 +203,7 @@ export default function EnhancedTestPage() {
       'Bill Gamma Inc for a complete e-commerce solution with payment integration, product catalog, and admin dashboard - total $5000'
     ],
     nda: [
-      'Draft a mutual NDA between TechCorp (123 Silicon Valley, CA) and InnovateLab (456 Innovation St, NY) for a 2-year software development collaboration starting January 1, 2026',
+      'Draft a mutual NDA between TechCorp and InnovateLab for a 2-year software development collaboration starting January 1, 2026',
       'Create a unilateral NDA where DataCorp shares confidential algorithms with StartupXYZ for 3 years, with high confidentiality level',
       'Generate an NDA between two consulting firms for sharing client strategies and methodologies, term of 18 months'
     ]
@@ -49,7 +211,7 @@ export default function EnhancedTestPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-100/50 p-8">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -60,7 +222,7 @@ export default function EnhancedTestPage() {
             Enhanced AI Document Generator
           </h1>
           <p className="text-gray-600 text-lg">
-            Test the new enhanced prompt system for richer, more structured document generation
+            Create professional documents with AI-powered intelligence and optional parameters
           </p>
         </motion.div>
 
@@ -69,12 +231,12 @@ export default function EnhancedTestPage() {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bg-white/80 backdrop-blur-md rounded-xl p-6 shadow-lg"
+            className="bg-white/80 backdrop-blur-md rounded-xl p-6 shadow-lg space-y-6"
           >
             <h2 className="text-xl font-semibold mb-4">Document Generation</h2>
             
             {/* Document Type Selection */}
-            <div className="mb-6">
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Document Type
               </label>
@@ -95,8 +257,125 @@ export default function EnhancedTestPage() {
               </div>
             </div>
 
+            {/* Optional Parameters */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Company Name
+                </label>
+                <input
+                  type="text"
+                  value={optionalParams.companyName}
+                  onChange={(e) => setOptionalParams(prev => ({ ...prev, companyName: e.target.value }))}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Your Company Inc."
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Client Name
+                </label>
+                <input
+                  type="text"
+                  value={optionalParams.clientName}
+                  onChange={(e) => setOptionalParams(prev => ({ ...prev, clientName: e.target.value }))}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Client Company"
+                />
+              </div>
+              
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Company Address
+                </label>
+                <input
+                  type="text"
+                  value={optionalParams.companyAddress}
+                  onChange={(e) => setOptionalParams(prev => ({ ...prev, companyAddress: e.target.value }))}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="123 Business St, City, State 12345"
+                />
+              </div>
+              
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Client Address
+                </label>
+                <input
+                  type="text"
+                  value={optionalParams.clientAddress}
+                  onChange={(e) => setOptionalParams(prev => ({ ...prev, clientAddress: e.target.value }))}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="456 Client Ave, City, State 67890"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Currency
+                </label>
+                <select
+                  value={optionalParams.currency}
+                  onChange={(e) => setOptionalParams(prev => ({ ...prev, currency: e.target.value }))}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="USD">USD - US Dollar</option>
+                  <option value="EUR">EUR - Euro</option>
+                  <option value="GBP">GBP - British Pound</option>
+                  <option value="CAD">CAD - Canadian Dollar</option>
+                  <option value="AUD">AUD - Australian Dollar</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Locale
+                </label>
+                <select
+                  value={optionalParams.locale}
+                  onChange={(e) => setOptionalParams(prev => ({ ...prev, locale: e.target.value }))}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="en-US">English (US)</option>
+                  <option value="en-GB">English (UK)</option>
+                  <option value="fr-FR">Français</option>
+                  <option value="de-DE">Deutsch</option>
+                  <option value="es-ES">Español</option>
+                </select>
+              </div>
+              
+              {documentType === 'nda' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Effective Date
+                    </label>
+                    <input
+                      type="date"
+                      value={optionalParams.effectiveDate}
+                      onChange={(e) => setOptionalParams(prev => ({ ...prev, effectiveDate: e.target.value }))}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Termination Date
+                    </label>
+                    <input
+                      type="date"
+                      value={optionalParams.terminationDate}
+                      onChange={(e) => setOptionalParams(prev => ({ ...prev, terminationDate: e.target.value }))}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
             {/* Prompt Input */}
-            <div className="mb-6">
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Prompt
               </label>
@@ -109,7 +388,7 @@ export default function EnhancedTestPage() {
             </div>
 
             {/* Example Prompts */}
-            <div className="mb-6">
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Example Prompts
               </label>
@@ -154,63 +433,181 @@ export default function EnhancedTestPage() {
             {response ? (
               <div className="space-y-4">
                 {/* Status Indicators */}
-                <div className="flex items-center space-x-4">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    response.enhanced 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {response.enhanced ? '✨ Enhanced' : '⚠️ Standard Fallback'}
-                  </span>
-                  {response.assumptions && response.assumptions.length > 0 && (
-                    <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                      {response.assumptions.length} Assumptions
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      response.enhanced 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {response.enhanced ? '✨ Enhanced' : '⚠️ Standard Fallback'}
                     </span>
+                    {response.assumptions && response.assumptions.length > 0 && (
+                      <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        {response.assumptions.length} Assumptions
+                      </span>
+                    )}
+                  </div>
+                  
+                  {/* Export Actions */}
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={downloadJSON}
+                      className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Download JSON"
+                    >
+                      <DocumentArrowDownIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex space-x-4 pb-4 border-b">
+                  <button
+                    onClick={handleUseAsInvoice}
+                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    Use as Invoice
+                  </button>
+                  <button
+                    onClick={handleUseAsNDA}
+                    className="flex-1 bg-purple-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-purple-700 transition-colors"
+                  >
+                    Use as NDA
+                  </button>
+                </div>
+
+                {/* Collapsible Sections */}
+                {/* Formatted Document */}
+                <div className="border rounded-lg">
+                  <button
+                    onClick={() => toggleSection('formatted')}
+                    className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
+                  >
+                    <h3 className="font-medium">Formatted Document</h3>
+                    {expandedSections.includes('formatted') ? (
+                      <ChevronDownIcon className="w-5 h-5" />
+                    ) : (
+                      <ChevronRightIcon className="w-5 h-5" />
+                    )}
+                  </button>
+                  {expandedSections.includes('formatted') && response.formatted_document && (
+                    <div className="px-4 pb-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-gray-600">Ready-to-use document text</span>
+                        <button
+                          onClick={() => copyToClipboard(response.formatted_document, 'Formatted document')}
+                          className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                          title="Copy to clipboard"
+                        >
+                          <ClipboardDocumentIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700 whitespace-pre-wrap max-h-64 overflow-y-auto">
+                        {response.formatted_document}
+                      </div>
+                    </div>
                   )}
                 </div>
 
                 {/* Metadata */}
-                {response.document && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-medium mb-2">Document Metadata</h3>
-                    <pre className="text-sm text-gray-600 whitespace-pre-wrap">
-                      {JSON.stringify(response.document, null, 2)}
-                    </pre>
-                  </div>
-                )}
+                <div className="border rounded-lg">
+                  <button
+                    onClick={() => toggleSection('metadata')}
+                    className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
+                  >
+                    <h3 className="font-medium">Document Metadata</h3>
+                    {expandedSections.includes('metadata') ? (
+                      <ChevronDownIcon className="w-5 h-5" />
+                    ) : (
+                      <ChevronRightIcon className="w-5 h-5" />
+                    )}
+                  </button>
+                  {expandedSections.includes('metadata') && response.document && (
+                    <div className="px-4 pb-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-gray-600">Structured document data</span>
+                        <button
+                          onClick={() => copyToClipboard(JSON.stringify(response.document, null, 2), 'Metadata')}
+                          className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                          title="Copy to clipboard"
+                        >
+                          <ClipboardDocumentIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <pre className="text-sm text-gray-600 whitespace-pre-wrap max-h-64 overflow-y-auto">
+                          {JSON.stringify(response.document, null, 2)}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Enhanced Content */}
                 {response.content && (
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <h3 className="font-medium mb-2">Enhanced Content Structure</h3>
-                    <pre className="text-sm text-gray-600 whitespace-pre-wrap">
-                      {JSON.stringify(response.content, null, 2)}
-                    </pre>
-                  </div>
-                )}
-
-                {/* Formatted Document */}
-                {response.formatted_document && (
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <h3 className="font-medium mb-2">Formatted Document</h3>
-                    <div className="text-sm text-gray-700 whitespace-pre-wrap max-h-64 overflow-y-auto">
-                      {response.formatted_document}
-                    </div>
+                  <div className="border rounded-lg">
+                    <button
+                      onClick={() => toggleSection('content')}
+                      className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
+                    >
+                      <h3 className="font-medium">Enhanced Content Structure</h3>
+                      {expandedSections.includes('content') ? (
+                        <ChevronDownIcon className="w-5 h-5" />
+                      ) : (
+                        <ChevronRightIcon className="w-5 h-5" />
+                      )}
+                    </button>
+                    {expandedSections.includes('content') && (
+                      <div className="px-4 pb-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm text-gray-600">Rich content structure</span>
+                          <button
+                            onClick={() => copyToClipboard(JSON.stringify(response.content, null, 2), 'Content structure')}
+                            className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                            title="Copy to clipboard"
+                          >
+                            <ClipboardDocumentIcon className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="bg-blue-50 p-4 rounded-lg">
+                          <pre className="text-sm text-gray-600 whitespace-pre-wrap max-h-64 overflow-y-auto">
+                            {JSON.stringify(response.content, null, 2)}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
                 {/* Assumptions */}
                 {response.assumptions && response.assumptions.length > 0 && (
-                  <div className="bg-purple-50 p-4 rounded-lg">
-                    <h3 className="font-medium mb-2">AI Assumptions Made</h3>
-                    <ul className="text-sm text-gray-700 space-y-1">
-                      {response.assumptions.map((assumption: string, index: number) => (
-                        <li key={index} className="flex items-start">
-                          <span className="text-purple-600 mr-2">•</span>
-                          {assumption}
-                        </li>
-                      ))}
-                    </ul>
+                  <div className="border rounded-lg">
+                    <button
+                      onClick={() => toggleSection('assumptions')}
+                      className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
+                    >
+                      <h3 className="font-medium">AI Assumptions Made</h3>
+                      {expandedSections.includes('assumptions') ? (
+                        <ChevronDownIcon className="w-5 h-5" />
+                      ) : (
+                        <ChevronRightIcon className="w-5 h-5" />
+                      )}
+                    </button>
+                    {expandedSections.includes('assumptions') && (
+                      <div className="px-4 pb-4">
+                        <div className="bg-purple-50 p-4 rounded-lg">
+                          <ul className="text-sm text-gray-700 space-y-1">
+                            {response.assumptions.map((assumption: string, index: number) => (
+                              <li key={index} className="flex items-start">
+                                <span className="text-purple-600 mr-2">•</span>
+                                {assumption}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -220,6 +617,7 @@ export default function EnhancedTestPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <p>Enhanced document response will appear here</p>
+                <p className="text-sm mt-2">Fill in optional parameters and generate a document to see the structured output</p>
               </div>
             )}
           </motion.div>

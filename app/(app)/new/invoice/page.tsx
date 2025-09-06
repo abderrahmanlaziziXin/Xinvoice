@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
+import { useSearchParams } from 'next/navigation'
 import { 
   DocumentTextIcon, 
   CloudArrowUpIcon,
@@ -21,13 +22,57 @@ import { parseUploadedFile, convertFileDataToPrompt, FileParseResult } from '../
 import { Invoice } from '../../../../packages/core'
 
 export default function NewInvoicePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>}>
+      <NewInvoiceContent />
+    </Suspense>
+  )
+}
+
+function NewInvoiceContent() {
+  const searchParams = useSearchParams()
+  const fromAI = searchParams.get('from') === 'ai'
+  
   const [prompt, setPrompt] = useState('')
   const [generatedInvoice, setGeneratedInvoice] = useState<Partial<Invoice> | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [inputMode, setInputMode] = useState<'text' | 'file'>('text')
   const [uploadedData, setUploadedData] = useState<{success: boolean, data: any[], headers: string[], rawData: string, fileName: string, fileType: 'csv' | 'excel'} | null>(null)
+  const [aiData, setAiData] = useState<any>(null)
+  const [aiAssumptions, setAiAssumptions] = useState<string[]>([])
   const { context } = useUserContext()
+
+  // Load AI-generated data if coming from enhanced generator
+  useEffect(() => {
+    if (fromAI) {
+      const savedData = localStorage.getItem('aiGeneratedInvoice')
+      if (savedData) {
+        try {
+          const data = JSON.parse(savedData)
+          setAiData(data)
+          
+          // If we have structured invoice data, use it directly
+          if (data.document && data.document.type === 'invoice') {
+            setGeneratedInvoice(data.document)
+            setShowForm(true)
+            toast.success('📄 AI-generated invoice data loaded!')
+          }
+          
+          // Extract assumptions if available
+          if (data.metadata?.assumptions && Array.isArray(data.metadata.assumptions)) {
+            setAiAssumptions(data.metadata.assumptions)
+          }
+          
+          // Clear the data after loading
+          localStorage.removeItem('aiGeneratedInvoice')
+        } catch (error) {
+          console.error('Error loading AI data:', error)
+          toast.error('Failed to load AI-generated data')
+        }
+      }
+    }
+  }, [fromAI])
 
   const generateMutation = useGenerateDocument()
 
@@ -340,6 +385,7 @@ export default function NewInvoicePage() {
                 >
                   <InvoiceForm
                     initialData={generatedInvoice || {}}
+                    aiAssumptions={aiAssumptions}
                     onSubmit={(data) => {
                       setGeneratedInvoice(data)
                       toast.success('Invoice updated successfully!')

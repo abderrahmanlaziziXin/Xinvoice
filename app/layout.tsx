@@ -1,6 +1,7 @@
 import './globals.css'
 import QueryProvider from './components/query-provider'
 import { ToastProvider } from './components/toast-provider'
+import { NavigationHeader } from './components/navigation-header'
 
 export default function RootLayout({
   children,
@@ -11,7 +12,10 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <QueryProvider>
-          {children}
+          <NavigationHeader />
+          <main className="min-h-screen">
+            {children}
+          </main>
           <ToastProvider />
         </QueryProvider>
       </body>
