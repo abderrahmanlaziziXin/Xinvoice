@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { useGenerateEnhancedDocument } from '../../../hooks/use-generate-enhanced-document'
@@ -30,6 +30,14 @@ interface OptionalParams {
 }
 
 export default function EnhancedTestPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <EnhancedTestContent />
+    </Suspense>
+  )
+}
+
+function EnhancedTestContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [prompt, setPrompt] = useState('')
