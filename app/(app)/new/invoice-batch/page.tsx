@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useGenerateDocument } from '../../../hooks/use-generate-document'
 import { useGenerateBatchDocuments } from '../../../hooks/use-generate-batch-documents'
 import { useUserContext } from '../../../lib/user-context'
+import { parseUploadedFile, convertFileDataToPrompt } from '../../../lib/file-parser'
+import { FileUpload } from '../../../components/file-upload'
 import { Invoice } from '../../../../packages/core'
 import { CompanySettings } from '../../../components/company-settings'
 import { downloadMultiplePDFs, InvoicePDFGenerator } from '../../../lib/pdf-generator'
@@ -100,10 +102,26 @@ export default function BatchInvoicePage() {
   const [showSettings, setShowSettings] = useState(false)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [isDownloading, setIsDownloading] = useState(false)
+  const [inputMode, setInputMode] = useState<'text' | 'file'>('text')
+  const [uploadedData, setUploadedData] = useState<{success: boolean, data: any[], headers: string[], rawData: string, fileName: string, fileType: 'csv' | 'excel'} | null>(null)
 
   const { context } = useUserContext()
   const generateMutation = useGenerateDocument()
   const generateBatchMutation = useGenerateBatchDocuments()
+
+  const handleFileProcessed = (result: any) => {
+    if (result.success) {
+      setUploadedData(result)
+      console.log('File processed for batch:', result)
+    } else {
+      alert('Failed to parse file. Please check the format and try again.')
+    }
+  }
+
+  const handleFileError = (error: string) => {
+    console.error('File upload error:', error)
+    alert('Error uploading file: ' + error)
+  }
 
   const addPromptField = () => {
     setPrompts([...prompts, ''])
@@ -122,18 +140,30 @@ export default function BatchInvoicePage() {
   }
 
   const handleGenerateDrafts = async () => {
-    const validPrompts = prompts.filter(p => p.trim().length > 0)
+    let finalPrompts: string[] = []
     
-    if (validPrompts.length === 0) {
+    if (inputMode === 'text') {
+      finalPrompts = prompts.filter(p => p.trim().length > 0)
+    } else if (inputMode === 'file' && uploadedData) {
+      // For batch processing, convert each row of the file to a separate prompt
+      finalPrompts = uploadedData.data.map((row, index) => {
+        return convertFileDataToPrompt({
+          ...uploadedData,
+          data: [row] // Convert each row individually
+        })
+      }).filter(prompt => prompt.trim().length > 0)
+    }
+    
+    if (finalPrompts.length === 0) {
       return
     }
 
     try {
-      if (validPrompts.length === 1) {
+      if (finalPrompts.length === 1) {
         // Single invoice generation
         console.log('About to send single request with context:', context)
         const requestData = {
-          prompt: validPrompts[0].trim(),
+          prompt: finalPrompts[0].trim(),
           documentType: 'invoice' as const,
           userContext: context ? {
             companyName: context.companyName,
@@ -158,7 +188,7 @@ export default function BatchInvoicePage() {
         // Batch invoice generation
         console.log('About to send batch request with context:', context)
         const requestData = {
-          prompts: validPrompts,
+          prompts: finalPrompts,
           documentType: 'invoice' as const,
           userContext: context ? {
             companyName: context.companyName,
@@ -185,7 +215,9 @@ export default function BatchInvoicePage() {
     }
   }
 
-  const canGenerate = prompts.some(p => p.trim().length > 0)
+  const canGenerate = inputMode === 'text' ? 
+    prompts.some(p => p.trim().length > 0) : 
+    uploadedData !== null
   const isLoading = generateMutation.isPending || generateBatchMutation.isPending
 
   const handleDownloadAll = async () => {
@@ -250,6 +282,8 @@ export default function BatchInvoicePage() {
                     setShowForms(false)
                     setGeneratedInvoices([])
                     setPrompts([''])
+                    setInputMode('text')
+                    setUploadedData(null)
                   }}
                   className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
                 >
@@ -309,7 +343,7 @@ export default function BatchInvoicePage() {
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Batch Invoice Generator
               </h1>
-              <p className="text-gray-600 mt-2">Create multiple invoices at once with AI-powered generation</p>
+              <p className="text-gray-600 mt-2">Create multiple invoices at once with AI-powered generation or upload a file</p>
             </div>
             <button
               onClick={() => setShowSettings(true)}
@@ -319,10 +353,43 @@ export default function BatchInvoicePage() {
             </button>
           </div>
 
-          <div className="space-y-4 mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Invoice Requests (one per field)
-            </label>
+          {/* Input Mode Toggle */}
+          <div className="mb-8">
+            <div className="flex justify-center">
+              <div className="bg-gray-100 p-1 rounded-xl">
+                <button
+                  onClick={() => setInputMode('text')}
+                  className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                    inputMode === 'text'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  <span className="mr-2">✏️</span>
+                  Type Multiple Requests
+                </button>
+                <button
+                  onClick={() => setInputMode('file')}
+                  className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                    inputMode === 'file'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  <span className="mr-2">📄</span>
+                  Upload Batch File
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {inputMode === 'text' ? (
+            /* Text Input Mode */
+            <div>
+              <div className="space-y-4 mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Invoice Requests (one per field)
+                </label>
             
             {prompts.map((prompt, index) => (
               <div key={index} className="flex gap-3">
@@ -357,11 +424,42 @@ export default function BatchInvoicePage() {
                 </div>
               </div>
             ))}
-          </div>
+              </div>
+            </div>
+          ) : (
+            /* File Upload Mode */
+            <div>
+              <div className="space-y-4 mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Upload Batch Invoice Data
+                </label>
+                <FileUpload
+                  onFileProcessed={handleFileProcessed}
+                  onError={handleFileError}
+                />
+                {uploadedData && (
+                  <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl">
+                    <div className="flex items-center">
+                      <span className="text-green-600 mr-2">✅</span>
+                      <span className="text-green-800 font-medium">
+                        File uploaded: {uploadedData.fileName} ({uploadedData.data.length} rows)
+                      </span>
+                    </div>
+                    <div className="mt-2 text-sm text-green-700">
+                      Each row will generate a separate invoice
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-between items-center">
             <div className="text-sm text-gray-600">
-              {prompts.filter(p => p.trim().length > 0).length} invoice(s) ready to generate
+              {inputMode === 'text' ? 
+                `${prompts.filter(p => p.trim().length > 0).length} invoice(s) ready to generate` :
+                uploadedData ? `${uploadedData.data.length} invoice(s) ready to generate from file` : '0 invoices ready'
+              }
             </div>
             <button
               onClick={handleGenerateDrafts}
@@ -378,7 +476,11 @@ export default function BatchInvoicePage() {
                   Generating...
                 </div>
               ) : (
-                `Generate ${prompts.filter(p => p.trim().length > 0).length > 1 ? 'Batch' : 'Draft'}`
+                `Generate ${
+                  inputMode === 'text' 
+                    ? (prompts.filter(p => p.trim().length > 0).length > 1 ? 'Batch' : 'Draft')
+                    : (uploadedData && uploadedData.data.length > 1 ? 'Batch' : 'Draft')
+                }`
               )}
             </button>
           </div>

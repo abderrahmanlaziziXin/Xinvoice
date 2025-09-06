@@ -45,7 +45,7 @@ export default function SimpleInvoicePage() {
           <div className="space-y-4">
             <div className="p-4 bg-blue-50 rounded">
               <h2 className="font-semibold mb-2">Debug Info:</h2>
-              <div>Current prompt: "{prompt}"</div>
+              <div>Current prompt: &quot;{prompt}&quot;</div>
               <div>Length: {prompt.length}</div>
               <div>Trimmed length: {prompt.trim().length}</div>
               <div>Is generating: {isGenerating ? "true" : "false"}</div>
