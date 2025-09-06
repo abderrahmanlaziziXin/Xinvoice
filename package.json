@@ -1,6 +1,7 @@
 {
   "name": "doc-generator-mvp",
   "version": "0.1.0",
+  "description": "AI-powered invoice generator with multi-currency support and batch processing capabilities",
   "private": true,
   "scripts": {
     "dev": "next dev",

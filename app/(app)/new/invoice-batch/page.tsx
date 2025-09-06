@@ -21,8 +21,9 @@ import { FileUpload } from '../../../components/file-upload'
 import { LoadingSpinner } from '../../../components/loading'
 import { useUserContext } from '../../../lib/user-context'
 import { convertFileDataToPrompt, FileParseResult } from '../../../lib/file-parser'
+import { generateMultiItemPrompt, detectTemplateType } from '../../../lib/csv-template-enhanced'
 import { downloadMultiplePDFs } from '../../../lib/pdf-generator'
-import { downloadCSVTemplate, getTemplateFieldDescriptions } from '../../../lib/csv-template'
+import { downloadCSVTemplate, getTemplateFieldDescriptions } from '../../../lib/csv-template-enhanced'
 import { Invoice } from '../../../../packages/core'
 
 export default function BatchInvoicePage() {
@@ -32,13 +33,19 @@ export default function BatchInvoicePage() {
   const [showSettings, setShowSettings] = useState(false)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [editData, setEditData] = useState<Invoice | null>(null)
+  const [detectedTemplate, setDetectedTemplate] = useState<string>('Simple Invoice')
   const { context } = useUserContext()
 
   const generateMutation = useGenerateBatchDocuments()
 
   const handleFileProcessed = (result: FileParseResult) => {
     setUploadedData(result)
-    toast.success('✅ File uploaded and processed successfully!')
+    
+    // Detect template type from headers
+    const templateType = detectTemplateType(result.headers)
+    setDetectedTemplate(templateType)
+    
+    toast.success(`✅ File uploaded! Detected: ${templateType}`)
   }
 
   const handleFileError = (error: string) => {
@@ -51,48 +58,12 @@ export default function BatchInvoicePage() {
       return
     }
 
-    // The data is already parsed as objects, not arrays
+    // Use enhanced multi-item prompt generation
     const prompts = uploadedData.data.map((row: any, index: number) => {
-      // Clean the row data by removing empty values
-      const cleanRowData = Object.fromEntries(
-        Object.entries(row).filter(([key, value]) => 
-          value !== null && value !== undefined && String(value).trim() !== ''
-        )
-      )
-      
-      // Extract key fields with fallbacks
-      const clientName = cleanRowData.name || cleanRowData.client || cleanRowData.customer || `Client ${index + 1}`
-      const amount = cleanRowData.money || cleanRowData.amount || cleanRowData.price || 100
-      const time = cleanRowData.time || cleanRowData.hours || cleanRowData.duration || '1 hour'
-      const service = cleanRowData.job || cleanRowData.service || cleanRowData.description || 'Professional Services'
-      
-      // Create a detailed prompt with required fields specified
-      const prompt = `Generate a complete, valid invoice with ALL required fields for:
-
-CLIENT DETAILS:
-- Client Name: ${clientName}
-- Amount: $${amount}
-- Time/Duration: ${time}
-- Service: ${service}
-
-REQUIRED INVOICE STRUCTURE:
-- Invoice number (e.g., INV-${String(index + 1).padStart(3, '0')})
-- Issue date (today's date)
-- Due date (30 days from issue)
-- Client name: "${clientName}"
-- At least one line item with description, quantity, rate, and amount
-- Proper calculations for subtotal, tax, and total
-
-MANDATORY FIELDS TO INCLUDE:
-- to.name: "${clientName}" (REQUIRED - never leave empty)
-- items: [{ description: "${service}", quantity: 1, rate: ${amount}, amount: ${amount} }] (REQUIRED - must have at least one item)
-- from: Company details from context
-- All financial calculations must be accurate
-
-Create a professional, complete invoice with all required fields populated.`
-      
-      return context ? `${context}\n\n${prompt}` : prompt
+      return generateMultiItemPrompt(row, index, context)
     })
+
+    console.log('Generated prompts:', prompts.slice(0, 2)) // Log first 2 for debugging
 
     generateMutation.mutate(
       { prompts, documentType: 'invoice', userContext: context || undefined },

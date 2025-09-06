@@ -81,13 +81,29 @@ export class InvoicePDFGenerator {
         this.addWatermark()
       }
 
-      const dataUri = this.pdf.output('datauristring')
+      // Generate PDF with proper error handling
+      let dataUri: string
+      try {
+        dataUri = this.pdf.output('datauristring')
+      } catch (outputError) {
+        console.error('PDF output generation failed:', outputError)
+        throw new Error('Failed to generate PDF output')
+      }
       
-      // Validate output format
-      if (!dataUri || !dataUri.startsWith('data:application/pdf')) {
-        throw new Error('Generated PDF data is invalid')
+      // Validate output format with detailed checking
+      if (!dataUri) {
+        throw new Error('PDF generation returned empty result')
+      }
+      
+      if (!dataUri.startsWith('data:application/pdf;base64,')) {
+        console.warn('PDF data URI format unexpected:', dataUri.substring(0, 50))
+        // Still return it as some browsers might handle it differently
+        if (!dataUri.startsWith('data:')) {
+          throw new Error('Generated PDF data is not a valid data URI')
+        }
       }
 
+      console.log('PDF generated successfully, size:', dataUri.length, 'characters')
       return dataUri
       
     } catch (error) {

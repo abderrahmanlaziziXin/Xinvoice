@@ -95,10 +95,30 @@ export async function POST(request: NextRequest) {
     // Add default values for backward compatibility
     const enhancedDocument = addDefaultValues(cleanedDocument, userContext, documentType)
 
+    console.log('Enhanced document before validation:', {
+      type: enhancedDocument.type,
+      currency: enhancedDocument.currency,
+      locale: enhancedDocument.locale,
+      hasFrom: !!enhancedDocument.from,
+      hasTo: !!enhancedDocument.to,
+      itemsCount: enhancedDocument.items?.length || 0
+    })
+
     // Validate the generated document based on document type
     let validatedDocument
     if (documentType === 'invoice') {
-      validatedDocument = InvoiceSchema.parse(enhancedDocument)
+      try {
+        validatedDocument = InvoiceSchema.parse(enhancedDocument)
+      } catch (validationError) {
+        console.error('Invoice validation failed:', validationError)
+        if (validationError instanceof z.ZodError) {
+          // Log specific validation errors for debugging
+          validationError.errors.forEach(err => {
+            console.error('Validation error at path:', err.path, 'message:', err.message)
+          })
+        }
+        throw validationError
+      }
     } else {
       validatedDocument = NDASchema.parse(enhancedDocument)
     }

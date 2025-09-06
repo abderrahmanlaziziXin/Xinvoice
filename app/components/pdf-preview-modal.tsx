@@ -24,31 +24,53 @@ export function PDFPreviewModal({ isOpen, onClose, invoice, onDownload }: PDFPre
     accentColor: '#2563eb'
   })
   const [pdfDataUri, setPdfDataUri] = useState<string>('')
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string>('')
   const [isGenerating, setIsGenerating] = useState(false)
+  const [previewError, setPreviewError] = useState<string>('')
 
   const generatePreview = useCallback(async () => {
     setIsGenerating(true)
+    setPreviewError('')
+    
     try {
+      // Clean up previous blob URL
+      if (pdfBlobUrl) {
+        URL.revokeObjectURL(pdfBlobUrl)
+        setPdfBlobUrl('')
+      }
+      
       const dataUri = previewInvoicePDF(invoice, {
         customTemplate: pdfOptions.template,
         includeWatermark: pdfOptions.includeWatermark,
         accentColor: pdfOptions.accentColor
       })
       
-      // Ensure proper data URI format
-      if (dataUri && dataUri.startsWith('data:application/pdf')) {
+      // Validate data URI format
+      if (!dataUri || !dataUri.startsWith('data:application/pdf')) {
+        throw new Error('Invalid PDF data URI format')
+      }
+      
+      // Convert data URI to blob for better browser compatibility
+      try {
+        const response = await fetch(dataUri)
+        const blob = await response.blob()
+        const blobUrl = URL.createObjectURL(blob)
+        
         setPdfDataUri(dataUri)
-      } else {
-        console.error('Invalid PDF data URI format')
-        setPdfDataUri('')
+        setPdfBlobUrl(blobUrl)
+      } catch (blobError) {
+        console.warn('Blob conversion failed, using data URI:', blobError)
+        setPdfDataUri(dataUri)
       }
     } catch (error) {
       console.error('Error generating PDF preview:', error)
+      setPreviewError(error instanceof Error ? error.message : 'Unknown error')
       setPdfDataUri('')
+      setPdfBlobUrl('')
     } finally {
       setIsGenerating(false)
     }
-  }, [invoice, pdfOptions])
+  }, [invoice, pdfOptions, pdfBlobUrl])
 
   const handleDownloadWithOptions = () => {
     const generator = new InvoicePDFGenerator({
@@ -65,7 +87,23 @@ export function PDFPreviewModal({ isOpen, onClose, invoice, onDownload }: PDFPre
     if (isOpen) {
       generatePreview()
     }
+    
+    // Cleanup blob URL when modal closes
+    return () => {
+      if (pdfBlobUrl) {
+        URL.revokeObjectURL(pdfBlobUrl)
+      }
+    }
   }, [isOpen, pdfOptions, generatePreview])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (pdfBlobUrl) {
+        URL.revokeObjectURL(pdfBlobUrl)
+      }
+    }
+  }, [])
 
   if (!isOpen) return null
 
@@ -203,15 +241,32 @@ export function PDFPreviewModal({ isOpen, onClose, invoice, onDownload }: PDFPre
                   <p className="text-gray-600">Generating PDF preview...</p>
                 </div>
               </div>
-            ) : pdfDataUri ? (
+            ) : previewError ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center text-red-500">
+                  <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                  <p className="mb-4 font-medium">Preview Error</p>
+                  <p className="text-sm text-gray-600 mb-4">{previewError}</p>
+                  <button
+                    onClick={generatePreview}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    Retry Preview
+                  </button>
+                </div>
+              </div>
+            ) : pdfBlobUrl || pdfDataUri ? (
               <div className="h-full">
                 <iframe
-                  src={pdfDataUri}
+                  src={pdfBlobUrl || pdfDataUri}
                   className="w-full h-full border-2 border-gray-300 rounded-lg shadow-lg"
                   title="PDF Preview"
-                  onError={() => {
-                    console.error('PDF iframe failed to load')
-                    setPdfDataUri('')
+                  onLoad={() => console.log('PDF iframe loaded successfully')}
+                  onError={(e) => {
+                    console.error('PDF iframe failed to load:', e)
+                    setPreviewError('Failed to load PDF preview. Try downloading instead.')
                   }}
                 />
               </div>

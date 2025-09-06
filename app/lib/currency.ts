@@ -110,6 +110,11 @@ export function formatCurrency(
   locale: Locale = 'en-US'
 ): string {
   try {
+    // Validate inputs
+    if (typeof amount !== 'number' || isNaN(amount)) {
+      throw new Error('Invalid amount')
+    }
+    
     return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: currency,
@@ -117,13 +122,29 @@ export function formatCurrency(
       maximumFractionDigits: 2
     }).format(amount)
   } catch (error) {
-    // Fallback formatting
+    console.warn(`Currency formatting failed for ${locale} ${currency}:`, error)
+    
+    // Enhanced fallback formatting with Arabic locale support
     const symbol = CURRENCY_SYMBOLS[currency] || currency
-    const formattedAmount = amount.toLocaleString(locale, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    })
-    return `${symbol}${formattedAmount}`
+    try {
+      const formattedAmount = amount.toLocaleString(locale, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+      
+      // For RTL locales (Arabic), adjust symbol placement
+      if (locale.startsWith('ar-')) {
+        return `${formattedAmount} ${symbol}`
+      }
+      return `${symbol}${formattedAmount}`
+    } catch (fallbackError) {
+      // Final fallback - use English formatting
+      const formattedAmount = amount.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+      return `${symbol}${formattedAmount}`
+    }
   }
 }
 
@@ -135,11 +156,27 @@ export function formatNumber(
   locale: Locale = 'en-US',
   options?: Intl.NumberFormatOptions
 ): string {
-  return new Intl.NumberFormat(locale, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-    ...options
-  }).format(number)
+  try {
+    // Validate inputs
+    if (typeof number !== 'number' || isNaN(number)) {
+      throw new Error('Invalid number')
+    }
+    
+    return new Intl.NumberFormat(locale, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+      ...options
+    }).format(number)
+  } catch (error) {
+    console.warn(`Number formatting failed for ${locale}:`, error)
+    
+    // Fallback to English formatting
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+      ...options
+    }).format(number)
+  }
 }
 
 /**
@@ -150,13 +187,32 @@ export function formatDate(
   locale: Locale = 'en-US',
   options?: Intl.DateTimeFormatOptions
 ): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date
-  return new Intl.DateTimeFormat(locale, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    ...options
-  }).format(dateObj)
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date
+    
+    // Validate date
+    if (isNaN(dateObj.getTime())) {
+      throw new Error('Invalid date')
+    }
+    
+    return new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      ...options
+    }).format(dateObj)
+  } catch (error) {
+    console.warn(`Date formatting failed for ${locale}:`, error)
+    
+    // Fallback to English formatting
+    const dateObj = typeof date === 'string' ? new Date(date) : date
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      ...options
+    }).format(dateObj)
+  }
 }
 
 /**

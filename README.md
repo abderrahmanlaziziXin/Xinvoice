@@ -14,9 +14,16 @@ A Next.js 14 application for generating documents (invoices, NDAs) using AI assi
 - 🏢 Company settings and context saving
 - 📧 Email validation with warnings
 - 📅 Smart date handling (AI calculates due dates)
-- 📄 Client-side PDF export and download
+- 📄 **Professional PDF Export**: Multi-template system (Modern/Classic/Minimal)
+- 🔍 **PDF Preview**: Real-time preview with customization options
 - 💾 Session-based history (in-memory)
 - 🎨 Modern, responsive design with animations
+- 💰 **Multi-Currency Support**: 28+ currencies (USD, EUR, GBP, DZD, MAD, TND, etc.)
+- 🌍 **Localization**: 32+ locales with regional formatting
+- 📁 **File Upload**: CSV/Excel upload with intelligent AI parsing
+- 🔄 **Dual Input Modes**: Text and file upload for batch processing
+- ✨ **Professional UI**: Glass morphism design with Framer Motion animations
+- 🛡️ **Type Safety**: Full TypeScript coverage with Zod validation
 
 ## Tech Stack
 
