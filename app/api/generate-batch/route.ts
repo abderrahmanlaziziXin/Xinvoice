@@ -78,10 +78,46 @@ export async function POST(request: NextRequest) {
 
     const documentsData = await provider.generateBatchDocuments(prompts, documentType, userContext)
 
+    // Function to fix incomplete invoices
+    const fixIncompleteInvoice = (doc: any, index: number) => {
+      // Ensure client name exists
+      if (!doc.to || !doc.to.name || doc.to.name.trim() === '') {
+        if (!doc.to) doc.to = {}
+        doc.to.name = `Client ${index + 1}`
+      }
+
+      // Ensure items array exists with at least one item
+      if (!doc.items || !Array.isArray(doc.items) || doc.items.length === 0) {
+        doc.items = [{
+          description: 'Professional Services',
+          quantity: 1,
+          rate: 100,
+          amount: 100
+        }]
+        
+        // Recalculate totals
+        doc.subtotal = 100
+        doc.taxAmount = doc.taxRate ? doc.subtotal * doc.taxRate : 0
+        doc.total = doc.subtotal + doc.taxAmount
+      }
+
+      // Ensure required fields exist
+      if (!doc.invoiceNumber) doc.invoiceNumber = `INV-${String(index + 1).padStart(3, '0')}`
+      if (!doc.date) doc.date = new Date().toISOString().split('T')[0]
+      if (!doc.dueDate) {
+        const dueDate = new Date()
+        dueDate.setDate(dueDate.getDate() + 30)
+        doc.dueDate = dueDate.toISOString().split('T')[0]
+      }
+
+      return doc
+    }
+
     // Clean up empty email fields and validate each document
     const validatedDocuments = documentsData.map((doc, index) => {
       try {
-        const cleanedDocument = cleanEmptyEmails(doc)
+        let cleanedDocument = cleanEmptyEmails(doc)
+        cleanedDocument = fixIncompleteInvoice(cleanedDocument, index)
         return DocumentSchema.parse(cleanedDocument)
       } catch (validationError) {
         console.error(`Validation error for document ${index + 1}:`, validationError)
