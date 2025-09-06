@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createLLMProvider, DocumentTypeSchema, DocumentSchema, UserContextSchema } from '../../../packages/core'
+import { createLLMProvider, DocumentTypeSchema, DocumentSchema, UserContextSchema, InvoiceSchema, NDASchema } from '../../../packages/core'
 
 // Helper function to clean up empty email fields
 function cleanEmptyEmails(data: any): any {
@@ -19,6 +19,26 @@ function cleanEmptyEmails(data: any): any {
   }
   
   return cleaned
+}
+
+// Helper function to add default values for backward compatibility
+// Helper function to add default values for backward compatibility
+function addDefaultValues(data: any, userContext?: any, documentType?: string): any {
+  if (typeof data !== 'object' || data === null) return data
+  
+  const enhanced = { ...data }
+  
+  // Add default currency and locale for invoices if missing
+  if (documentType === 'invoice') {
+    if (!enhanced.currency) {
+      enhanced.currency = userContext?.defaultCurrency || 'USD'
+    }
+    if (!enhanced.locale) {
+      enhanced.locale = userContext?.defaultLocale || 'en-US'
+    }
+  }
+  
+  return enhanced
 }
 
 const GenerateRequestSchema = z.object({
@@ -71,9 +91,17 @@ export async function POST(request: NextRequest) {
 
     // Clean up empty email fields before validation
     const cleanedDocument = cleanEmptyEmails(documentData)
+    
+    // Add default values for backward compatibility
+    const enhancedDocument = addDefaultValues(cleanedDocument, userContext, documentType)
 
-    // Validate the generated document
-    const validatedDocument = DocumentSchema.parse(cleanedDocument)
+    // Validate the generated document based on document type
+    let validatedDocument
+    if (documentType === 'invoice') {
+      validatedDocument = InvoiceSchema.parse(enhancedDocument)
+    } else {
+      validatedDocument = NDASchema.parse(enhancedDocument)
+    }
 
     return NextResponse.json({
       success: true,

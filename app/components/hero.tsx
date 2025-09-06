@@ -152,7 +152,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.8 }}
-            className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto"
+            className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-20"
           >
             {features.map((feature, index) => (
               <motion.div
@@ -175,6 +175,189 @@ export function Hero() {
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </motion.div>
             ))}
+          </motion.div>
+
+          {/* Example Invoices Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1.4 }}
+            className="mb-20"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
+              <span className="bg-gradient-to-r from-gray-900 to-indigo-900 bg-clip-text text-transparent">
+                See What You Can Create
+              </span>
+            </h2>
+            <p className="text-xl text-gray-600 text-center mb-12 max-w-2xl mx-auto">
+              From simple freelance invoices to complex business transactions
+            </p>
+            
+            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              {[
+                {
+                  title: 'Freelance Web Design',
+                  description: 'Modern template with custom branding',
+                  amount: '$2,500',
+                  client: 'ACME Corporation',
+                  gradient: 'from-blue-500 to-purple-600'
+                },
+                {
+                  title: 'Consulting Services',
+                  description: 'Professional hourly billing',
+                  amount: '$1,200',
+                  client: 'Tech Startup Inc.',
+                  gradient: 'from-emerald-500 to-teal-600'
+                },
+                {
+                  title: 'Digital Marketing',
+                  description: 'Multi-service package invoice',
+                  amount: '$3,750',
+                  client: 'Global Brands Ltd.',
+                  gradient: 'from-purple-500 to-pink-600'
+                }
+              ].map((example, index) => (
+                <motion.div
+                  key={example.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 1.6 + index * 0.1 }}
+                  className="group relative bg-white/70 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <div className={`w-full h-32 bg-gradient-to-br ${example.gradient} rounded-xl mb-4 flex items-center justify-center relative overflow-hidden`}>
+                    <div className="text-white text-center">
+                      <div className="text-2xl font-bold">{example.amount}</div>
+                      <div className="text-sm opacity-80">Invoice Total</div>
+                    </div>
+                    <div className="absolute inset-0 bg-black/10 backdrop-blur-sm"></div>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">{example.title}</h3>
+                  <p className="text-sm text-gray-600 mb-3">{example.description}</p>
+                  <div className="flex justify-between items-center text-xs text-gray-500">
+                    <span>Client: {example.client}</span>
+                    <span>✓ AI Generated</span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Testimonials Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1.8 }}
+            className="mb-20"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+              <span className="bg-gradient-to-r from-gray-900 to-indigo-900 bg-clip-text text-transparent">
+                Trusted by Professionals
+              </span>
+            </h2>
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              {[
+                {
+                  name: 'Sarah Johnson',
+                  role: 'Freelance Designer',
+                  content: 'This AI invoice generator saved me hours every week. The templates are professional and the AI understands exactly what I need.',
+                  rating: 5
+                },
+                {
+                  name: 'Michael Chen',
+                  role: 'Consulting Firm Owner',
+                  content: 'Batch processing is a game-changer for our business. We generate hundreds of invoices in minutes with perfect accuracy.',
+                  rating: 5
+                },
+                {
+                  name: 'Emma Rodriguez',
+                  role: 'Digital Agency',
+                  content: 'The multi-currency support and localization features make this perfect for our international clients.',
+                  rating: 5
+                }
+              ].map((testimonial, index) => (
+                <motion.div
+                  key={testimonial.name}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 2 + index * 0.1 }}
+                  className="bg-white/70 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <div className="flex mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <span key={i} className="text-yellow-400 text-lg">★</span>
+                    ))}
+                  </div>
+                  <p className="text-gray-700 mb-4 italic">&quot;{testimonial.content}&quot;</p>
+                  <div>
+                    <div className="font-semibold text-gray-900">{testimonial.name}</div>
+                    <div className="text-sm text-gray-600">{testimonial.role}</div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* How It Works Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 2.2 }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
+              <span className="bg-gradient-to-r from-gray-900 to-indigo-900 bg-clip-text text-transparent">
+                How AI Powers Your Invoices
+              </span>
+            </h2>
+            <p className="text-xl text-gray-600 text-center mb-12 max-w-3xl mx-auto">
+              Advanced GPT-4o technology understands your business context and creates perfect documents every time
+            </p>
+            
+            <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
+              {[
+                {
+                  step: '1',
+                  title: 'Describe or Upload',
+                  description: 'Tell us about your work in plain English or upload CSV/Excel files',
+                  icon: '📝'
+                },
+                {
+                  step: '2', 
+                  title: 'AI Processing',
+                  description: 'Our advanced AI analyzes your input and understands your business context',
+                  icon: '🤖'
+                },
+                {
+                  step: '3',
+                  title: 'Smart Generation',
+                  description: 'Professional invoices are created with proper formatting and calculations',
+                  icon: '⚡'
+                },
+                {
+                  step: '4',
+                  title: 'Download & Send',
+                  description: 'Get your PDF invoices instantly, ready to send to clients',
+                  icon: '📄'
+                }
+              ].map((step, index) => (
+                <motion.div
+                  key={step.step}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 2.4 + index * 0.1 }}
+                  className="text-center"
+                >
+                  <div className="relative mb-6">
+                    <div className="w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl mx-auto mb-4">
+                      {step.step}
+                    </div>
+                    <div className="text-4xl mb-4">{step.icon}</div>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{step.title}</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">{step.description}</p>
+                </motion.div>
+              ))}
+            </div>
           </motion.div>
         </div>
       </div>

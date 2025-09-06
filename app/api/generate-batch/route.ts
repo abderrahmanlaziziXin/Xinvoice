@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createLLMProvider, DocumentTypeSchema, DocumentSchema, UserContextSchema } from '../../../packages/core'
+import { createLLMProvider, DocumentTypeSchema, DocumentSchema, UserContextSchema, InvoiceSchema, NDASchema } from '../../../packages/core'
 
 // Helper function to clean up empty email fields
 function cleanEmptyEmails(data: any): any {
@@ -19,6 +19,26 @@ function cleanEmptyEmails(data: any): any {
   }
   
   return cleaned
+}
+
+// Helper function to add default values for backward compatibility
+// Helper function to add default values for backward compatibility
+function addDefaultValues(data: any, userContext?: any, documentType?: string): any {
+  if (typeof data !== 'object' || data === null) return data
+  
+  const enhanced = { ...data }
+  
+  // Add default currency and locale for invoices if missing
+  if (documentType === 'invoice') {
+    if (!enhanced.currency) {
+      enhanced.currency = userContext?.defaultCurrency || 'USD'
+    }
+    if (!enhanced.locale) {
+      enhanced.locale = userContext?.defaultLocale || 'en-US'
+    }
+  }
+  
+  return enhanced
 }
 
 const GenerateBatchRequestSchema = z.object({
@@ -118,7 +138,14 @@ export async function POST(request: NextRequest) {
       try {
         let cleanedDocument = cleanEmptyEmails(doc)
         cleanedDocument = fixIncompleteInvoice(cleanedDocument, index)
-        return DocumentSchema.parse(cleanedDocument)
+        cleanedDocument = addDefaultValues(cleanedDocument, userContext, documentType)
+        
+        // Validate based on document type
+        if (documentType === 'invoice') {
+          return InvoiceSchema.parse(cleanedDocument)
+        } else {
+          return NDASchema.parse(cleanedDocument)
+        }
       } catch (validationError) {
         console.error(`Validation error for document ${index + 1}:`, validationError)
         throw new Error(`Validation failed for document ${index + 1}: ${validationError}`)

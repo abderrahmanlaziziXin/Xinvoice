@@ -105,7 +105,7 @@ export default function NewInvoicePage() {
                     Describe Your Invoice
                   </h2>
                   <p className="text-gray-600 text-lg">
-                    Tell us about the work you did and we'll generate a
+                    Tell us about the work you did and we&apos;ll generate a
                     professional invoice draft for you.
                   </p>
                 </div>
@@ -195,8 +195,8 @@ export default function NewInvoicePage() {
                             )
                           }
                         >
-                          "Invoice ACME Corp $2500 for website development, due
-                          in 30 days"
+                          &quot;Invoice ACME Corp $2500 for website development,
+                          due in 30 days&quot;
                         </div>
                         <div
                           className="p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-all"
@@ -206,8 +206,8 @@ export default function NewInvoicePage() {
                             )
                           }
                         >
-                          "Bill John Smith $150/hour for 8 hours of consulting,
-                          due next Friday"
+                          &quot;Bill John Smith $150/hour for 8 hours of
+                          consulting, due next Friday&quot;
                         </div>
                       </div>
                       <div className="space-y-2">
@@ -219,8 +219,8 @@ export default function NewInvoicePage() {
                             )
                           }
                         >
-                          "Facture ACME Corp 1500€ pour développement web"
-                          (French)
+                          &quot;Facture ACME Corp 1500€ pour développement
+                          web&quot; (French)
                         </div>
                         <div
                           className="p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-all"
@@ -230,8 +230,8 @@ export default function NewInvoicePage() {
                             )
                           }
                         >
-                          "invoice acme corp 1500 dolars for web desing" (with
-                          typos!)
+                          &quot;invoice acme corp 1500 dolars for web
+                          desing&quot; (with typos!)
                         </div>
                       </div>
                     </div>

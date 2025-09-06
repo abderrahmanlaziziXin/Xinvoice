@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useUserContext } from '../lib/user-context'
-import { UserContext } from '../../packages/core/schemas'
+import { UserContext, Currency, Locale } from '../../packages/core/schemas'
+import { getPopularCurrencies, getRegionalCurrencies, getCurrencySymbol, getSuggestedCurrency } from '../lib/currency'
 
 interface CompanySettingsProps {
   isOpen: boolean
@@ -108,13 +109,77 @@ export function CompanySettings({ isOpen, onClose }: CompanySettingsProps) {
                 </label>
                 <select
                   value={formData.defaultCurrency || 'USD'}
-                  onChange={(e) => setFormData({...formData, defaultCurrency: e.target.value})}
+                  onChange={(e) => setFormData({...formData, defaultCurrency: e.target.value as Currency})}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="USD">USD ($)</option>
-                  <option value="EUR">EUR (€)</option>
-                  <option value="GBP">GBP (£)</option>
-                  <option value="CAD">CAD (C$)</option>
+                  <optgroup label="Popular Currencies">
+                    {getPopularCurrencies().map((currency) => (
+                      <option key={currency.code} value={currency.code}>
+                        {currency.code} ({currency.symbol}) - {currency.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="African Currencies">
+                    {getRegionalCurrencies('africa').map((currency) => (
+                      <option key={currency.code} value={currency.code}>
+                        {currency.code} ({currency.symbol}) - {currency.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="European Currencies">
+                    {getRegionalCurrencies('europe').map((currency) => (
+                      <option key={currency.code} value={currency.code}>
+                        {currency.code} ({currency.symbol}) - {currency.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Default Locale
+                </label>
+                <select
+                  value={formData.defaultLocale || 'en-US'}
+                  onChange={(e) => {
+                    const newLocale = e.target.value as Locale
+                    const suggestedCurrency = getSuggestedCurrency(newLocale)
+                    setFormData({
+                      ...formData, 
+                      defaultLocale: newLocale,
+                      // Auto-suggest currency based on locale if not set
+                      defaultCurrency: formData.defaultCurrency || suggestedCurrency
+                    })
+                  }}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <optgroup label="English">
+                    <option value="en-US">English (United States)</option>
+                    <option value="en-GB">English (United Kingdom)</option>
+                    <option value="en-CA">English (Canada)</option>
+                    <option value="en-AU">English (Australia)</option>
+                  </optgroup>
+                  <optgroup label="European">
+                    <option value="fr-FR">Français (France)</option>
+                    <option value="de-DE">Deutsch (Deutschland)</option>
+                    <option value="es-ES">Español (España)</option>
+                    <option value="it-IT">Italiano (Italia)</option>
+                    <option value="pt-PT">Português (Portugal)</option>
+                    <option value="nl-NL">Nederlands (Nederland)</option>
+                  </optgroup>
+                  <optgroup label="African & Middle Eastern">
+                    <option value="ar-DZ">العربية (الجزائر)</option>
+                    <option value="ar-MA">العربية (المغرب)</option>
+                    <option value="ar-TN">العربية (تونس)</option>
+                    <option value="ar-EG">العربية (مصر)</option>
+                  </optgroup>
+                  <optgroup label="Other">
+                    <option value="pt-BR">Português (Brasil)</option>
+                    <option value="zh-CN">中文 (中国)</option>
+                    <option value="ja-JP">日本語 (日本)</option>
+                    <option value="hi-IN">हिन्दी (भारत)</option>
+                  </optgroup>
                 </select>
               </div>
 
@@ -143,6 +208,32 @@ export function CompanySettings({ isOpen, onClose }: CompanySettingsProps) {
                   onChange={(e) => setFormData({...formData, jurisdiction: e.target.value})}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="New York, USA"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tax Number / VAT ID
+                </label>
+                <input
+                  type="text"
+                  value={formData.taxNumber || ''}
+                  onChange={(e) => setFormData({...formData, taxNumber: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="VAT123456789"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Website
+                </label>
+                <input
+                  type="url"
+                  value={formData.website || ''}
+                  onChange={(e) => setFormData({...formData, website: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="https://www.company.com"
                 />
               </div>
 

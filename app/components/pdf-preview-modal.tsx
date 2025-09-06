@@ -34,9 +34,17 @@ export function PDFPreviewModal({ isOpen, onClose, invoice, onDownload }: PDFPre
         includeWatermark: pdfOptions.includeWatermark,
         accentColor: pdfOptions.accentColor
       })
-      setPdfDataUri(dataUri)
+      
+      // Ensure proper data URI format
+      if (dataUri && dataUri.startsWith('data:application/pdf')) {
+        setPdfDataUri(dataUri)
+      } else {
+        console.error('Invalid PDF data URI format')
+        setPdfDataUri('')
+      }
     } catch (error) {
       console.error('Error generating PDF preview:', error)
+      setPdfDataUri('')
     } finally {
       setIsGenerating(false)
     }
@@ -201,6 +209,10 @@ export function PDFPreviewModal({ isOpen, onClose, invoice, onDownload }: PDFPre
                   src={pdfDataUri}
                   className="w-full h-full border-2 border-gray-300 rounded-lg shadow-lg"
                   title="PDF Preview"
+                  onError={() => {
+                    console.error('PDF iframe failed to load')
+                    setPdfDataUri('')
+                  }}
                 />
               </div>
             ) : (
@@ -209,7 +221,13 @@ export function PDFPreviewModal({ isOpen, onClose, invoice, onDownload }: PDFPre
                   <svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  <p>Click &quot;Refresh Preview&quot; to generate PDF</p>
+                  <p className="mb-4">PDF preview will appear here</p>
+                  <button
+                    onClick={generatePreview}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Generate Preview
+                  </button>
                 </div>
               </div>
             )}

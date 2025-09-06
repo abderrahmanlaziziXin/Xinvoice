@@ -3,10 +3,12 @@
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useState } from 'react'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { InvoiceSchema, Invoice, InvoiceItem } from '../../packages/core'
 import { EmailWarningModal } from './modal'
 import { PDFPreviewModal } from './pdf-preview-modal'
 import { InvoicePDFGenerator } from '../lib/pdf-generator'
+import { Tooltip } from './tooltip'
 
 interface InvoiceFormProps {
   initialData?: Partial<Invoice>
@@ -43,6 +45,8 @@ export default function InvoiceForm({ initialData, onSubmit, isSubmitting }: Inv
       taxRate: 0,
       taxAmount: 0,
       total: 0,
+      currency: 'USD',
+      locale: 'en-US',
       terms: '',
       notes: '',
     },
@@ -74,6 +78,8 @@ export default function InvoiceForm({ initialData, onSubmit, isSubmitting }: Inv
         taxRate: initialData.taxRate || 0,
         taxAmount: initialData.taxAmount || 0,
         total: initialData.total || 0,
+        currency: initialData.currency || 'USD',
+        locale: initialData.locale || 'en-US',
         terms: initialData.terms || '',
         notes: initialData.notes || '',
       }
@@ -154,27 +160,38 @@ export default function InvoiceForm({ initialData, onSubmit, isSubmitting }: Inv
       {/* Header Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
             Invoice Number
+            <Tooltip content="A unique identifier for this invoice. Use a format like INV-001, INV-2024-001, etc.">
+              <InformationCircleIcon className="w-4 h-4 ml-1 text-gray-400 cursor-help" />
+            </Tooltip>
           </label>
           <input
             {...register('invoiceNumber')}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
             placeholder="INV-001"
+            aria-describedby="invoice-number-help"
           />
           {errors.invoiceNumber && (
             <p className="text-red-500 text-sm mt-1">{errors.invoiceNumber.message}</p>
           )}
+          <p id="invoice-number-help" className="text-xs text-gray-500 mt-1">
+            This will appear on your invoice and should be unique for each invoice
+          </p>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
             Date
+            <Tooltip content="The date this invoice was created/issued">
+              <InformationCircleIcon className="w-4 h-4 ml-1 text-gray-400 cursor-help" />
+            </Tooltip>
           </label>
           <input
             {...register('date')}
             type="date"
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+            aria-describedby="date-help"
           />
           {errors.date && (
             <p className="text-red-500 text-sm mt-1">{errors.date.message}</p>
@@ -182,17 +199,24 @@ export default function InvoiceForm({ initialData, onSubmit, isSubmitting }: Inv
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
             Due Date
+            <Tooltip content="When payment is expected. Typically 15-30 days from invoice date">
+              <InformationCircleIcon className="w-4 h-4 ml-1 text-gray-400 cursor-help" />
+            </Tooltip>
           </label>
           <input
             {...register('dueDate')}
             type="date"
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+            aria-describedby="due-date-help"
           />
           {errors.dueDate && (
             <p className="text-red-500 text-sm mt-1">{errors.dueDate.message}</p>
           )}
+          <p id="due-date-help" className="text-xs text-gray-500 mt-1">
+            Payment deadline for this invoice
+          </p>
         </div>
       </div>
 

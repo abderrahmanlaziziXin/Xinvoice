@@ -12,7 +12,8 @@ import {
   PencilIcon,
   TrashIcon,
   DocumentArrowDownIcon,
-  EyeIcon
+  EyeIcon,
+  InformationCircleIcon
 } from '@heroicons/react/24/outline'
 import { useGenerateBatchDocuments } from '../../../hooks/use-generate-batch-documents'
 import { CompanySettings } from '../../../components/company-settings'
@@ -21,6 +22,7 @@ import { LoadingSpinner } from '../../../components/loading'
 import { useUserContext } from '../../../lib/user-context'
 import { convertFileDataToPrompt, FileParseResult } from '../../../lib/file-parser'
 import { downloadMultiplePDFs } from '../../../lib/pdf-generator'
+import { downloadCSVTemplate, getTemplateFieldDescriptions } from '../../../lib/csv-template'
 import { Invoice } from '../../../../packages/core'
 
 export default function BatchInvoicePage() {
@@ -239,6 +241,73 @@ Create a professional, complete invoice with all required fields populated.`
                 </div>
 
                 <div className="p-8">
+                  {/* CSV Template Section */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.5 }}
+                    className="mb-8 p-6 bg-blue-50/50 border border-blue-200/50 rounded-2xl"
+                  >
+                    <div className="flex items-start space-x-4">
+                      <div className="flex-shrink-0">
+                        <InformationCircleIcon className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-blue-900 mb-2">Need a template?</h3>
+                        <p className="text-blue-700 mb-4">
+                          Download our CSV template to ensure your data is formatted correctly for batch processing.
+                        </p>
+                        
+                        <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                          <button
+                            onClick={() => {
+                              downloadCSVTemplate()
+                              toast.success('📄 CSV template downloaded!')
+                            }}
+                            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                          >
+                            <DocumentArrowDownIcon className="w-4 h-4 mr-2" />
+                            Download CSV Template
+                          </button>
+                        </div>
+                        
+                        {/* Required Fields Info */}
+                        <div className="bg-white/60 rounded-lg p-4">
+                          <h4 className="font-medium text-gray-900 mb-2">Required Fields:</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                            {getTemplateFieldDescriptions()
+                              .filter(field => field.required)
+                              .map((field) => (
+                                <div key={field.field} className="flex items-center">
+                                  <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                                  <span className="font-mono text-gray-700">{field.field}</span>
+                                  <span className="text-gray-500 ml-2">- {field.description}</span>
+                                </div>
+                              ))}
+                          </div>
+                          
+                          <h4 className="font-medium text-gray-900 mb-2 mt-4">Optional Fields:</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                            {getTemplateFieldDescriptions()
+                              .filter(field => !field.required)
+                              .slice(0, 4) // Show first 4 optional fields
+                              .map((field) => (
+                                <div key={field.field} className="flex items-center">
+                                  <span className="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
+                                  <span className="font-mono text-gray-700">{field.field}</span>
+                                  <span className="text-gray-500 ml-2">- {field.description}</span>
+                                </div>
+                              ))}
+                          </div>
+                          
+                          <p className="text-xs text-gray-500 mt-3">
+                            💡 Tip: The AI can understand various column names and formats. Even if your headers don&apos;t match exactly, the system will try to map them intelligently.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+
                   {/* File Upload Section */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}

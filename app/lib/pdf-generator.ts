@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf'
 import autoTable, { UserOptions } from 'jspdf-autotable'
 import { Invoice } from '../../packages/core'
+import { formatCurrency, formatDate, formatNumber } from './currency'
 
 // Constants for better maintainability
 const PDF_CONSTANTS = {
@@ -80,7 +81,14 @@ export class InvoicePDFGenerator {
         this.addWatermark()
       }
 
-      return this.pdf.output('datauristring')
+      const dataUri = this.pdf.output('datauristring')
+      
+      // Validate output format
+      if (!dataUri || !dataUri.startsWith('data:application/pdf')) {
+        throw new Error('Generated PDF data is invalid')
+      }
+
+      return dataUri
       
     } catch (error) {
       console.error('PDF generation failed:', error)
@@ -275,8 +283,8 @@ export class InvoicePDFGenerator {
     this.pdf.text('Due Date:', margin + 100, startY)
     
     this.pdf.setFont('helvetica', 'normal')
-    this.pdf.text(invoice.date, margin, startY + 10)
-    this.pdf.text(invoice.dueDate, margin + 100, startY + 10)
+    this.pdf.text(formatDate(invoice.date, invoice.locale || 'en-US'), margin, startY + 10)
+    this.pdf.text(formatDate(invoice.dueDate, invoice.locale || 'en-US'), margin + 100, startY + 10)
   }
 
   private addPartiesSection(invoice: Invoice, startY: number) {
@@ -344,12 +352,12 @@ export class InvoicePDFGenerator {
   private addItemsTable(invoice: Invoice, startY: number, minimal: boolean = false): number {
     const margin = 20
     
-    // Prepare table data
+    // Prepare table data with proper currency formatting
     const tableData = invoice.items.map(item => [
       item.description,
-      item.quantity.toString(),
-      `$${item.rate.toFixed(2)}`,
-      `$${item.amount.toFixed(2)}`
+      formatNumber(item.quantity, invoice.locale || 'en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }),
+      formatCurrency(item.rate, invoice.currency || 'USD', invoice.locale || 'en-US'),
+      formatCurrency(item.amount, invoice.currency || 'USD', invoice.locale || 'en-US')
     ])
     
     const tableConfig: UserOptions = {
@@ -393,13 +401,13 @@ export class InvoicePDFGenerator {
     // Subtotal
     this.pdf.setFont('helvetica', 'normal')
     this.pdf.text('Subtotal:', totalsX, currentY)
-    this.pdf.text(`$${invoice.subtotal.toFixed(2)}`, totalsX + 50, currentY, { align: 'right' })
+    this.pdf.text(formatCurrency(invoice.subtotal, invoice.currency || 'USD', invoice.locale || 'en-US'), totalsX + 50, currentY, { align: 'right' })
     currentY += 12
     
     // Tax (if applicable)
     if (invoice.taxRate > 0) {
       this.pdf.text(`Tax (${(invoice.taxRate * 100).toFixed(1)}%):`, totalsX, currentY)
-      this.pdf.text(`$${invoice.taxAmount.toFixed(2)}`, totalsX + 50, currentY, { align: 'right' })
+      this.pdf.text(formatCurrency(invoice.taxAmount, invoice.currency || 'USD', invoice.locale || 'en-US'), totalsX + 50, currentY, { align: 'right' })
       currentY += 12
     }
     
@@ -414,7 +422,7 @@ export class InvoicePDFGenerator {
     this.pdf.setFont('helvetica', 'bold')
     this.pdf.setFontSize(13)
     this.pdf.text('Total:', totalsX, currentY)
-    this.pdf.text(`$${invoice.total.toFixed(2)}`, totalsX + 50, currentY, { align: 'right' })
+    this.pdf.text(formatCurrency(invoice.total, invoice.currency || 'USD', invoice.locale || 'en-US'), totalsX + 50, currentY, { align: 'right' })
   }
 
   private addFooter(invoice: Invoice) {
