@@ -118,34 +118,25 @@ export default function BatchInvoicePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-100/50 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
       {/* Animated Background Elements */}
       <motion.div
         animate={{ 
-          x: [0, 40, 0],
-          y: [0, -25, 0],
-          scale: [1, 1.15, 1],
+          x: [0, 60, 0],
+          y: [0, -40, 0],
+          scale: [1, 1.2, 1],
         }}
         transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
-        className="absolute top-16 right-16 w-72 h-72 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"
+        className="absolute top-16 right-16 w-72 h-72 bg-gradient-to-r from-emerald-400/10 to-teal-400/10 rounded-full blur-3xl"
       />
       <motion.div
         animate={{ 
-          x: [0, -35, 0],
-          y: [0, 50, 0],
-          scale: [1.1, 1, 1.1],
+          x: [0, -50, 0],
+          y: [0, 70, 0],
+          scale: [1.2, 1, 1.2],
         }}
         transition={{ duration: 28, repeat: Infinity, ease: 'linear' }}
-        className="absolute bottom-16 left-16 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-indigo-400/10 rounded-full blur-3xl"
-      />
-      <motion.div
-        animate={{ 
-          x: [0, 20, 0],
-          y: [0, -40, 0],
-          scale: [1, 1.05, 1],
-        }}
-        transition={{ duration: 24, repeat: Infinity, ease: 'linear' }}
-        className="absolute top-1/2 left-1/3 w-64 h-64 bg-gradient-to-r from-emerald-400/8 to-teal-400/8 rounded-full blur-3xl"
+        className="absolute bottom-16 left-16 w-96 h-96 bg-gradient-to-r from-purple-400/10 to-indigo-400/10 rounded-full blur-3xl"
       />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -157,53 +148,47 @@ export default function BatchInvoicePage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5 }}
-              className="min-h-[80vh] flex flex-col"
             >
               {/* Header */}
               <div className="text-center mb-12">
                 <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="flex items-center justify-center mb-6"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl mb-6 shadow-2xl"
                 >
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-full blur-lg opacity-30"></div>
-                    <DocumentDuplicateIcon className="relative w-16 h-16 text-emerald-600" />
-                  </div>
+                  <DocumentDuplicateIcon className="w-10 h-10 text-white" />
                 </motion.div>
                 
                 <motion.h1
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-emerald-900 to-teal-900 bg-clip-text text-transparent mb-4"
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                  className="text-4xl md:text-5xl font-bold mb-4"
                 >
-                  Batch Invoice Generation
+                  <span className="bg-gradient-to-r from-gray-900 to-emerald-900 bg-clip-text text-transparent">
+                    Batch Invoice Generation
+                  </span>
                 </motion.h1>
                 
                 <motion.p
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed"
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                  className="text-xl text-gray-600 max-w-2xl mx-auto"
                 >
-                  Upload your CSV or Excel file and generate multiple professional invoices at once with AI
+                  Upload your CSV or Excel file and generate multiple professional invoices at once
                 </motion.p>
               </div>
 
-              {/* Main Content */}
-              <div className="flex-1 flex flex-col justify-center">
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="max-w-4xl mx-auto w-full"
-                >
-                  {/* Main Card */}
-                  <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl p-8"
-                  >
-                    {/* Settings Button */}
+              {/* Main Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
+              >
+                {/* Settings Button */}
                 <div className="flex justify-between items-center p-8 border-b border-gray-100/50">
                   <div>
                     <h2 className="text-2xl font-semibold text-gray-900">Bulk Invoice Processing</h2>
@@ -252,7 +237,7 @@ export default function BatchInvoicePage() {
                         </div>
                         
                         {/* Data Preview */}
-                        <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 max-h-48 overflow-auto">
+                        <div className="bg-white/60 rounded-xl p-4 max-h-48 overflow-auto">
                           <h4 className="font-semibold text-gray-800 mb-2">Data Preview:</h4>
                           <div className="text-sm">
                             <div className="font-medium text-gray-600 mb-1">
