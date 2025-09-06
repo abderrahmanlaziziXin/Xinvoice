@@ -38,6 +38,28 @@ export default function BatchInvoicePage() {
 
   const generateMutation = useGenerateBatchDocuments()
 
+  // Helper function to recalculate invoice totals
+  const recalculateInvoiceTotals = (invoice: Invoice): Invoice => {
+    const subtotal = invoice.items.reduce((sum, item) => sum + item.amount, 0)
+    const taxAmount = subtotal * invoice.taxRate
+    const total = subtotal + taxAmount + (invoice.shippingAmount || 0) - (invoice.discountAmount || 0)
+    
+    return {
+      ...invoice,
+      subtotal,
+      taxAmount,
+      total
+    }
+  }
+
+  // Helper function to update edit data with recalculation
+  const updateEditData = (updates: Partial<Invoice>) => {
+    if (editData) {
+      const updated = { ...editData, ...updates }
+      setEditData(recalculateInvoiceTotals(updated))
+    }
+  }
+
   const handleFileProcessed = (result: FileParseResult) => {
     setUploadedData(result)
     
@@ -87,8 +109,11 @@ export default function BatchInvoicePage() {
 
   const handleSave = () => {
     if (editingIndex !== null && editData) {
+      // Recalculate totals using helper function
+      const updatedInvoice = recalculateInvoiceTotals(editData)
+      
       const updated = [...generatedInvoices]
-      updated[editingIndex] = editData
+      updated[editingIndex] = updatedInvoice
       setGeneratedInvoices(updated)
       setEditingIndex(null)
       setEditData(null)
@@ -437,45 +462,332 @@ export default function BatchInvoicePage() {
                       </div>
 
                       {editingIndex === index ? (
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Client Name
-                            </label>
-                            <input
-                              type="text"
-                              value={editData?.to.name || ''}
-                              onChange={(e) => setEditData(prev => prev ? {
-                                ...prev,
-                                to: { ...prev.to, name: e.target.value }
-                              } : null)}
-                              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
-                            />
+                        <div className="space-y-6 max-h-96 overflow-y-auto">
+                          {/* Basic Information */}
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Invoice Number
+                              </label>
+                              <input
+                                type="text"
+                                value={editData?.invoiceNumber || ''}
+                                onChange={(e) => setEditData(prev => prev ? {
+                                  ...prev,
+                                  invoiceNumber: e.target.value
+                                } : null)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Date
+                              </label>
+                              <input
+                                type="date"
+                                value={editData?.date || ''}
+                                onChange={(e) => setEditData(prev => prev ? {
+                                  ...prev,
+                                  date: e.target.value
+                                } : null)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Due Date
+                              </label>
+                              <input
+                                type="date"
+                                value={editData?.dueDate || ''}
+                                onChange={(e) => setEditData(prev => prev ? {
+                                  ...prev,
+                                  dueDate: e.target.value
+                                } : null)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Status
+                              </label>
+                              <select
+                                value={editData?.status || 'draft'}
+                                onChange={(e) => setEditData(prev => prev ? {
+                                  ...prev,
+                                  status: e.target.value as any
+                                } : null)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
+                              >
+                                <option value="draft">Draft</option>
+                                <option value="sent">Sent</option>
+                                <option value="paid">Paid</option>
+                                <option value="overdue">Overdue</option>
+                                <option value="cancelled">Cancelled</option>
+                              </select>
+                            </div>
                           </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Total Amount
-                            </label>
-                            <input
-                              type="number"
-                              value={editData?.total || 0}
-                              onChange={(e) => setEditData(prev => prev ? {
-                                ...prev,
-                                total: parseFloat(e.target.value) || 0
-                              } : null)}
-                              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
-                            />
+
+                          {/* Client Information */}
+                          <div className="border-t pt-4">
+                            <h4 className="font-medium text-gray-900 mb-3">Client Information</h4>
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Client Name
+                                </label>
+                                <input
+                                  type="text"
+                                  value={editData?.to.name || ''}
+                                  onChange={(e) => setEditData(prev => prev ? {
+                                    ...prev,
+                                    to: { ...prev.to, name: e.target.value }
+                                  } : null)}
+                                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Email
+                                </label>
+                                <input
+                                  type="email"
+                                  value={editData?.to.email || ''}
+                                  onChange={(e) => setEditData(prev => prev ? {
+                                    ...prev,
+                                    to: { ...prev.to, email: e.target.value }
+                                  } : null)}
+                                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
+                                />
+                              </div>
+                              <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Address
+                                </label>
+                                <textarea
+                                  value={editData?.to.address || ''}
+                                  onChange={(e) => setEditData(prev => prev ? {
+                                    ...prev,
+                                    to: { ...prev.to, address: e.target.value }
+                                  } : null)}
+                                  rows={2}
+                                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
+                                />
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex space-x-2">
+
+                          {/* Items */}
+                          <div className="border-t pt-4">
+                            <div className="flex justify-between items-center mb-3">
+                              <h4 className="font-medium text-gray-900">Invoice Items</h4>
+                              <button
+                                onClick={() => {
+                                  if (editData) {
+                                    updateEditData({
+                                      items: [...editData.items, {
+                                        description: '',
+                                        quantity: 1,
+                                        rate: 0,
+                                        amount: 0
+                                      }]
+                                    })
+                                  }
+                                }}
+                                className="text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200"
+                              >
+                                + Add Item
+                              </button>
+                            </div>
+                            <div className="space-y-3 max-h-48 overflow-y-auto">
+                              {editData?.items.map((item, itemIndex) => (
+                                <div key={itemIndex} className="grid grid-cols-12 gap-2 items-end">
+                                  <div className="col-span-4">
+                                    <label className="block text-xs text-gray-600 mb-1">Description</label>
+                                    <input
+                                      type="text"
+                                      value={item.description}
+                                      onChange={(e) => {
+                                        if (editData) {
+                                          const newItems = [...editData.items]
+                                          newItems[itemIndex] = { ...item, description: e.target.value }
+                                          updateEditData({ items: newItems })
+                                        }
+                                      }}
+                                      className="w-full px-2 py-1 border border-gray-200 rounded text-xs"
+                                    />
+                                  </div>
+                                  <div className="col-span-2">
+                                    <label className="block text-xs text-gray-600 mb-1">Qty</label>
+                                    <input
+                                      type="number"
+                                      step="0.01"
+                                      value={item.quantity}
+                                      onChange={(e) => {
+                                        if (editData) {
+                                          const qty = parseFloat(e.target.value) || 0
+                                          const newItems = [...editData.items]
+                                          newItems[itemIndex] = { 
+                                            ...item, 
+                                            quantity: qty,
+                                            amount: qty * item.rate
+                                          }
+                                          updateEditData({ items: newItems })
+                                        }
+                                      }}
+                                      className="w-full px-2 py-1 border border-gray-200 rounded text-xs"
+                                    />
+                                  </div>
+                                  <div className="col-span-2">
+                                    <label className="block text-xs text-gray-600 mb-1">Rate</label>
+                                    <input
+                                      type="number"
+                                      step="0.01"
+                                      value={item.rate}
+                                      onChange={(e) => {
+                                        if (editData) {
+                                          const rate = parseFloat(e.target.value) || 0
+                                          const newItems = [...editData.items]
+                                          newItems[itemIndex] = { 
+                                            ...item, 
+                                            rate: rate,
+                                            amount: item.quantity * rate
+                                          }
+                                          updateEditData({ items: newItems })
+                                        }
+                                      }}
+                                      className="w-full px-2 py-1 border border-gray-200 rounded text-xs"
+                                    />
+                                  </div>
+                                  <div className="col-span-2">
+                                    <label className="block text-xs text-gray-600 mb-1">Amount</label>
+                                    <input
+                                      type="number"
+                                      value={item.amount.toFixed(2)}
+                                      readOnly
+                                      className="w-full px-2 py-1 border border-gray-200 rounded text-xs bg-gray-50"
+                                    />
+                                  </div>
+                                  <div className="col-span-2">
+                                    <button
+                                      onClick={() => {
+                                        if (editData && editData.items.length > 1) {
+                                          const newItems = editData.items.filter((_, i) => i !== itemIndex)
+                                          updateEditData({ items: newItems })
+                                        }
+                                      }}
+                                      className="w-full px-2 py-1 text-red-600 hover:bg-red-50 rounded text-xs"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Totals */}
+                          <div className="border-t pt-4">
+                            <div className="grid md:grid-cols-3 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Tax Rate (%)
+                                </label>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={(editData?.taxRate || 0) * 100}
+                                  onChange={(e) => {
+                                    if (editData) {
+                                      const taxRate = (parseFloat(e.target.value) || 0) / 100
+                                      updateEditData({ taxRate })
+                                    }
+                                  }}
+                                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Discount Amount
+                                </label>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={editData?.discountAmount || 0}
+                                  onChange={(e) => {
+                                    if (editData) {
+                                      const discountAmount = parseFloat(e.target.value) || 0
+                                      updateEditData({ discountAmount })
+                                    }
+                                  }}
+                                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Shipping Amount
+                                </label>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={editData?.shippingAmount || 0}
+                                  onChange={(e) => {
+                                    if (editData) {
+                                      const shippingAmount = parseFloat(e.target.value) || 0
+                                      updateEditData({ shippingAmount })
+                                    }
+                                  }}
+                                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Notes and Terms */}
+                          <div className="border-t pt-4">
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Terms & Conditions
+                                </label>
+                                <textarea
+                                  value={editData?.terms || ''}
+                                  onChange={(e) => setEditData(prev => prev ? {
+                                    ...prev,
+                                    terms: e.target.value
+                                  } : null)}
+                                  rows={3}
+                                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Notes
+                                </label>
+                                <textarea
+                                  value={editData?.notes || ''}
+                                  onChange={(e) => setEditData(prev => prev ? {
+                                    ...prev,
+                                    notes: e.target.value
+                                  } : null)}
+                                  rows={3}
+                                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="border-t pt-4 flex space-x-2">
                             <button
                               onClick={handleSave}
-                              className="flex-1 px-3 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors text-sm"
+                              className="flex-1 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors text-sm font-medium"
                             >
-                              Save
+                              Save Changes
                             </button>
                             <button
                               onClick={handleCancel}
-                              className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                              className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
                             >
                               Cancel
                             </button>
