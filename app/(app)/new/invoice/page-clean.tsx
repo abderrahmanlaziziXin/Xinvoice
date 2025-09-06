@@ -18,7 +18,7 @@ import { FileUpload } from '../../../components/file-upload'
 import { LoadingSpinner } from '../../../components/loading'
 import { useUserContext } from '../../../lib/user-context'
 import { parseUploadedFile, convertFileDataToPrompt } from '../../../lib/file-parser'
-import { Invoice } from '../../../../packages/core'
+import { Invoice, DocumentType } from '../../../../packages/core'
 
 export default function NewInvoicePage() {
   const [prompt, setPrompt] = useState('')
@@ -29,35 +29,10 @@ export default function NewInvoicePage() {
   const [uploadedData, setUploadedData] = useState<{success: boolean, data: any[], headers: string[], rawData: string, fileName: string, fileType: 'csv' | 'excel'} | null>(null)
   const { context } = useUserContext()
 
-  const generateMutation = useGenerateDocument({
-    onSuccess: (invoice: Partial<Invoice>) => {
-      setGeneratedInvoice(invoice)
-      setShowForm(true)
-      toast.success('🎉 Invoice generated successfully!')
-    },
-    onError: (error: Error) => {
-      toast.error('❌ Failed to generate invoice: ' + error.message)
-    }
-  })
+  const generateMutation = useGenerateDocument()
 
   const handlePromptChange = (value: string) => {
     setPrompt(value)
-  }
-
-  const handleFileUpload = async (files: FileList) => {
-    const file = files[0]
-    if (!file) return
-
-    toast.loading('📄 Processing your file...', { id: 'file-upload' })
-    
-    try {
-      const result = await parseUploadedFile(file)
-      setUploadedData(result)
-      toast.success('✅ File uploaded and processed successfully!', { id: 'file-upload' })
-    } catch (error) {
-      console.error('File upload error:', error)
-      toast.error('❌ Failed to process file', { id: 'file-upload' })
-    }
   }
 
   const handleSubmit = async () => {
@@ -76,7 +51,27 @@ export default function NewInvoicePage() {
       ? `${context}\n\n${finalPrompt}`
       : finalPrompt
 
-    generateMutation.mutate(fullPrompt)
+    generateMutation.mutate(
+      {
+        prompt: fullPrompt,
+        documentType: 'invoice' as DocumentType,
+        userContext: context || undefined
+      },
+      {
+        onSuccess: (response) => {
+          if (response.success) {
+            setGeneratedInvoice(response.document)
+            setShowForm(true)
+            toast.success('🎉 Invoice generated successfully!')
+          } else {
+            toast.error('❌ Failed to generate invoice: ' + (response.error || 'Unknown error'))
+          }
+        },
+        onError: (error: Error) => {
+          toast.error('❌ Failed to generate invoice: ' + error.message)
+        }
+      }
+    )
   }
 
   const handleSaveInvoice = (updatedInvoice: Partial<Invoice>) => {
@@ -245,9 +240,7 @@ export default function NewInvoicePage() {
                         transition={{ duration: 0.4 }}
                       >
                         <FileUpload
-                          onFileUpload={handleFileUpload}
-                          uploadedData={uploadedData}
-                          disabled={generateMutation.isPending}
+                          onFileProcessed={(result) => setUploadedData(result)}
                         />
                       </motion.div>
                     )}
@@ -340,7 +333,7 @@ export default function NewInvoicePage() {
                 className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
               >
                 <InvoiceForm
-                  invoice={generatedInvoice!}
+                  initialData={generatedInvoice!}
                   onSubmit={handleSaveInvoice}
                   isSubmitting={false}
                 />
