@@ -8,7 +8,8 @@ import { z } from 'zod'
 import toast from 'react-hot-toast'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { LoadingSpinner } from '../../../components/loading'
-import { DocumentTextIcon, SparklesIcon, EyeIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline'
+import { Logo } from '../../../components/logo'
+import { DocumentTextIcon, SparklesIcon, EyeIcon, DocumentArrowDownIcon, UserGroupIcon, CalendarIcon, ShieldCheckIcon, ScaleIcon } from '@heroicons/react/24/outline'
 import { NDAPDFPreviewModal } from '../../../components/nda-pdf-preview-modal'
 
 // NDA Form Schema
@@ -162,63 +163,101 @@ function NDAEditorContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-pink-100/50 p-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen xinfinity-background relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-gradient-to-r from-xinfinity-primary/20 to-xinfinity-secondary/20 blur-3xl"
+          animate={{
+            scale: [1, 1.2, 1],
+            rotate: [0, 90, 0],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+        <motion.div
+          className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-gradient-to-r from-xinfinity-accent/20 to-xinfinity-tertiary/20 blur-3xl"
+          animate={{
+            scale: [1.2, 1, 1.2],
+            rotate: [0, -90, 0],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto p-xfi-6">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
+          transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+          className="text-center mb-xfi-8"
         >
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
-            NDA Document Editor
-          </h1>
-          <p className="text-gray-600 text-lg">
-            Create professional Non-Disclosure Agreements with legal-grade formatting
+          <div className="flex items-center justify-center mb-xfi-4">
+            <Logo size="md" className="mr-xfi-3" />
+            <div className="h-8 w-px bg-gradient-to-b from-transparent via-xinfinity-primary/30 to-transparent mx-xfi-4" />
+            <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-xinfinity-primary via-xinfinity-secondary to-xinfinity-accent bg-clip-text text-transparent">
+              NDA Document Studio
+            </h1>
+          </div>
+          <p className="text-xinfinity-muted text-lg max-w-2xl mx-auto leading-relaxed">
+            Create professional Non-Disclosure Agreements with AI-powered assistance and legal-grade formatting
           </p>
           {fromAI && aiData && (
-            <div className="mt-4 inline-flex items-center px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-sm">
-              <SparklesIcon className="w-4 h-4 mr-2" />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+              className="mt-xfi-6 inline-flex items-center px-xfi-6 py-xfi-3 xinfinity-card text-xinfinity-primary rounded-full text-sm font-medium"
+            >
+              <SparklesIcon className="w-4 h-4 mr-xfi-2" />
               Pre-filled with AI-generated content
-            </div>
+            </motion.div>
           )}
         </motion.div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-xfi-8">
           {/* Document Header */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white/80 backdrop-blur-md rounded-xl p-6 shadow-lg"
+            transition={{ delay: 0.2, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+            className="xinfinity-card p-xfi-8"
           >
-            <h2 className="text-xl font-semibold mb-4 flex items-center">
-              <DocumentTextIcon className="w-6 h-6 mr-2 text-purple-600" />
+            <h2 className="text-xl font-semibold mb-xfi-6 flex items-center text-xinfinity-foreground">
+              <DocumentTextIcon className="w-6 h-6 mr-xfi-3 text-xinfinity-primary" />
               Document Details
             </h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-xfi-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                   Document Title *
                 </label>
                 <input
                   {...register('title')}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="xinfinity-input"
                   placeholder="Non-Disclosure Agreement"
                 />
                 {errors.title && (
-                  <p className="text-red-600 text-sm mt-1">{errors.title.message}</p>
+                  <p className="text-red-500 text-sm mt-xfi-1">{errors.title.message}</p>
                 )}
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                   Confidentiality Level *
                 </label>
                 <select
                   {...register('confidentialityLevel')}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="xinfinity-input"
                 >
                   <option value="standard">Standard</option>
                   <option value="high">High</option>
@@ -227,79 +266,82 @@ function NDAEditorContent() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                   Effective Date *
                 </label>
                 <input
                   type="date"
                   {...register('effectiveDate')}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="xinfinity-input"
                 />
                 {errors.effectiveDate && (
-                  <p className="text-red-600 text-sm mt-1">{errors.effectiveDate.message}</p>
+                  <p className="text-red-500 text-sm mt-xfi-1">{errors.effectiveDate.message}</p>
                 )}
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                   Termination Date (Optional)
                 </label>
                 <input
                   type="date"
                   {...register('terminationDate')}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="xinfinity-input"
                 />
               </div>
               
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                   Governing Law *
                 </label>
                 <input
                   {...register('governingLaw')}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="xinfinity-input"
                   placeholder="State of California"
                 />
                 {errors.governingLaw && (
-                  <p className="text-red-600 text-sm mt-1">{errors.governingLaw.message}</p>
+                  <p className="text-red-500 text-sm mt-xfi-1">{errors.governingLaw.message}</p>
                 )}
               </div>
             </div>
           </motion.div>
 
           {/* Parties Information */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-xfi-8">
             {/* Disclosing Party */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white/80 backdrop-blur-md rounded-xl p-6 shadow-lg"
+              transition={{ delay: 0.3, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+              className="xinfinity-card p-xfi-6"
             >
-              <h3 className="text-lg font-semibold mb-4 text-purple-800">Disclosing Party</h3>
+              <h3 className="text-lg font-semibold mb-xfi-4 text-xinfinity-primary flex items-center">
+                <UserGroupIcon className="w-5 h-5 mr-xfi-2" />
+                Disclosing Party
+              </h3>
               
-              <div className="space-y-4">
+              <div className="space-y-xfi-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                     Name *
                   </label>
                   <input
                     {...register('disclosingParty.name')}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="xinfinity-input"
                     placeholder="Company or Individual Name"
                   />
                   {errors.disclosingParty?.name && (
-                    <p className="text-red-600 text-sm mt-1">{errors.disclosingParty.name.message}</p>
+                    <p className="text-red-500 text-sm mt-xfi-1">{errors.disclosingParty.name.message}</p>
                   )}
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                     Entity Type *
                   </label>
                   <select
                     {...register('disclosingParty.type')}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="xinfinity-input"
                   >
                     <option value="individual">Individual</option>
                     <option value="corporation">Corporation</option>
@@ -309,17 +351,17 @@ function NDAEditorContent() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                     Address *
                   </label>
                   <textarea
                     {...register('disclosingParty.address')}
                     rows={3}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                    className="xinfinity-input resize-none"
                     placeholder="123 Business St, City, State 12345"
                   />
                   {errors.disclosingParty?.address && (
-                    <p className="text-red-600 text-sm mt-1">{errors.disclosingParty.address.message}</p>
+                    <p className="text-red-500 text-sm mt-xfi-1">{errors.disclosingParty.address.message}</p>
                   )}
                 </div>
               </div>
@@ -327,35 +369,38 @@ function NDAEditorContent() {
 
             {/* Receiving Party */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-white/80 backdrop-blur-md rounded-xl p-6 shadow-lg"
+              transition={{ delay: 0.4, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+              className="xinfinity-card p-xfi-6"
             >
-              <h3 className="text-lg font-semibold mb-4 text-pink-800">Receiving Party</h3>
+              <h3 className="text-lg font-semibold mb-xfi-4 text-xinfinity-secondary flex items-center">
+                <UserGroupIcon className="w-5 h-5 mr-xfi-2" />
+                Receiving Party
+              </h3>
               
-              <div className="space-y-4">
+              <div className="space-y-xfi-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                     Name *
                   </label>
                   <input
                     {...register('receivingParty.name')}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    className="xinfinity-input"
                     placeholder="Company or Individual Name"
                   />
                   {errors.receivingParty?.name && (
-                    <p className="text-red-600 text-sm mt-1">{errors.receivingParty.name.message}</p>
+                    <p className="text-red-500 text-sm mt-xfi-1">{errors.receivingParty.name.message}</p>
                   )}
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                     Entity Type *
                   </label>
                   <select
                     {...register('receivingParty.type')}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    className="xinfinity-input"
                   >
                     <option value="individual">Individual</option>
                     <option value="corporation">Corporation</option>
@@ -365,17 +410,17 @@ function NDAEditorContent() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                     Address *
                   </label>
                   <textarea
                     {...register('receivingParty.address')}
                     rows={3}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none"
+                    className="xinfinity-input resize-none"
                     placeholder="456 Client Ave, City, State 67890"
                   />
                   {errors.receivingParty?.address && (
-                    <p className="text-red-600 text-sm mt-1">{errors.receivingParty.address.message}</p>
+                    <p className="text-red-500 text-sm mt-xfi-1">{errors.receivingParty.address.message}</p>
                   )}
                 </div>
               </div>
@@ -384,124 +429,127 @@ function NDAEditorContent() {
 
           {/* Document Sections */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white/80 backdrop-blur-md rounded-xl p-6 shadow-lg"
+            transition={{ delay: 0.5, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+            className="xinfinity-card p-xfi-8"
           >
-            <h2 className="text-xl font-semibold mb-6">Document Sections</h2>
+            <h2 className="text-xl font-semibold mb-xfi-6 flex items-center text-xinfinity-foreground">
+              <ScaleIcon className="w-6 h-6 mr-xfi-3 text-xinfinity-primary" />
+              Document Sections
+            </h2>
             
-            <div className="space-y-6">
+            <div className="space-y-xfi-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                   Purpose *
                 </label>
                 <textarea
                   {...register('purpose')}
                   rows={3}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  className="xinfinity-input resize-none"
                   placeholder="Describe the purpose of this NDA..."
                 />
                 {errors.purpose && (
-                  <p className="text-red-600 text-sm mt-1">{errors.purpose.message}</p>
+                  <p className="text-red-500 text-sm mt-xfi-1">{errors.purpose.message}</p>
                 )}
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                   Definitions *
                 </label>
                 <textarea
                   {...register('definitions')}
                   rows={3}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  className="xinfinity-input resize-none"
                   placeholder="Define key terms and confidential information..."
                 />
                 {errors.definitions && (
-                  <p className="text-red-600 text-sm mt-1">{errors.definitions.message}</p>
+                  <p className="text-red-500 text-sm mt-xfi-1">{errors.definitions.message}</p>
                 )}
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                   Confidentiality Obligations *
                 </label>
                 <textarea
                   {...register('confidentialityObligations')}
                   rows={4}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  className="xinfinity-input resize-none"
                   placeholder="Specify the obligations of the receiving party..."
                 />
                 {errors.confidentialityObligations && (
-                  <p className="text-red-600 text-sm mt-1">{errors.confidentialityObligations.message}</p>
+                  <p className="text-red-500 text-sm mt-xfi-1">{errors.confidentialityObligations.message}</p>
                 )}
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                   Exclusions *
                 </label>
                 <textarea
                   {...register('exclusions')}
                   rows={3}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  className="xinfinity-input resize-none"
                   placeholder="List information that is not considered confidential..."
                 />
                 {errors.exclusions && (
-                  <p className="text-red-600 text-sm mt-1">{errors.exclusions.message}</p>
+                  <p className="text-red-500 text-sm mt-xfi-1">{errors.exclusions.message}</p>
                 )}
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                   Term & Termination *
                 </label>
                 <textarea
                   {...register('termClause')}
                   rows={3}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  className="xinfinity-input resize-none"
                   placeholder="Specify the duration and termination conditions..."
                 />
                 {errors.termClause && (
-                  <p className="text-red-600 text-sm mt-1">{errors.termClause.message}</p>
+                  <p className="text-red-500 text-sm mt-xfi-1">{errors.termClause.message}</p>
                 )}
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                   Governing Law Clause *
                 </label>
                 <textarea
                   {...register('governingLawClause')}
                   rows={2}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  className="xinfinity-input resize-none"
                   placeholder="Specify the governing law and jurisdiction..."
                 />
                 {errors.governingLawClause && (
-                  <p className="text-red-600 text-sm mt-1">{errors.governingLawClause.message}</p>
+                  <p className="text-red-500 text-sm mt-xfi-1">{errors.governingLawClause.message}</p>
                 )}
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                   Additional Terms (Optional)
                 </label>
                 <textarea
                   {...register('additionalTerms')}
                   rows={3}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  className="xinfinity-input resize-none"
                   placeholder="Any additional terms or clauses..."
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                   Special Provisions (Optional)
                 </label>
                 <textarea
                   {...register('specialProvisions')}
                   rows={3}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  className="xinfinity-input resize-none"
                   placeholder="Any special provisions or requirements..."
                 />
               </div>
@@ -511,21 +559,24 @@ function NDAEditorContent() {
           {/* AI Assumptions Display */}
           {aiData?.assumptions && aiData.assumptions.length > 0 && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="bg-blue-50 border border-blue-200 rounded-xl p-6"
+              transition={{ delay: 0.6, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+              className="xinfinity-card-accent p-xfi-6 border border-xinfinity-accent/20"
             >
-              <h3 className="text-lg font-semibold text-blue-800 mb-4">AI Assumptions Made</h3>
-              <ul className="space-y-2 text-blue-700">
+              <h3 className="text-lg font-semibold text-xinfinity-accent mb-xfi-4 flex items-center">
+                <SparklesIcon className="w-5 h-5 mr-xfi-2" />
+                AI Assumptions Made
+              </h3>
+              <ul className="space-y-xfi-2 text-xinfinity-foreground">
                 {aiData.assumptions.map((assumption: string, index: number) => (
                   <li key={index} className="flex items-start">
-                    <span className="text-blue-500 mr-2">•</span>
+                    <span className="text-xinfinity-accent mr-xfi-2 mt-1">•</span>
                     {assumption}
                   </li>
                 ))}
               </ul>
-              <p className="text-sm text-blue-600 mt-4">
+              <p className="text-sm text-xinfinity-muted mt-xfi-4">
                 Please review and modify the form fields as needed to ensure accuracy.
               </p>
             </motion.div>
@@ -533,32 +584,35 @@ function NDAEditorContent() {
 
           {/* Action Buttons */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+            transition={{ delay: 0.7, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+            className="flex flex-col sm:flex-row gap-xfi-4 justify-center items-center"
           >
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+              className="xinfinity-button xinfinity-button-primary w-full sm:w-auto px-xfi-8 py-xfi-4 text-lg font-semibold"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
                   <LoadingSpinner />
-                  <span className="ml-2">Processing...</span>
+                  <span className="ml-xfi-2">Processing...</span>
                 </div>
               ) : (
-                'Review NDA'
+                <>
+                  <ShieldCheckIcon className="w-5 h-5 mr-xfi-2" />
+                  Review NDA
+                </>
               )}
             </button>
             
             <button
               type="button"
               onClick={handlePreviewPDF}
-              className="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all shadow-lg flex items-center justify-center"
+              className="xinfinity-button xinfinity-button-secondary w-full sm:w-auto px-xfi-8 py-xfi-4 text-lg font-semibold"
             >
-              <EyeIcon className="w-5 h-5 mr-2" />
+              <EyeIcon className="w-5 h-5 mr-xfi-2" />
               Preview PDF
             </button>
             
@@ -569,16 +623,16 @@ function NDAEditorContent() {
                 generator.download()
                 toast.success('📄 NDA PDF downloaded!')
               }}
-              className="w-full sm:w-auto px-8 py-3 bg-white text-purple-600 border-2 border-purple-600 font-semibold rounded-lg hover:bg-purple-50 transition-all shadow-lg flex items-center justify-center"
+              className="xinfinity-button xinfinity-button-outline w-full sm:w-auto px-xfi-8 py-xfi-4 text-lg font-semibold"
             >
-              <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
+              <DocumentArrowDownIcon className="w-5 h-5 mr-xfi-2" />
               Download PDF
             </button>
             
             <button
               type="button"
               onClick={() => router.push('/')}
-              className="w-full sm:w-auto px-8 py-3 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition-all shadow-lg"
+              className="w-full sm:w-auto px-xfi-6 py-xfi-3 bg-xinfinity-surface/50 text-xinfinity-muted border border-xinfinity-border font-medium rounded-xl hover:bg-xinfinity-surface transition-all duration-300"
             >
               Cancel
             </button>

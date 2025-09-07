@@ -8,6 +8,7 @@ import { z } from 'zod'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import { LoadingSpinner } from '../../../components/loading'
+import { Logo } from '../../../components/logo'
 import { useGenerateEnhancedDocument } from '../../../hooks/use-generate-enhanced-document'
 import {
   SparklesIcon,
@@ -15,7 +16,10 @@ import {
   DocumentTextIcon,
   ChatBubbleLeftRightIcon,
   ArrowRightIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  BoltIcon,
+  UserGroupIcon,
+  CalendarIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 
@@ -179,19 +183,19 @@ Please create comprehensive legal sections and make reasonable assumptions for a
 
   if (isGenerating) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen xinfinity-background flex items-center justify-center">
         <div className="text-center">
           <LoadingSpinner />
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="mt-4"
+            className="mt-xfi-4"
           >
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-lg font-semibold text-xinfinity-foreground mb-xfi-2">
               Generating Your NDA
             </h3>
-            <p className="text-gray-600">
+            <p className="text-xinfinity-muted">
               Our AI is crafting professional legal language for your agreement...
             </p>
           </motion.div>
@@ -201,46 +205,78 @@ Please create comprehensive legal sections and make reasonable assumptions for a
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen xinfinity-background relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-gradient-to-r from-xinfinity-primary/20 to-xinfinity-secondary/20 blur-3xl"
+          animate={{
+            scale: [1, 1.2, 1],
+            rotate: [0, 90, 0],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+        <motion.div
+          className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-gradient-to-r from-xinfinity-accent/20 to-xinfinity-tertiary/20 blur-3xl"
+          animate={{
+            scale: [1.2, 1, 1.2],
+            rotate: [0, -90, 0],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+      </div>
+
       {/* Header */}
-      <div className="relative pt-8 pb-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 pt-xfi-8 pb-xfi-6">
+        <div className="max-w-7xl mx-auto px-xfi-4 sm:px-xfi-6 lg:px-xfi-8">
           <div className="flex items-center justify-between">
-            <Link href="/nda/new" className="flex items-center text-gray-600 hover:text-gray-900 transition-colors">
-              <ArrowLeftIcon className="w-5 h-5 mr-2" />
+            <Link href="/nda/new" className="flex items-center text-xinfinity-muted hover:text-xinfinity-foreground transition-colors">
+              <ArrowLeftIcon className="w-5 h-5 mr-xfi-2" />
               Back to NDA Hub
             </Link>
-            <div className="flex items-center space-x-2">
-              <SparklesIcon className="w-5 h-5 text-indigo-600" />
-              <span className="text-sm font-medium text-gray-600">AI-Assisted Creation</span>
+            <div className="flex items-center space-x-xfi-2">
+              <BoltIcon className="w-5 h-5 text-xinfinity-primary" />
+              <span className="text-sm font-medium text-xinfinity-muted">AI-Assisted Creation</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      <div className="relative z-10 max-w-4xl mx-auto px-xfi-4 sm:px-xfi-6 lg:px-xfi-8 pb-xfi-16">
         {/* Main Content */}
-        <div className="text-center mb-12">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-4xl md:text-5xl font-bold mb-6"
-          >
-            <span className="bg-gradient-to-r from-gray-900 to-indigo-900 bg-clip-text text-transparent">
-              AI-Assisted
-            </span>
-            <br />
-            <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              NDA Creation
-            </span>
-          </motion.h1>
+        <div className="text-center mb-xfi-12">
+          <div className="flex items-center justify-center mb-xfi-6">
+            <Logo size="lg" className="mr-xfi-4" />
+            <div className="h-12 w-px bg-gradient-to-b from-transparent via-xinfinity-primary/30 to-transparent mx-xfi-4" />
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-4xl md:text-5xl font-bold"
+            >
+              <span className="bg-gradient-to-r from-xinfinity-foreground to-xinfinity-primary bg-clip-text text-transparent">
+                AI-Assisted
+              </span>
+              <br />
+              <span className="bg-gradient-to-r from-xinfinity-primary to-xinfinity-secondary bg-clip-text text-transparent">
+                NDA Creation
+              </span>
+            </motion.h1>
+          </div>
           
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl text-gray-600 max-w-3xl mx-auto mb-8"
+            className="text-xl text-xinfinity-muted max-w-3xl mx-auto mb-xfi-8"
           >
             Choose your preferred input method - guided form for structured input or free-text description for natural language.
           </motion.p>

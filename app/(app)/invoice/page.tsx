@@ -3,13 +3,16 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { Logo } from '../../components/logo'
 import {
   DocumentTextIcon,
   DocumentDuplicateIcon,
   CloudArrowUpIcon,
   SparklesIcon,
   ChevronRightIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
+  BoltIcon,
+  RocketLaunchIcon
 } from '@heroicons/react/24/outline'
 
 export default function InvoicePage() {
@@ -28,8 +31,8 @@ export default function InvoicePage() {
         'Professional formatting',
         'Instant PDF generation'
       ],
-      color: 'from-indigo-600 to-purple-600',
-      bgColor: 'from-indigo-50 to-purple-50'
+      color: 'from-xinfinity-primary to-xinfinity-secondary',
+      bgColor: 'from-xinfinity-primary/10 to-xinfinity-secondary/10'
     },
     {
       id: 'batch' as const,
@@ -43,52 +46,84 @@ export default function InvoicePage() {
         'Smart data parsing',
         'Multiple PDF download'
       ],
-      color: 'from-emerald-600 to-teal-600',
-      bgColor: 'from-emerald-50 to-teal-50'
+      color: 'from-xinfinity-accent to-xinfinity-tertiary',
+      bgColor: 'from-xinfinity-accent/10 to-xinfinity-tertiary/10'
     }
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen xinfinity-background relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-gradient-to-r from-xinfinity-primary/20 to-xinfinity-secondary/20 blur-3xl"
+          animate={{
+            scale: [1, 1.2, 1],
+            rotate: [0, 90, 0],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+        <motion.div
+          className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-gradient-to-r from-xinfinity-accent/20 to-xinfinity-tertiary/20 blur-3xl"
+          animate={{
+            scale: [1.2, 1, 1.2],
+            rotate: [0, -90, 0],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+      </div>
+
       {/* Header */}
-      <div className="relative pt-8 pb-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 pt-xfi-8 pb-xfi-6">
+        <div className="max-w-7xl mx-auto px-xfi-4 sm:px-xfi-6 lg:px-xfi-8">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center text-gray-600 hover:text-gray-900 transition-colors">
-              <ArrowLeftIcon className="w-5 h-5 mr-2" />
+            <Link href="/" className="flex items-center text-xinfinity-muted hover:text-xinfinity-foreground transition-colors">
+              <ArrowLeftIcon className="w-5 h-5 mr-xfi-2" />
               Back to Home
             </Link>
-            <div className="flex items-center space-x-2">
-              <SparklesIcon className="w-5 h-5 text-indigo-600" />
-              <span className="text-sm font-medium text-gray-600">Enhanced AI Powered</span>
+            <div className="flex items-center space-x-xfi-2">
+              <SparklesIcon className="w-5 h-5 text-xinfinity-primary" />
+              <span className="text-sm font-medium text-xinfinity-muted">Enhanced AI Powered</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      <div className="relative z-10 max-w-7xl mx-auto px-xfi-4 sm:px-xfi-6 lg:px-xfi-8 pb-xfi-16">
         {/* Main Content */}
-        <div className="text-center mb-12">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-4xl md:text-6xl font-bold mb-6"
-          >
-            <span className="bg-gradient-to-r from-gray-900 to-indigo-900 bg-clip-text text-transparent">
-              Invoice
-            </span>
-            <br />
-            <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Generation
-            </span>
-          </motion.h1>
+        <div className="text-center mb-xfi-12">
+          <div className="flex items-center justify-center mb-xfi-6">
+            <Logo size="lg" className="mr-xfi-4" />
+            <div className="h-12 w-px bg-gradient-to-b from-transparent via-xinfinity-primary/30 to-transparent mx-xfi-4" />
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-4xl md:text-6xl font-bold"
+            >
+              <span className="bg-gradient-to-r from-xinfinity-foreground to-xinfinity-primary bg-clip-text text-transparent">
+                Invoice
+              </span>
+              <br />
+              <span className="bg-gradient-to-r from-xinfinity-primary to-xinfinity-secondary bg-clip-text text-transparent">
+                Generation
+              </span>
+            </motion.h1>
+          </div>
           
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl text-gray-600 max-w-3xl mx-auto mb-8"
+            className="text-xl text-xinfinity-muted max-w-3xl mx-auto mb-xfi-8"
           >
             Choose your preferred method to create professional invoices with AI assistance.
             Whether you need one invoice or hundreds, we&apos;ve got you covered.
@@ -96,7 +131,7 @@ export default function InvoicePage() {
         </div>
 
         {/* Mode Selection */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-xfi-8 max-w-5xl mx-auto">
           {modes.map((mode, index) => (
             <motion.div
               key={mode.id}
@@ -108,34 +143,34 @@ export default function InvoicePage() {
               className="group relative"
             >
               <Link href={mode.href}>
-                <div className={`relative h-full p-8 bg-gradient-to-br ${mode.bgColor} rounded-3xl border border-white/50 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2`}>
+                <div className={`relative h-full p-xfi-8 xinfinity-card bg-gradient-to-br ${mode.bgColor} hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2`}>
                   {/* Icon */}
-                  <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-r ${mode.color} text-white mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                  <div className={`inline-flex p-xfi-4 rounded-2xl bg-gradient-to-r ${mode.color} text-white mb-xfi-6 group-hover:scale-110 transition-transform duration-300`}>
                     <mode.icon className="w-8 h-8" />
                   </div>
 
                   {/* Content */}
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                  <h3 className="text-2xl font-bold text-xinfinity-foreground mb-xfi-4">
                     {mode.title}
                   </h3>
-                  <p className="text-gray-600 mb-6 leading-relaxed">
+                  <p className="text-xinfinity-muted mb-xfi-6 leading-relaxed">
                     {mode.description}
                   </p>
 
                   {/* Features */}
-                  <ul className="space-y-3 mb-8">
+                  <ul className="space-y-xfi-3 mb-xfi-8">
                     {mode.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-center text-sm text-gray-700">
-                        <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${mode.color} mr-3`} />
+                      <li key={featureIndex} className="flex items-center text-sm text-xinfinity-foreground">
+                        <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${mode.color} mr-xfi-3`} />
                         {feature}
                       </li>
                     ))}
                   </ul>
 
                   {/* CTA Button */}
-                  <div className={`inline-flex items-center px-6 py-3 bg-gradient-to-r ${mode.color} text-white font-semibold rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300`}>
+                  <div className={`inline-flex items-center px-xfi-6 py-xfi-3 bg-gradient-to-r ${mode.color} text-white font-semibold rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300`}>
                     <span>Get Started</span>
-                    <ChevronRightIcon className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                    <ChevronRightIcon className="w-4 h-4 ml-xfi-2 group-hover:translate-x-1 transition-transform duration-300" />
                   </div>
 
                   {/* Hover Effect Overlay */}
@@ -151,18 +186,18 @@ export default function InvoicePage() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.8 }}
-          className="mt-16 text-center"
+          className="mt-xfi-16 text-center"
         >
           <div className="max-w-2xl mx-auto">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">
+            <h3 className="text-xl font-semibold text-xinfinity-foreground mb-xfi-4">
               Need Help Choosing?
             </h3>
-            <p className="text-gray-600 mb-8">
+            <p className="text-xinfinity-muted mb-xfi-8">
               Start with a single invoice if you&apos;re new to our platform, or jump straight to batch processing
               if you have multiple invoices to create.
             </p>
 
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-xfi-4">
               <Link href="/new/invoice">
                 <motion.div
                   whileHover={{ scale: 1.02 }}

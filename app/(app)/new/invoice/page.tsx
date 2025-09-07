@@ -1,112 +1,28 @@
 'use client'
 
-import React, { useState, useEffect, Suspense } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import toast from 'react-hot-toast'
-import { useSearchParams } from 'next/navigation'
-import { 
-  DocumentTextIcon, 
-  CloudArrowUpIcon,
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { useGenerateDocument } from '../../../hooks/use-generate-document'
+import InvoiceForm from '../../../components/invoice-form'
+import { CompanySettings } from '../../../components/company-settings'
+import { Logo } from '../../../components/logo'
+import { useUserContext } from '../../../lib/user-context'
+import { Invoice } from '../../../../packages/core'
+import {
   SparklesIcon,
   Cog6ToothIcon,
   ArrowLeftIcon,
-  CheckCircleIcon
+  DocumentTextIcon,
+  BoltIcon,
+  RocketLaunchIcon
 } from '@heroicons/react/24/outline'
-import { useGenerateDocument } from '../../../hooks/use-generate-document'
-import { usePersistedUserSettings, usePersistedCurrency, usePersistedLocale } from '../../../hooks/use-persisted-settings'
-import InvoiceForm from '../../../components/invoice-form'
-import { CompanySettings } from '../../../components/company-settings'
-import { FileUpload } from '../../../components/file-upload'
-import { LoadingSpinner } from '../../../components/loading'
-import { useUserContext } from '../../../lib/user-context'
-import { parseUploadedFile, convertFileDataToPrompt, FileParseResult } from '../../../lib/file-parser'
-import { Invoice } from '../../../../packages/core'
 
 export default function NewInvoicePage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>}>
-      <NewInvoiceContent />
-    </Suspense>
-  )
-}
-
-function NewInvoiceContent() {
-  const searchParams = useSearchParams()
-  const fromAI = searchParams.get('from') === 'ai'
-  const editMode = searchParams.get('edit') === 'true'
-  
   const [prompt, setPrompt] = useState('')
   const [generatedInvoice, setGeneratedInvoice] = useState<Partial<Invoice> | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  const [inputMode, setInputMode] = useState<'text' | 'file'>('text')
-  const [uploadedData, setUploadedData] = useState<{success: boolean, data: any[], headers: string[], rawData: string, fileName: string, fileType: 'csv' | 'excel'} | null>(null)
-  const [aiData, setAiData] = useState<any>(null)
-  const [aiAssumptions, setAiAssumptions] = useState<string[]>([])
-  const [editingData, setEditingData] = useState<any>(null)
   const { context } = useUserContext()
-  const { settings } = usePersistedUserSettings()
-  const [lastUsedCurrency, setLastUsedCurrency] = usePersistedCurrency()
-  const [lastUsedLocale, setLastUsedLocale] = usePersistedLocale()
-
-  // Load AI-generated data if coming from enhanced generator
-  useEffect(() => {
-    if (fromAI) {
-      const savedData = localStorage.getItem('aiGeneratedInvoice')
-      if (savedData) {
-        try {
-          const data = JSON.parse(savedData)
-          setAiData(data)
-          
-          // If we have structured invoice data, use it directly
-          if (data.document && data.document.type === 'invoice') {
-            setGeneratedInvoice(data.document)
-            setShowForm(true)
-            toast.success('📄 AI-generated invoice data loaded!')
-          }
-          
-          // Extract assumptions if available
-          if (data.metadata?.assumptions && Array.isArray(data.metadata.assumptions)) {
-            setAiAssumptions(data.metadata.assumptions)
-          }
-          
-          // Clear the data after loading
-          localStorage.removeItem('aiGeneratedInvoice')
-        } catch (error) {
-          console.error('Error loading AI data:', error)
-          toast.error('Failed to load AI-generated data')
-        }
-      }
-    }
-    
-    // Load editing data if in edit mode
-    if (editMode) {
-      const editingData = localStorage.getItem('editingInvoice')
-      if (editingData) {
-        try {
-          const data = JSON.parse(editingData)
-          setEditingData(data)
-          setGeneratedInvoice(data.invoice)
-          setShowForm(true)
-          
-          // Load persisted settings if available
-          if (data.defaultCurrency) {
-            setLastUsedCurrency(data.defaultCurrency)
-          }
-          if (data.defaultLocale) {
-            setLastUsedLocale(data.defaultLocale)
-          }
-          
-          toast.success('📝 Invoice loaded for editing!')
-          // Clear the data after loading
-          localStorage.removeItem('editingInvoice')
-        } catch (error) {
-          console.error('Error loading editing data:', error)
-          toast.error('Failed to load invoice for editing')
-        }
-      }
-    }
-  }, [fromAI, editMode, setLastUsedCurrency, setLastUsedLocale])
 
   const generateMutation = useGenerateDocument()
 
@@ -114,330 +30,291 @@ function NewInvoiceContent() {
     setPrompt(value)
   }
 
-  const handleFileProcessed = (result: FileParseResult) => {
-    setUploadedData(result)
-    toast.success('✅ File uploaded and processed successfully!')
-  }
+  const handleGenerateDraft = async () => {
+    if (!prompt.trim()) return
 
-  const handleFileError = (error: string) => {
-    toast.error(`❌ Failed to process file: ${error}`)
-  }
+    try {
+      const result = await generateMutation.mutateAsync({
+        prompt: prompt.trim(),
+        documentType: 'invoice',
+        userContext: context || undefined,
+      })
 
-  const handleSubmit = async () => {
-    let finalPrompt = prompt
-
-    if (inputMode === 'file' && uploadedData) {
-      finalPrompt = convertFileDataToPrompt(uploadedData)
-    }
-
-    if (!finalPrompt.trim()) {
-      toast.error('Please provide invoice details or upload a file')
-      return
-    }
-
-    const request = {
-      prompt: context ? `${context}\n\n${finalPrompt}` : finalPrompt,
-      documentType: 'invoice' as const,
-      userContext: context ? context : undefined
-    }
-
-    generateMutation.mutate(request, {
-      onSuccess: (response) => {
-        setGeneratedInvoice(response.document)
+      if (result.success) {
+        setGeneratedInvoice(result.document)
         setShowForm(true)
-        toast.success('🎉 Invoice generated successfully!')
-      },
-      onError: (error: Error) => {
-        toast.error('❌ Failed to generate invoice: ' + error.message)
       }
-    })
+    } catch (error) {
+      console.error('Failed to generate invoice:', error)
+      alert(
+        'Failed to generate invoice: ' +
+          (error instanceof Error ? error.message : 'Unknown error')
+      )
+    }
   }
 
-  const handleSaveInvoice = (updatedInvoice: Invoice) => {
-    console.log('Saving invoice:', updatedInvoice)
-    toast.success('✅ Invoice saved successfully!')
+  const handleSaveInvoice = (invoiceData: Invoice) => {
+    console.log('Saving invoice:', invoiceData)
+    alert('Invoice saved! (PDF generation coming in Step 02)')
   }
 
-  const isButtonDisabled = inputMode === 'text' ? 
-    !prompt.trim() || generateMutation.isPending :
-    !uploadedData || generateMutation.isPending
+  const handleStartOver = () => {
+    setPrompt('')
+    setGeneratedInvoice(null)
+    setShowForm(false)
+    generateMutation.reset()
+  }
+
+  const isButtonDisabled = !prompt.trim() || generateMutation.isPending
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-100/50 relative overflow-hidden">
+    <div className="min-h-screen xinfinity-background relative overflow-hidden">
       {/* Animated Background Elements */}
-      <motion.div
-        animate={{ 
-          x: [0, 30, 0],
-          y: [0, -30, 0],
-          scale: [1, 1.1, 1],
-        }}
-        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-        className="absolute top-20 right-20 w-64 h-64 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"
-      />
-      <motion.div
-        animate={{ 
-          x: [0, -40, 0],
-          y: [0, 60, 0],
-          scale: [1.1, 1, 1.1],
-        }}
-        transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-        className="absolute bottom-20 left-20 w-80 h-80 bg-gradient-to-r from-blue-400/10 to-indigo-400/10 rounded-full blur-3xl"
-      />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-gradient-to-r from-xinfinity-primary/20 to-xinfinity-secondary/20 blur-3xl"
+          animate={{
+            scale: [1, 1.2, 1],
+            rotate: [0, 90, 0],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+        <motion.div
+          className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-gradient-to-r from-xinfinity-accent/20 to-xinfinity-tertiary/20 blur-3xl"
+          animate={{
+            scale: [1.2, 1, 1.2],
+            rotate: [0, -90, 0],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+      </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <AnimatePresence mode="wait">
-          {!showForm ? (
-            <motion.div
-              key="input-form"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-            >
-              {/* Header */}
-              <div className="text-center mb-12">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl mb-6 shadow-2xl"
-                >
-                  <DocumentTextIcon className="w-10 h-10 text-white" />
-                </motion.div>
-                
-                <motion.h1
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.3 }}
-                  className="text-4xl md:text-5xl font-bold mb-4"
-                >
-                  <span className="bg-gradient-to-r from-gray-900 to-indigo-900 bg-clip-text text-transparent">
+      <div className="relative z-10 max-w-7xl mx-auto p-xfi-6">
+        <div className="xinfinity-card overflow-hidden">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-xfi-8 border-b border-xinfinity-border bg-gradient-to-r from-xinfinity-surface/50 to-xinfinity-primary/5"
+          >
+            <div className="flex justify-between items-center">
+              <div className="flex items-center">
+                <Logo size="sm" className="mr-xfi-4" />
+                <div>
+                  <h1 className="text-3xl font-bold bg-gradient-to-r from-xinfinity-primary to-xinfinity-secondary bg-clip-text text-transparent">
                     Create New Invoice
-                  </span>
-                </motion.h1>
-                
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.4 }}
-                  className="text-xl text-gray-600 max-w-2xl mx-auto"
-                >
-                  Generate professional invoices with AI assistance or upload your data files
-                </motion.p>
+                  </h1>
+                  <p className="mt-xfi-1 text-sm text-xinfinity-muted">
+                    Generate professional invoices with AI assistance
+                  </p>
+                </div>
               </div>
-
-              {/* Main Card */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-                className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
-              >
-                {/* Settings Button */}
-                <div className="flex justify-between items-center p-8 border-b border-gray-100/50">
-                  <div>
-                    <h2 className="text-2xl font-semibold text-gray-900">Invoice Details</h2>
-                    <p className="text-gray-600 mt-1">Choose your input method and create your invoice</p>
-                  </div>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowSettings(true)}
-                    className="flex items-center px-4 py-2 bg-gray-100/80 hover:bg-gray-200/80 rounded-xl transition-all duration-200"
+              <div className="flex items-center space-x-xfi-3">
+                <button
+                  onClick={() => setShowSettings(true)}
+                  className="inline-flex items-center px-xfi-4 py-xfi-2 text-sm font-medium text-xinfinity-foreground bg-xinfinity-surface border border-xinfinity-border rounded-xl hover:bg-xinfinity-surface/80 focus:outline-none focus:ring-2 focus:ring-xinfinity-primary/20 transition-all"
+                >
+                  <Cog6ToothIcon className="w-4 h-4 mr-xfi-2" />
+                  Company Settings
+                </button>
+                {showForm && (
+                  <button
+                    onClick={handleStartOver}
+                    className="inline-flex items-center px-xfi-4 py-xfi-2 text-sm font-medium text-xinfinity-muted hover:text-xinfinity-foreground bg-xinfinity-surface/50 hover:bg-xinfinity-surface rounded-xl transition-all"
                   >
-                    <Cog6ToothIcon className="w-5 h-5 text-gray-600 mr-2" />
-                    Settings
-                  </motion.button>
+                    <ArrowLeftIcon className="w-4 h-4 mr-xfi-2" />
+                    Start Over
+                  </button>
+                )}
+              </div>
+            </div>
+          </motion.div>
+
+          <div className="p-xfi-8">
+            {!showForm ? (
+              // Prompt Input Section
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="max-w-4xl mx-auto"
+              >
+                <div className="text-center mb-xfi-8">
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-xinfinity-primary to-xinfinity-secondary rounded-full mb-xfi-6"
+                  >
+                    <DocumentTextIcon className="w-8 h-8 text-white" />
+                  </motion.div>
+                  <h2 className="text-3xl font-bold text-xinfinity-foreground mb-xfi-3">
+                    Describe Your Invoice
+                  </h2>
+                  <p className="text-xinfinity-muted text-lg max-w-2xl mx-auto">
+                    Tell us about the work you did and we&apos;ll generate a professional invoice draft for you using AI.
+                  </p>
                 </div>
 
-                <div className="p-8">
-                  {/* Input Mode Toggle */}
+                <div className="space-y-xfi-8">
+                  {/* Main Input */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.6 }}
-                    className="flex justify-center mb-8"
+                    transition={{ delay: 0.3 }}
+                    className="relative"
                   >
-                    <div className="bg-gray-100/80 p-1 rounded-2xl backdrop-blur-sm">
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => setInputMode('text')}
-                        className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 ${
-                          inputMode === 'text'
-                            ? 'bg-white text-indigo-600 shadow-lg'
-                            : 'text-gray-600 hover:text-gray-800'
-                        }`}
-                      >
-                        <span className="mr-2">✏️</span>
-                        Type Description
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => setInputMode('file')}
-                        className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 ${
-                          inputMode === 'file'
-                            ? 'bg-white text-indigo-600 shadow-lg'
-                            : 'text-gray-600 hover:text-gray-800'
-                        }`}
-                      >
-                        <CloudArrowUpIcon className="w-5 h-5 inline mr-2" />
-                        Upload File
-                      </motion.button>
+                    <label className="block text-sm font-semibold text-xinfinity-foreground mb-xfi-3">
+                      Invoice Details
+                    </label>
+                    <textarea
+                      value={prompt}
+                      onChange={(e) => handlePromptChange(e.target.value)}
+                      className="xinfinity-input resize-none text-base"
+                      rows={6}
+                      placeholder="Example: Invoice ACME Corp $1500 for web design services, due in 14 days. Include logo design and responsive layout."
+                      disabled={generateMutation.isPending}
+                    />
+                    <div className="absolute bottom-3 right-3 text-xs text-xinfinity-muted">
+                      {prompt.length} characters
                     </div>
                   </motion.div>
 
-                  {/* Input Content */}
-                  <div className="space-y-6">
-                    {inputMode === 'text' ? (
-                      <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.4 }}
-                        className="space-y-4"
-                      >
-                        <label className="block text-lg font-semibold text-gray-700">
-                          Invoice Description
-                        </label>
-                        <textarea
-                          value={prompt}
-                          onChange={(e) => handlePromptChange(e.target.value)}
-                          className="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 bg-white/80 placeholder-gray-400 text-base transition-all resize-none backdrop-blur-sm"
-                          rows={6}
-                          placeholder="Example: Invoice ACME Corp $1500 for web design services, due in 14 days. Include logo design and responsive layout."
-                          disabled={generateMutation.isPending}
-                        />
-                        <div className="text-sm text-gray-500">
-                          Tip: Be specific about services, amounts, and due dates for better results
-                        </div>
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.4 }}
-                      >
-                        <FileUpload
-                          onFileProcessed={handleFileProcessed}
-                          onError={handleFileError}
-                        />
-                      </motion.div>
-                    )}
-                  </div>
-
-                  {/* Generate Button */}
+                  {/* Status and Button */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.7 }}
-                    className="mt-8 text-center"
+                    transition={{ delay: 0.4 }}
+                    className="flex flex-col items-center space-y-xfi-4"
                   >
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleSubmit}
+                    <div className="text-sm text-xinfinity-muted">
+                      {prompt.trim().length === 0 ? (
+                        'Enter some details about your invoice to get started'
+                      ) : (
+                        <span className="text-xinfinity-accent font-medium flex items-center">
+                          <SparklesIcon className="w-4 h-4 mr-1" />
+                          Ready to generate!
+                        </span>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={handleGenerateDraft}
                       disabled={isButtonDisabled}
-                      className="relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 group"
+                      className="xinfinity-button xinfinity-button-primary px-xfi-8 py-xfi-4 text-lg font-semibold transform hover:scale-105 transition-all"
                     >
                       {generateMutation.isPending ? (
                         <>
-                          <LoadingSpinner size="sm" className="mr-3" />
-                          Generating Invoice...
+                          <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-xfi-3"></div>
+                          Generating...
                         </>
                       ) : (
                         <>
-                          <SparklesIcon className="w-5 h-5 mr-3 group-hover:animate-pulse" />
-                          Generate Invoice
+                          <BoltIcon className="w-5 h-5 mr-xfi-2" />
+                          Generate Draft
                         </>
                       )}
-                    </motion.button>
+                    </button>
+                  </motion.div>
+
+                  {/* Sample Prompts */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="mt-xfi-8 p-xfi-6 xinfinity-card-accent border border-xinfinity-accent/20"
+                  >
+                    <h3 className="text-lg font-semibold text-xinfinity-foreground mb-xfi-4 flex items-center">
+                      <RocketLaunchIcon className="w-5 h-5 mr-xfi-2 text-xinfinity-accent" />
+                      Sample Prompts
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-xfi-3 text-sm">
+                      <div className="space-y-xfi-2">
+                        <div
+                          className="p-xfi-3 bg-xinfinity-surface rounded-xl border border-xinfinity-border hover:border-xinfinity-primary/30 cursor-pointer transition-all hover:shadow-md"
+                          onClick={() =>
+                            handlePromptChange(
+                              'Invoice ACME Corp $2500 for website development, due in 30 days'
+                            )
+                          }
+                        >
+                          &quot;Invoice ACME Corp $2500 for website development, due in 30 days&quot;
+                        </div>
+                        <div
+                          className="p-xfi-3 bg-xinfinity-surface rounded-xl border border-xinfinity-border hover:border-xinfinity-primary/30 cursor-pointer transition-all hover:shadow-md"
+                          onClick={() =>
+                            handlePromptChange(
+                              'Bill John Smith $150/hour for 8 hours of consulting, due next Friday'
+                            )
+                          }
+                        >
+                          &quot;Bill John Smith $150/hour for 8 hours of consulting, due next Friday&quot;
+                        </div>
+                      </div>
+                      <div className="space-y-xfi-2">
+                        <div
+                          className="p-xfi-3 bg-xinfinity-surface rounded-xl border border-xinfinity-border hover:border-xinfinity-primary/30 cursor-pointer transition-all hover:shadow-md"
+                          onClick={() =>
+                            handlePromptChange(
+                              'Facture ACME Corp 1500€ pour développement web'
+                            )
+                          }
+                        >
+                          &quot;Facture ACME Corp 1500€ pour développement web&quot; (French)
+                        </div>
+                        <div
+                          className="p-xfi-3 bg-xinfinity-surface rounded-xl border border-xinfinity-border hover:border-xinfinity-primary/30 cursor-pointer transition-all hover:shadow-md"
+                          onClick={() =>
+                            handlePromptChange(
+                              'invoice acme corp 1500 dolars for web desing'
+                            )
+                          }
+                        >
+                          &quot;invoice acme corp 1500 dolars for web desing&quot; (with typos!)
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-xfi-4 text-xs text-xinfinity-accent font-medium flex items-center">
+                      <SparklesIcon className="w-4 h-4 mr-1" />
+                      Click any example to try it, or write your own. AI understands multiple languages and handles typos!
+                    </div>
                   </motion.div>
                 </div>
               </motion.div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="invoice-form"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-              className="min-h-[80vh] flex flex-col"
-            >
-              {/* Back Button */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowForm(false)}
-                className="flex items-center px-4 py-3 text-gray-600 hover:text-gray-800 bg-white/60 backdrop-blur-sm rounded-lg transition-all duration-200 mb-8 w-fit hover:bg-white/80"
+            ) : (
+              // Form Editing Section
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
               >
-                <ArrowLeftIcon className="w-5 h-5 mr-2" />
-                Back to Input
-              </motion.button>
-
-              {/* Success Header */}
-              <div className="text-center mb-8">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="flex items-center justify-center mb-6"
-                >
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full blur-lg opacity-30"></div>
-                    <CheckCircleIcon className="relative w-16 h-16 text-green-600" />
+                <div className="mb-xfi-6 p-xfi-4 bg-xinfinity-accent/10 border border-xinfinity-accent/20 rounded-xl">
+                  <div className="flex items-center">
+                    <SparklesIcon className="w-5 h-5 text-xinfinity-accent mr-xfi-2" />
+                    <span className="text-xinfinity-foreground font-medium">
+                      Invoice draft generated successfully! Review and edit the details below.
+                    </span>
                   </div>
-                </motion.div>
+                </div>
 
-                <motion.h2
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 via-green-800 to-emerald-900 bg-clip-text text-transparent mb-4"
-                >
-                  Invoice Generated Successfully!
-                </motion.h2>
+                <InvoiceForm
+                  initialData={generatedInvoice || undefined}
+                  onSubmit={handleSaveInvoice}
+                  isSubmitting={false}
+                />
+              </motion.div>
+            )}
+          </div>
+        </div>
 
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="text-lg text-gray-600 max-w-xl mx-auto"
-                >
-                  Review and customize your invoice details below, then download as PDF.
-                </motion.p>
-              </div>
-
-              {/* Invoice Form Container */}
-              <div className="flex-1 max-w-5xl mx-auto w-full">
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/30 shadow-xl p-8"
-                >
-                  <InvoiceForm
-                    initialData={generatedInvoice || {}}
-                    aiAssumptions={aiAssumptions}
-                    defaultCurrency={settings.defaultCurrency || lastUsedCurrency}
-                    defaultLocale={settings.defaultLocale || lastUsedLocale}
-                    persistSettings={(currency, locale) => {
-                      setLastUsedCurrency(currency)
-                      setLastUsedLocale(locale)
-                    }}
-                    onSubmit={(data) => {
-                      setGeneratedInvoice(data)
-                      toast.success('Invoice updated successfully!')
-                    }}
-                  />
-                </motion.div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        <CompanySettings 
+        <CompanySettings
           isOpen={showSettings}
           onClose={() => setShowSettings(false)}
         />

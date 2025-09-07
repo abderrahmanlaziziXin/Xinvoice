@@ -15,12 +15,15 @@ import {
   DocumentArrowDownIcon,
   EyeIcon,
   InformationCircleIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
+  RocketLaunchIcon,
+  BoltIcon
 } from '@heroicons/react/24/outline'
 import { useGenerateBatchDocuments } from '../../../hooks/use-generate-batch-documents'
 import { CompanySettings } from '../../../components/company-settings'
 import { FileUpload } from '../../../components/file-upload'
 import { LoadingSpinner } from '../../../components/loading'
+import { Logo } from '../../../components/logo'
 import { useUserContext } from '../../../lib/user-context'
 import { usePersistedUserSettings, usePersistedCurrency, usePersistedLocale } from '../../../hooks/use-persisted-settings'
 import { convertFileDataToPrompt, FileParseResult } from '../../../lib/file-parser'
@@ -173,7 +176,7 @@ export default function BatchInvoicePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
+    <div className="min-h-screen xinfinity-background relative overflow-hidden">
       {/* Animated Background Elements */}
       <motion.div
         animate={{ 
@@ -182,7 +185,7 @@ export default function BatchInvoicePage() {
           scale: [1, 1.2, 1],
         }}
         transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
-        className="absolute top-16 right-16 w-72 h-72 bg-gradient-to-r from-emerald-400/10 to-teal-400/10 rounded-full blur-3xl"
+        className="absolute top-16 right-16 w-72 h-72 bg-gradient-to-r from-xinfinity-accent/10 to-xinfinity-tertiary/10 rounded-full blur-3xl"
       />
       <motion.div
         animate={{ 
@@ -191,10 +194,10 @@ export default function BatchInvoicePage() {
           scale: [1.2, 1, 1.2],
         }}
         transition={{ duration: 28, repeat: Infinity, ease: 'linear' }}
-        className="absolute bottom-16 left-16 w-96 h-96 bg-gradient-to-r from-purple-400/10 to-indigo-400/10 rounded-full blur-3xl"
+        className="absolute bottom-16 left-16 w-96 h-96 bg-gradient-to-r from-xinfinity-primary/10 to-xinfinity-secondary/10 rounded-full blur-3xl"
       />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-xfi-4 sm:px-xfi-6 lg:px-xfi-8 py-xfi-8">
         <AnimatePresence mode="wait">
           {!showForm ? (
             <motion.div
@@ -205,23 +208,27 @@ export default function BatchInvoicePage() {
               transition={{ duration: 0.5 }}
             >
               {/* Header */}
-              <div className="text-center mb-12">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl mb-6 shadow-2xl"
-                >
-                  <DocumentDuplicateIcon className="w-10 h-10 text-white" />
-                </motion.div>
+              <div className="text-center mb-xfi-12">
+                <div className="flex items-center justify-center mb-xfi-6">
+                  <Logo size="lg" className="mr-xfi-4" />
+                  <div className="h-12 w-px bg-gradient-to-b from-transparent via-xinfinity-primary/30 to-transparent mx-xfi-4" />
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-xinfinity-accent to-xinfinity-tertiary rounded-3xl shadow-2xl"
+                  >
+                    <DocumentDuplicateIcon className="w-10 h-10 text-white" />
+                  </motion.div>
+                </div>
                 
                 <motion.h1
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.3 }}
-                  className="text-4xl md:text-5xl font-bold mb-4"
+                  className="text-4xl md:text-5xl font-bold mb-xfi-4"
                 >
-                  <span className="bg-gradient-to-r from-gray-900 to-emerald-900 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-xinfinity-foreground to-xinfinity-primary bg-clip-text text-transparent">
                     Batch Invoice Generation
                   </span>
                 </motion.h1>
@@ -230,7 +237,7 @@ export default function BatchInvoicePage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.4 }}
-                  className="text-xl text-gray-600 max-w-2xl mx-auto"
+                  className="text-xl text-xinfinity-muted max-w-2xl mx-auto"
                 >
                   Upload your CSV or Excel file and generate multiple professional invoices at once
                 </motion.p>
@@ -241,26 +248,26 @@ export default function BatchInvoicePage() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
-                className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
+                className="xinfinity-card overflow-hidden"
               >
                 {/* Settings Button */}
-                <div className="flex justify-between items-center p-8 border-b border-gray-100/50">
+                <div className="flex justify-between items-center p-xfi-8 border-b border-xinfinity-border">
                   <div>
-                    <h2 className="text-2xl font-semibold text-gray-900">Bulk Invoice Processing</h2>
-                    <p className="text-gray-600 mt-1">Upload your data file and generate multiple invoices</p>
+                    <h2 className="text-2xl font-semibold text-xinfinity-foreground">Bulk Invoice Processing</h2>
+                    <p className="text-xinfinity-muted mt-xfi-1">Upload your data file and generate multiple invoices</p>
                   </div>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setShowSettings(true)}
-                    className="flex items-center px-4 py-2 bg-gray-100/80 hover:bg-gray-200/80 rounded-xl transition-all duration-200"
+                    className="flex items-center px-xfi-4 py-xfi-2 bg-xinfinity-surface hover:bg-xinfinity-surface/80 rounded-xl transition-all duration-200"
                   >
-                    <Cog6ToothIcon className="w-5 h-5 text-gray-600 mr-2" />
+                    <Cog6ToothIcon className="w-5 h-5 text-xinfinity-muted mr-xfi-2" />
                     Settings
                   </motion.button>
                 </div>
 
-                <div className="p-8">
+                <div className="p-xfi-8">
                   {/* CSV Template Section */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}

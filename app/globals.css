@@ -1,47 +1,211 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #ffffff;
-    --foreground: #171717;
-  }
+  /* Logo-inspired color system */
+  --xinfinity-blue-900: #1e3a8a;
+  --xinfinity-blue-800: #1e40af;
+  --xinfinity-cyan-500: #06b6d4;
+  --xinfinity-blue-500: #3b82f6;
+  
+  /* Extended palette based on logo gradients */
+  --xinfinity-primary: #1e40af;
+  --xinfinity-primary-light: #3b82f6;
+  --xinfinity-secondary: #06b6d4;
+  --xinfinity-secondary-light: #0891b2;
+  --xinfinity-accent: #1e3a8a;
+  --xinfinity-accent-light: #1d4ed8;
+  
+  /* Neutral palette */
+  --xinfinity-gray-50: #f8fafc;
+  --xinfinity-gray-100: #f1f5f9;
+  --xinfinity-gray-200: #e2e8f0;
+  --xinfinity-gray-300: #cbd5e1;
+  --xinfinity-gray-400: #94a3b8;
+  --xinfinity-gray-500: #64748b;
+  --xinfinity-gray-600: #475569;
+  --xinfinity-gray-700: #334155;
+  --xinfinity-gray-800: #1e293b;
+  --xinfinity-gray-900: #0f172a;
+  
+  /* Fibonacci-based spacing system */
+  --space-1: 0.125rem;     /* 2px */
+  --space-2: 0.25rem;      /* 4px */
+  --space-3: 0.375rem;     /* 6px */
+  --space-5: 0.5rem;       /* 8px */
+  --space-8: 0.8rem;       /* 13px */
+  --space-13: 1.3rem;      /* 21px */
+  --space-21: 2.1rem;      /* 34px */
+  --space-34: 3.4rem;      /* 55px */
+  --space-55: 5.5rem;      /* 89px */
+  --space-89: 8.9rem;      /* 144px */
+  
+  /* Fibonacci-based border radius */
+  --radius-1: 0.125rem;    /* 2px */
+  --radius-2: 0.25rem;     /* 4px */
+  --radius-3: 0.375rem;    /* 6px */
+  --radius-5: 0.5rem;      /* 8px */
+  --radius-8: 0.8rem;      /* 13px */
+  --radius-13: 1.3rem;     /* 21px */
+  --radius-21: 2.1rem;     /* 34px */
+  
+  /* Glass morphism variables */
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-blur: 16px;
+  --glass-shadow: 0 8px 32px rgba(30, 64, 175, 0.12);
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--xinfinity-gray-800);
+  background: linear-gradient(135deg, var(--xinfinity-gray-50) 0%, #ffffff 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  min-height: 100vh;
 }
 
-/* Ensure all form elements have proper text color and background */
+/* Custom utility classes */
+@layer utilities {
+  .glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+  
+  .xinfinity-gradient {
+    background: linear-gradient(135deg, var(--xinfinity-primary) 0%, var(--xinfinity-secondary) 100%);
+  }
+  
+  .xinfinity-gradient-reverse {
+    background: linear-gradient(135deg, var(--xinfinity-secondary) 0%, var(--xinfinity-primary) 100%);
+  }
+  
+  .xinfinity-text-gradient {
+    background: linear-gradient(135deg, var(--xinfinity-primary) 0%, var(--xinfinity-secondary) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .fibonacci-container {
+    max-width: 89rem; /* 1424px - Fibonacci number */
+  }
+  
+  .fibonacci-grid-2 {
+    grid-template-columns: 1fr 1.618fr; /* Golden ratio */
+  }
+  
+  .fibonacci-grid-3 {
+    grid-template-columns: 1fr 1.618fr 2.618fr; /* Fibonacci proportions */
+  }
+}
+
+/* Component-specific styles */
+.xinfinity-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-21);
+  border-radius: var(--radius-8);
+  font-weight: 500;
+  color: white;
+  background: linear-gradient(135deg, var(--xinfinity-primary) 0%, var(--xinfinity-secondary) 100%);
+  transition: all 0.3s ease-out;
+  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
+  border: none;
+  cursor: pointer;
+}
+
+.xinfinity-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(30, 64, 175, 0.25);
+}
+
+.xinfinity-input {
+  width: 100%;
+  padding: var(--space-8) var(--space-13);
+  border-radius: var(--radius-8);
+  border: 1px solid var(--xinfinity-gray-200);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  color: var(--xinfinity-gray-800);
+  transition: all 0.2s ease;
+}
+
+.xinfinity-input:focus {
+  outline: none;
+  border-color: var(--xinfinity-primary);
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+}
+
+.xinfinity-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--radius-13);
+  padding: var(--space-21);
+}
+
+/* Ensure all form elements have proper styling */
 input, textarea, select {
-  color: #1f2937 !important;
-  background-color: #ffffff !important;
+  color: var(--xinfinity-gray-800) !important;
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-radius: var(--radius-8);
 }
 
 input::placeholder, textarea::placeholder {
-  color: #9ca3af !important;
+  color: var(--xinfinity-gray-500) !important;
 }
 
-/* Ensure labels are visible */
 label {
-  color: #374151 !important;
+  color: var(--xinfinity-gray-700) !important;
+  font-weight: 500;
 }
 
-/* Ensure text elements are visible */
-span, p, div {
-  color: inherit;
+/* Navigation styles */
+.xinfinity-nav {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 0 0 var(--radius-13) var(--radius-13);
 }
 
-/* Specific overrides for form styling */
-.form-input {
-  color: #1f2937;
-  background-color: #ffffff;
+/* Animation classes */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--xinfinity-gray-100);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--xinfinity-primary) 0%, var(--xinfinity-secondary) 100%);
+  border-radius: var(--radius-5);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--xinfinity-primary);
 }

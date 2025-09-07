@@ -280,17 +280,60 @@ ${data.specialProvisions ? `SPECIAL PROVISIONS:\n${data.specialProvisions}` : ''
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen xinfinity-background">
+      {/* Floating Elements */}
+      <div className="floating-elements">
+        <motion.div 
+          className="floating-element"
+          animate={{ 
+            x: [0, 100, 0],
+            y: [0, -100, 0],
+            rotate: [0, 180, 360]
+          }}
+          transition={{ 
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
+        <motion.div 
+          className="floating-element floating-element-2"
+          animate={{ 
+            x: [0, -120, 0],
+            y: [0, 100, 0],
+            rotate: [0, -180, -360]
+          }}
+          transition={{ 
+            duration: 25,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
+        <motion.div 
+          className="floating-element floating-element-3"
+          animate={{ 
+            x: [0, 80, 0],
+            y: [0, -80, 0],
+            rotate: [0, 90, 180]
+          }}
+          transition={{ 
+            duration: 15,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
+      </div>
+
       {/* Header */}
-      <div className="relative pt-8 pb-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative pt-xfi-8 pb-xfi-6">
+        <div className="max-w-7xl mx-auto px-xfi-4 sm:px-xfi-6 lg:px-xfi-8">
           <div className="flex items-center justify-between">
-            <Link href="/nda/new" className="flex items-center text-gray-600 hover:text-gray-900 transition-colors">
-              <ArrowLeftIcon className="w-5 h-5 mr-2" />
+            <Link href="/nda/new" className="flex items-center text-gray-600 hover:text-gray-900 transition-colors duration-300">
+              <ArrowLeftIcon className="w-5 h-5 mr-xfi-2" />
               Back to NDA Hub
             </Link>
-            <div className="flex items-center space-x-2">
-              {fromAI && <SparklesIcon className="w-5 h-5 text-indigo-600" />}
+            <div className="flex items-center space-x-xfi-2">
+              {fromAI && <SparklesIcon className="w-5 h-5 text-xinfinity-primary" />}
               <DocumentTextIcon className="w-5 h-5 text-emerald-600" />
               <span className="text-sm font-medium text-gray-600">
                 {fromAI ? 'AI-Generated' : 'Manual'} NDA Editor
@@ -300,22 +343,22 @@ ${data.specialProvisions ? `SPECIAL PROVISIONS:\n${data.specialProvisions}` : ''
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <div className="grid lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-xfi-4 sm:px-xfi-6 lg:px-xfi-8 pb-xfi-16">
+        <div className="grid lg:grid-cols-3 gap-xfi-8">
           {/* Main Editor */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-xfi-6">
             {/* AI Assumptions */}
             {fromAI && assumptions.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-blue-50 border border-blue-200 rounded-2xl p-6"
+                className="xinfinity-card border-xinfinity-accent/30 bg-xinfinity-accent/10"
               >
                 <div className="flex items-start">
-                  <SparklesIcon className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
+                  <SparklesIcon className="w-5 h-5 text-xinfinity-primary mt-0.5 mr-xfi-3 flex-shrink-0" />
                   <div>
-                    <h3 className="text-sm font-medium text-blue-800 mb-2">AI Assumptions Made</h3>
-                    <ul className="text-sm text-blue-700 space-y-1">
+                    <h3 className="text-sm font-medium text-xinfinity-primary mb-xfi-2">AI Assumptions Made</h3>
+                    <ul className="text-sm text-xinfinity-primary/80 space-y-xfi-1">
                       {assumptions.map((assumption, index) => (
                         <li key={index}>• {assumption}</li>
                       ))}
@@ -330,23 +373,23 @@ ${data.specialProvisions ? `SPECIAL PROVISIONS:\n${data.specialProvisions}` : ''
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white/70 backdrop-blur-md rounded-2xl border border-white/20 shadow-lg p-6"
+              className="xinfinity-card"
             >
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Document Details</h2>
-              <div className="grid md:grid-cols-2 gap-4">
+              <h2 className="text-xl font-bold text-gray-900 mb-xfi-4">Document Details</h2>
+              <div className="grid md:grid-cols-2 gap-xfi-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-xfi-2">Title</label>
                   <input
                     {...register('title')}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    className="xinfinity-input w-full"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Effective Date</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-xfi-2">Effective Date</label>
                   <input
                     type="date"
                     {...register('effectiveDate')}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    className="xinfinity-input w-full"
                   />
                 </div>
               </div>
@@ -357,39 +400,39 @@ ${data.specialProvisions ? `SPECIAL PROVISIONS:\n${data.specialProvisions}` : ''
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white/70 backdrop-blur-md rounded-2xl border border-white/20 shadow-lg p-6"
+              className="xinfinity-card"
             >
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Parties</h2>
-              <div className="grid md:grid-cols-2 gap-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-xfi-4">Parties</h2>
+              <div className="grid md:grid-cols-2 gap-xfi-6">
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-3">Disclosing Party</h3>
-                  <div className="space-y-3">
+                  <h3 className="font-semibold text-gray-800 mb-xfi-3">Disclosing Party</h3>
+                  <div className="space-y-xfi-3">
                     <input
                       {...register('disclosingParty.name')}
                       placeholder="Name"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                      className="xinfinity-input w-full"
                     />
                     <textarea
                       {...register('disclosingParty.address')}
                       placeholder="Address"
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                      className="xinfinity-input w-full"
                     />
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-3">Receiving Party</h3>
-                  <div className="space-y-3">
+                  <h3 className="font-semibold text-gray-800 mb-xfi-3">Receiving Party</h3>
+                  <div className="space-y-xfi-3">
                     <input
                       {...register('receivingParty.name')}
                       placeholder="Name"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                      className="xinfinity-input w-full"
                     />
                     <textarea
                       {...register('receivingParty.address')}
                       placeholder="Address"
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                      className="xinfinity-input w-full"
                     />
                   </div>
                 </div>
@@ -401,16 +444,16 @@ ${data.specialProvisions ? `SPECIAL PROVISIONS:\n${data.specialProvisions}` : ''
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-white/70 backdrop-blur-md rounded-2xl border border-white/20 shadow-lg p-6"
+              className="xinfinity-card"
             >
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Legal Sections</h2>
-              <div className="space-y-4">
+              <h2 className="text-xl font-bold text-gray-900 mb-xfi-4">Legal Sections</h2>
+              <div className="space-y-xfi-4">
                 {sections.map((section, index) => (
                   <div key={section.id} className="border border-gray-200 rounded-lg">
                     <button
                       type="button"
                       onClick={() => setExpandedSection(expandedSection === section.id ? null : section.id)}
-                      className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50 rounded-t-lg"
+                      className="w-full px-xfi-4 py-xfi-3 text-left flex items-center justify-between hover:bg-gray-50 rounded-t-lg transition-colors duration-300"
                     >
                       <span className="font-medium text-gray-900">{section.title}</span>
                       <motion.div
@@ -427,12 +470,12 @@ ${data.specialProvisions ? `SPECIAL PROVISIONS:\n${data.specialProvisions}` : ''
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="px-4 pb-4"
+                        className="px-xfi-4 pb-xfi-4"
                       >
                         <textarea
                           {...register(section.field as keyof NDAEditorData)}
                           rows={6}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          className="xinfinity-input w-full"
                           placeholder={`Enter ${section.title.toLowerCase()} section...`}
                         />
                       </motion.div>
@@ -444,38 +487,38 @@ ${data.specialProvisions ? `SPECIAL PROVISIONS:\n${data.specialProvisions}` : ''
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-xfi-6">
             {/* Export Options */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
-              className="bg-white/70 backdrop-blur-md rounded-2xl border border-white/20 shadow-lg p-6"
+              className="xinfinity-card"
             >
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Export & Share</h3>
-              <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-gray-900 mb-xfi-4">Export & Share</h3>
+              <div className="space-y-xfi-3">
                 <button
                   onClick={handleDownloadPDF}
                   disabled={isExporting}
-                  className="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+                  className="xinfinity-button w-full flex items-center justify-center"
                 >
-                  <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
+                  <DocumentArrowDownIcon className="w-5 h-5 mr-xfi-2" />
                   Download PDF
                 </button>
                 
                 <button
                   onClick={handleCopyText}
-                  className="w-full flex items-center justify-center px-4 py-3 bg-gray-600 text-white rounded-xl hover:bg-gray-700 transition-colors"
+                  className="w-full flex items-center justify-center px-xfi-4 py-xfi-3 bg-gray-600 text-white rounded-xl hover:bg-gray-700 transition-colors duration-300"
                 >
-                  <ClipboardDocumentIcon className="w-5 h-5 mr-2" />
+                  <ClipboardDocumentIcon className="w-5 h-5 mr-xfi-2" />
                   Copy as Text
                 </button>
                 
                 <button
                   onClick={handleCopyJSON}
-                  className="w-full flex items-center justify-center px-4 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors"
+                  className="w-full flex items-center justify-center px-xfi-4 py-xfi-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors duration-300"
                 >
-                  <ClipboardDocumentIcon className="w-5 h-5 mr-2" />
+                  <ClipboardDocumentIcon className="w-5 h-5 mr-xfi-2" />
                   Copy JSON
                 </button>
               </div>
@@ -486,10 +529,10 @@ ${data.specialProvisions ? `SPECIAL PROVISIONS:\n${data.specialProvisions}` : ''
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5 }}
-              className="bg-white/70 backdrop-blur-md rounded-2xl border border-white/20 shadow-lg p-6"
+              className="xinfinity-card"
             >
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Document Info</h3>
-              <div className="space-y-3 text-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-xfi-4">Document Info</h3>
+              <div className="space-y-xfi-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Sections:</span>
                   <span className="font-medium">{sections.length}</span>

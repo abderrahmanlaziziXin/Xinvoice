@@ -14,6 +14,7 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
+import { LogoWithText } from './logo'
 
 interface NavigationItem {
   name: string
@@ -38,94 +39,193 @@ export function NavigationHeader() {
     },
     {
       name: 'Invoice',
-      href: '/invoice',
+      href: '/new/invoice',
       icon: DocumentTextIcon,
-      current: pathname.startsWith('/new/invoice'),
+      current: pathname.startsWith('/new/invoice') || pathname.startsWith('/invoice'),
       children: [
-        { name: 'Single Invoice', href: '/invoice/single', icon: DocumentTextIcon },
-        { name: 'Batch Processing', href: '/invoice/batch', icon: DocumentTextIcon }
+        { name: 'Single Invoice', href: '/new/invoice', icon: DocumentTextIcon },
+        { name: 'Batch Processing', href: '/new/invoice-batch', icon: DocumentTextIcon }
       ]
     },
     {
       name: 'NDA',
-      href: '/nda/new',
+      href: '/new/nda',
       icon: ShieldCheckIcon,
-      current: pathname.startsWith('/nda')
+      current: pathname.startsWith('/new/nda') || pathname.startsWith('/nda'),
+      children: [
+        { name: 'Create NDA', href: '/new/nda', icon: ShieldCheckIcon },
+        { name: 'AI Assisted', href: '/nda/ai-assisted', icon: ShieldCheckIcon },
+        { name: 'Editor', href: '/nda/editor', icon: ShieldCheckIcon }
+      ]
     },
     {
-      name: 'History',
-      href: '/history',
+      name: 'Recent',
+      href: '/recent',
       icon: ClockIcon,
-      current: pathname === '/history'
-    },
-    {
-      name: 'Settings',
-      href: '/settings',
-      icon: CogIcon,
-      current: pathname === '/settings'
+      current: pathname === '/recent'
     }
   ]
 
-  const toggleDropdown = (name: string) => {
-    setOpenDropdown(openDropdown === name ? null : name)
-  }
-
-  const handleNavigation = (href: string, hasChildren?: boolean) => {
-    if (hasChildren) return
-    
-    // Map new routes to existing ones during transition
-    const routeMap: { [key: string]: string } = {
-      '/invoice/single': '/new/invoice',
-      '/invoice/batch': '/new/invoice-batch',
-      '/history': '/',
-      '/settings': '/'
-    }
-
-    const targetRoute = routeMap[href] || href
-    router.push(targetRoute)
-    setIsMobileMenuOpen(false)
-    setOpenDropdown(null)
+  const handleDropdownToggle = (itemName: string) => {
+    setOpenDropdown(openDropdown === itemName ? null : itemName)
   }
 
   return (
-    <>
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <div className="flex items-center">
-              <Link href="/" className="flex items-center space-x-3">
-                <div className="relative">
-                  <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
-                    <DocumentTextIcon className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg blur-sm opacity-30"></div>
-                </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                  Only-AI
-                </span>
-              </Link>
-            </div>
+    <motion.header 
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+      className="sticky top-0 z-50 w-full xinfinity-nav"
+    >
+      <div className="max-w-fibonacci mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16 lg:h-20">
+          {/* Logo */}
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Link href="/" className="flex items-center">
+              <LogoWithText size="md" animated={true} />
+            </Link>
+          </motion.div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex space-x-1">
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center space-x-1">
+            {navigation.map((item) => (
+              <div key={item.name} className="relative">
+                {item.children ? (
+                  <div className="relative">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleDropdownToggle(item.name)}
+                      className={`
+                        flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                        ${item.current 
+                          ? 'xinfinity-gradient text-white shadow-xinfinity' 
+                          : 'text-gray-700 hover:text-xinfinity-primary hover:bg-white/50'
+                        }
+                      `}
+                    >
+                      <item.icon className="w-4 h-4 mr-2" />
+                      {item.name}
+                      <ChevronDownIcon 
+                        className={`w-4 h-4 ml-1 transition-transform duration-200 ${
+                          openDropdown === item.name ? 'rotate-180' : ''
+                        }`} 
+                      />
+                    </motion.button>
+                    
+                    <AnimatePresence>
+                      {openDropdown === item.name && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute top-full left-0 mt-2 w-48 xinfinity-card rounded-lg shadow-glass overflow-hidden"
+                        >
+                          {item.children.map((child) => (
+                            <Link
+                              key={child.name}
+                              href={child.href}
+                              className="flex items-center px-4 py-3 text-sm text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200"
+                              onClick={() => setOpenDropdown(null)}
+                            >
+                              <child.icon className="w-4 h-4 mr-3" />
+                              {child.name}
+                            </Link>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Link
+                      href={item.href}
+                      className={`
+                        flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                        ${item.current 
+                          ? 'xinfinity-gradient text-white shadow-xinfinity' 
+                          : 'text-gray-700 hover:text-xinfinity-primary hover:bg-white/50'
+                        }
+                      `}
+                    >
+                      <item.icon className="w-4 h-4 mr-2" />
+                      {item.name}
+                    </Link>
+                  </motion.div>
+                )}
+              </div>
+            ))}
+          </nav>
+
+          {/* Settings Button */}
+          <div className="hidden lg:flex items-center">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-2 rounded-lg text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200"
+              aria-label="Settings"
+            >
+              <CogIcon className="w-5 h-5" />
+            </motion.button>
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="lg:hidden">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 rounded-lg text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200"
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? (
+                <XMarkIcon className="w-6 h-6" />
+              ) : (
+                <Bars3Icon className="w-6 h-6" />
+              )}
+            </motion.button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Navigation */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="lg:hidden border-t border-white/20"
+          >
+            <div className="px-4 py-6 space-y-2">
               {navigation.map((item) => (
-                <div key={item.name} className="relative">
+                <div key={item.name}>
                   {item.children ? (
-                    <div className="relative">
+                    <div>
                       <button
-                        onClick={() => toggleDropdown(item.name)}
-                        className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                          item.current
-                            ? 'bg-purple-100 text-purple-700'
-                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                        }`}
+                        onClick={() => handleDropdownToggle(item.name)}
+                        className={`
+                          flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
+                          ${item.current 
+                            ? 'xinfinity-gradient text-white shadow-xinfinity' 
+                            : 'text-gray-700 hover:text-xinfinity-primary hover:bg-white/50'
+                          }
+                        `}
                       >
-                        <item.icon className="w-4 h-4 mr-2" />
-                        {item.name}
+                        <div className="flex items-center">
+                          <item.icon className="w-5 h-5 mr-3" />
+                          {item.name}
+                        </div>
                         <ChevronDownIcon 
-                          className={`w-4 h-4 ml-1 transition-transform duration-200 ${
+                          className={`w-4 h-4 transition-transform duration-200 ${
                             openDropdown === item.name ? 'rotate-180' : ''
                           }`} 
                         />
@@ -134,146 +234,58 @@ export function NavigationHeader() {
                       <AnimatePresence>
                         {openDropdown === item.name && (
                           <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
                             transition={{ duration: 0.2 }}
-                            className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+                            className="mt-2 ml-4 space-y-1"
                           >
                             {item.children.map((child) => (
-                              <button
+                              <Link
                                 key={child.name}
-                                onClick={() => handleNavigation(child.href)}
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                                href={child.href}
+                                className="flex items-center px-4 py-2 rounded-lg text-sm text-gray-600 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200"
+                                onClick={() => {
+                                  setIsMobileMenuOpen(false)
+                                  setOpenDropdown(null)
+                                }}
                               >
-                                <child.icon className="w-4 h-4 mr-2" />
+                                <child.icon className="w-4 h-4 mr-3" />
                                 {child.name}
-                              </button>
+                              </Link>
                             ))}
                           </motion.div>
                         )}
                       </AnimatePresence>
                     </div>
                   ) : (
-                    <button
-                      onClick={() => handleNavigation(item.href)}
-                      className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        item.current
-                          ? 'bg-purple-100 text-purple-700'
-                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                      }`}
+                    <Link
+                      href={item.href}
+                      className={`
+                        flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
+                        ${item.current 
+                          ? 'xinfinity-gradient text-white shadow-xinfinity' 
+                          : 'text-gray-700 hover:text-xinfinity-primary hover:bg-white/50'
+                        }
+                      `}
+                      onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      <item.icon className="w-4 h-4 mr-2" />
+                      <item.icon className="w-5 h-5 mr-3" />
                       {item.name}
-                    </button>
+                    </Link>
                   )}
                 </div>
               ))}
-            </nav>
-
-            {/* Mobile menu button */}
-            <div className="md:hidden">
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-              >
-                {isMobileMenuOpen ? (
-                  <XMarkIcon className="w-6 h-6" />
-                ) : (
-                  <Bars3Icon className="w-6 h-6" />
-                )}
+              
+              {/* Mobile Settings */}
+              <button className="flex items-center w-full px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200">
+                <CogIcon className="w-5 h-5 mr-3" />
+                Settings
               </button>
             </div>
-          </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="md:hidden bg-white border-t border-gray-200"
-            >
-              <div className="px-4 py-3 space-y-1">
-                {navigation.map((item) => (
-                  <div key={item.name}>
-                    {item.children ? (
-                      <div>
-                        <button
-                          onClick={() => toggleDropdown(item.name)}
-                          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium ${
-                            item.current
-                              ? 'bg-purple-100 text-purple-700'
-                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                          }`}
-                        >
-                          <div className="flex items-center">
-                            <item.icon className="w-4 h-4 mr-2" />
-                            {item.name}
-                          </div>
-                          <ChevronDownIcon 
-                            className={`w-4 h-4 transition-transform duration-200 ${
-                              openDropdown === item.name ? 'rotate-180' : ''
-                            }`} 
-                          />
-                        </button>
-                        
-                        <AnimatePresence>
-                          {openDropdown === item.name && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              exit={{ opacity: 0, height: 0 }}
-                              className="mt-1 ml-4 space-y-1"
-                            >
-                              {item.children.map((child) => (
-                                <button
-                                  key={child.name}
-                                  onClick={() => handleNavigation(child.href)}
-                                  className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg flex items-center"
-                                >
-                                  <child.icon className="w-4 h-4 mr-2" />
-                                  {child.name}
-                                </button>
-                              ))}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => handleNavigation(item.href)}
-                        className={`w-full flex items-center px-3 py-2 rounded-lg text-sm font-medium ${
-                          item.current
-                            ? 'bg-purple-100 text-purple-700'
-                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                        }`}
-                      >
-                        <item.icon className="w-4 h-4 mr-2" />
-                        {item.name}
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </header>
-
-      {/* Click outside to close dropdowns */}
-      {(openDropdown || isMobileMenuOpen) && (
-        <div 
-          className="fixed inset-0 z-30" 
-          onClick={() => {
-            setOpenDropdown(null)
-            setIsMobileMenuOpen(false)
-          }}
-        />
-      )}
-    </>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.header>
   )
 }

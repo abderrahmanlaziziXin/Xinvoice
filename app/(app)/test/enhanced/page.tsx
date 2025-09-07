@@ -5,7 +5,8 @@ import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { useGenerateEnhancedDocument } from '../../../hooks/use-generate-enhanced-document'
 import { LoadingSpinner } from '../../../components/loading'
-import { ChevronDownIcon, ChevronRightIcon, ClipboardDocumentIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline'
+import { Logo } from '../../../components/logo'
+import { ChevronDownIcon, ChevronRightIcon, ClipboardDocumentIcon, DocumentArrowDownIcon, BeakerIcon, SparklesIcon } from '@heroicons/react/24/outline'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Currency, Locale } from '../../../../packages/core/schemas'
 
@@ -218,34 +219,70 @@ function EnhancedTestContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-100/50 p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen xinfinity-background relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-gradient-to-r from-xinfinity-primary/20 to-xinfinity-secondary/20 blur-3xl"
+          animate={{
+            scale: [1, 1.2, 1],
+            rotate: [0, 90, 0],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+        <motion.div
+          className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-gradient-to-r from-xinfinity-accent/20 to-xinfinity-tertiary/20 blur-3xl"
+          animate={{
+            scale: [1.2, 1, 1.2],
+            rotate: [0, -90, 0],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto p-xfi-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
+          className="text-center mb-xfi-8"
         >
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-            Enhanced AI Document Generator
-          </h1>
-          <p className="text-gray-600 text-lg">
+          <div className="flex items-center justify-center mb-xfi-4">
+            <Logo size="md" className="mr-xfi-3" />
+            <div className="h-8 w-px bg-gradient-to-b from-transparent via-xinfinity-primary/30 to-transparent mx-xfi-4" />
+            <BeakerIcon className="w-10 h-10 text-xinfinity-primary mr-xfi-3" />
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-xinfinity-primary to-xinfinity-secondary bg-clip-text text-transparent">
+              Enhanced AI Document Generator
+            </h1>
+          </div>
+          <p className="text-xinfinity-muted text-lg">
             Create professional documents with AI-powered intelligence and optional parameters
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-xfi-8">
           {/* Input Panel */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bg-white/80 backdrop-blur-md rounded-xl p-6 shadow-lg space-y-6"
+            className="xinfinity-card p-xfi-6 space-y-xfi-6"
           >
-            <h2 className="text-xl font-semibold mb-4">Document Generation</h2>
+            <h2 className="text-xl font-semibold mb-xfi-4 text-xinfinity-foreground flex items-center">
+              <SparklesIcon className="w-5 h-5 mr-xfi-2 text-xinfinity-primary" />
+              Document Generation
+            </h2>
             
             {/* Document Type Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-xinfinity-foreground mb-xfi-2">
                 Document Type
               </label>
               <div className="flex space-x-4">
