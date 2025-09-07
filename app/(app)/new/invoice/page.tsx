@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useGenerateDocument } from '../../../hooks/use-generate-document'
 import InvoiceForm from '../../../components/invoice-form'
 import { CompanySettings } from '../../../components/company-settings'
 import { Logo } from '../../../components/logo'
 import { useUserContext } from '../../../lib/user-context'
+import { useDocumentContext } from '../../../context/document-context'
 import { Invoice } from '../../../../packages/core'
 import {
   SparklesIcon,
@@ -23,8 +24,35 @@ export default function NewInvoicePage() {
   const [showForm, setShowForm] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const { context } = useUserContext()
+  const { saveDocument, getDocument } = useDocumentContext()
 
   const generateMutation = useGenerateDocument()
+
+  // Load saved draft on mount
+  useEffect(() => {
+    const savedDraft = getDocument('invoice')
+    if (savedDraft) {
+      if (savedDraft.prompt) setPrompt(savedDraft.prompt)
+      if (savedDraft.generatedInvoice) {
+        setGeneratedInvoice(savedDraft.generatedInvoice)
+        setShowForm(true)
+      }
+    }
+  }, [getDocument])
+
+  // Auto-save prompt as user types
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (prompt.trim()) {
+        saveDocument('invoice', { 
+          prompt, 
+          generatedInvoice,
+          timestamp: Date.now() 
+        })
+      }
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [prompt, generatedInvoice, saveDocument])
 
   const handlePromptChange = (value: string) => {
     setPrompt(value)

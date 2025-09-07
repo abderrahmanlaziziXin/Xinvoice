@@ -54,16 +54,14 @@ export async function POST(request: NextRequest) {
           userContext
         )
         
-        documentResponse = {
-          success: true,
+        return NextResponse.json({ 
+          success: true, 
           document: enhancedResponse.metadata,
           content: enhancedResponse.content,
           formatted_document: enhancedResponse.formatted_document,
           assumptions: enhancedResponse.assumptions || [],
           enhanced: true
-        }
-        
-        return Response.json({ success: true, data: enhancedResponse })
+        })
         
       } catch (enhancedError) {
         console.warn('Enhanced generation failed, falling back to standard:', enhancedError)

@@ -115,7 +115,8 @@ export default function InvoiceForm({
       return sum + amount
     }, 0)
 
-    const taxAmount = subtotal * (watchedTaxRate || 0)
+    // Convert percentage to decimal for calculation (e.g., 8% becomes 0.08)
+    const taxAmount = subtotal * ((watchedTaxRate || 0) / 100)
     const total = subtotal + taxAmount
 
     // Update item amounts

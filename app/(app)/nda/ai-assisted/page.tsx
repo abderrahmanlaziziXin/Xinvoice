@@ -10,6 +10,8 @@ import { useRouter } from 'next/navigation'
 import { LoadingSpinner } from '../../../components/loading'
 import { Logo } from '../../../components/logo'
 import { useGenerateEnhancedDocument } from '../../../hooks/use-generate-enhanced-document'
+import { useDocumentContext } from '../../../context/document-context'
+import { DateInput } from '../../../components/date-input'
 import {
   SparklesIcon,
   ArrowLeftIcon,
@@ -48,10 +50,11 @@ export default function AIAssistedNDAPage() {
   const [mode, setMode] = useState<'guided' | 'freetext'>('guided')
   const [freeTextInput, setFreeTextInput] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
+  const { saveDocument, getDocument } = useDocumentContext()
   
   const generateMutation = useGenerateEnhancedDocument()
 
-  const { register, handleSubmit, formState: { errors }, watch } = useForm<AInaInputData>({
+  const { register, handleSubmit, formState: { errors }, watch, setValue, control } = useForm<AInaInputData>({
     resolver: zodResolver(aiNDAInputSchema),
     defaultValues: {
       disclosingParty: { name: '', address: '' },
@@ -65,7 +68,31 @@ export default function AIAssistedNDAPage() {
     }
   })
 
+  // Load saved draft on mount
+  useEffect(() => {
+    const savedDraft = getDocument('nda')
+    if (savedDraft && savedDraft.formData) {
+      const formData = savedDraft.formData
+      Object.keys(formData).forEach(key => {
+        if (key === 'disclosingParty' || key === 'receivingParty') {
+          setValue(`${key}.name`, formData[key]?.name || '')
+          setValue(`${key}.address`, formData[key]?.address || '')
+        } else {
+          setValue(key as keyof AInaInputData, formData[key])
+        }
+      })
+    }
+  }, [getDocument, setValue])
+
   const watchedData = watch()
+
+  // Auto-save draft as user types
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      saveDocument('nda', { formData: watchedData, mode })
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [watchedData, mode, saveDocument])
 
   const buildStructuredPrompt = (data: AInaInputData) => {
     return `Generate a professional Non-Disclosure Agreement with the following details:
@@ -410,17 +437,14 @@ Please create comprehensive legal sections and make reasonable assumptions for a
                 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Effective Date *
-                    </label>
-                    <input
-                      type="date"
-                      {...register('effectiveDate')}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    <DateInput
+                      label="Effective Date"
+                      required
+                      value={watchedData.effectiveDate}
+                      onChange={(date) => setValue('effectiveDate', date)}
+                      error={errors.effectiveDate?.message}
+                      placeholder="Select effective date"
                     />
-                    {errors.effectiveDate && (
-                      <p className="text-red-500 text-sm mt-1">{errors.effectiveDate.message}</p>
-                    )}
                   </div>
                   
                   <div>

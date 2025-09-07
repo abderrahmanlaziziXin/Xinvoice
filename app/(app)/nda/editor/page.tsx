@@ -8,6 +8,8 @@ import { z } from 'zod'
 import toast from 'react-hot-toast'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { LoadingSpinner } from '../../../components/loading'
+import { DateInput } from '../../../components/date-input'
+import { useDocumentContext } from '../../../context/document-context'
 import {
   DocumentTextIcon,
   SparklesIcon,
@@ -15,7 +17,8 @@ import {
   DocumentArrowDownIcon,
   ClipboardDocumentIcon,
   ArrowLeftIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  CheckCircleIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 
@@ -64,6 +67,7 @@ function NDAEditorContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const fromAI = searchParams.get('from') === 'ai'
+  const { saveDocument, getDocument } = useDocumentContext()
   
   const [aiData, setAiData] = useState<any>(null)
   const [assumptions, setAssumptions] = useState<string[]>([])
@@ -91,6 +95,18 @@ function NDAEditorContent() {
   })
 
   const watchedData = watch()
+
+  // Auto-save draft as user types
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      saveDocument('nda', { 
+        editorData: watchedData, 
+        fromAI,
+        timestamp: Date.now() 
+      })
+    }, 2000) // Save after 2 seconds of inactivity
+    return () => clearTimeout(timer)
+  }, [watchedData, fromAI, saveDocument])
 
   // Load AI-generated data if coming from AI workflow
   useEffect(() => {
@@ -242,6 +258,14 @@ function NDAEditorContent() {
     }
   }
 
+  const handlePreviewNDA = () => {
+    // For now, just scroll to top or show a preview modal
+    toast.success('👁️ PDF preview coming soon!')
+    // TODO: Implement PDF preview modal similar to invoice preview
+  }
+
+  const handleExportPDF = handleDownloadPDF // Alias for consistency
+
   const generateFullNDAText = (data: NDAEditorData): string => {
     return `${data.title}
 
@@ -376,21 +400,44 @@ ${data.specialProvisions ? `SPECIAL PROVISIONS:\n${data.specialProvisions}` : ''
               className="xinfinity-card"
             >
               <h2 className="text-xl font-bold text-gray-900 mb-xfi-4">Document Details</h2>
-              <div className="grid md:grid-cols-2 gap-xfi-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-xfi-2">Title</label>
-                  <input
-                    {...register('title')}
-                    className="xinfinity-input w-full"
-                  />
+              <div className="space-y-xfi-4">
+                <div className="grid md:grid-cols-2 gap-xfi-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-xfi-2">Title</label>
+                    <input
+                      {...register('title')}
+                      className="xinfinity-input w-full"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-xfi-2">Governing Law</label>
+                    <input
+                      {...register('governingLaw')}
+                      className="xinfinity-input w-full"
+                      placeholder="e.g., State of California"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-xfi-2">Effective Date</label>
-                  <input
-                    type="date"
-                    {...register('effectiveDate')}
-                    className="xinfinity-input w-full"
-                  />
+                <div className="grid md:grid-cols-2 gap-xfi-4">
+                  <div>
+                    <DateInput
+                      label="Effective Date"
+                      required
+                      value={watch('effectiveDate')}
+                      onChange={(date) => setValue('effectiveDate', date)}
+                      error={errors.effectiveDate?.message}
+                      placeholder="Select effective date"
+                    />
+                  </div>
+                  <div>
+                    <DateInput
+                      label="Termination Date (optional)"
+                      value={watch('terminationDate')}
+                      onChange={(date) => setValue('terminationDate', date)}
+                      error={errors.terminationDate?.message}
+                      placeholder="Select termination date"
+                    />
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -549,6 +596,65 @@ ${data.specialProvisions ? `SPECIAL PROVISIONS:\n${data.specialProvisions}` : ''
             </motion.div>
           </div>
         </div>
+
+        {/* Completion Stepper */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="mt-xfi-8 mb-xfi-12"
+        >
+          <div className="xinfinity-card bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+            <div className="text-center">
+              <h3 className="text-xl font-bold text-gray-900 mb-xfi-4">Complete Your NDA</h3>
+              <p className="text-gray-600 mb-xfi-6">Follow these steps to finalize your document</p>
+              
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                    <CheckCircleIcon className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">1. Edit Content</span>
+                </div>
+                
+                <div className="hidden sm:block w-8 h-px bg-gray-300"></div>
+                
+                <button
+                  onClick={handlePreviewNDA}
+                  disabled={isExporting}
+                  className="flex items-center gap-3 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                >
+                  <div className="w-8 h-8 bg-indigo-700 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-bold">2</span>
+                  </div>
+                  <span className="text-sm font-medium">Preview PDF</span>
+                  <EyeIcon className="w-4 h-4" />
+                </button>
+                
+                <div className="hidden sm:block w-8 h-px bg-gray-300"></div>
+                
+                <button
+                  onClick={handleExportPDF}
+                  disabled={isExporting}
+                  className="flex items-center gap-3 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                >
+                  <div className="w-8 h-8 bg-green-700 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-bold">3</span>
+                  </div>
+                  <span className="text-sm font-medium">Download PDF</span>
+                  <DocumentArrowDownIcon className="w-4 h-4" />
+                </button>
+              </div>
+              
+              {isExporting && (
+                <div className="mt-xfi-4 flex items-center justify-center gap-2 text-indigo-600">
+                  <LoadingSpinner size="sm" />
+                  <span className="text-sm">Generating PDF...</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   )

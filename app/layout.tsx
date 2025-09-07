@@ -2,6 +2,7 @@ import './globals.css'
 import QueryProvider from './components/query-provider'
 import { ToastProvider } from './components/toast-provider'
 import { NavigationHeader } from './components/navigation-header'
+import { DocumentProvider } from './context/document-context'
 import { Metadata, Viewport } from 'next'
 
 export const metadata: Metadata = {
@@ -51,11 +52,13 @@ export default function RootLayout({
       </head>
       <body className="antialiased font-sans">
         <QueryProvider>
-          <NavigationHeader />
-          <main className="min-h-screen">
-            {children}
-          </main>
-          <ToastProvider />
+          <DocumentProvider>
+            <NavigationHeader />
+            <main className="min-h-screen">
+              {children}
+            </main>
+            <ToastProvider />
+          </DocumentProvider>
         </QueryProvider>
       </body>
     </html>
