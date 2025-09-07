@@ -16,8 +16,6 @@ interface GenerateBatchDocumentResponse {
 }
 
 async function generateBatchDocuments(request: GenerateBatchDocumentRequest): Promise<GenerateBatchDocumentResponse> {
-  console.log('Sending batch request:', request)
-  
   const response = await fetch('/api/generate-batch', {
     method: 'POST',
     headers: {
@@ -25,8 +23,6 @@ async function generateBatchDocuments(request: GenerateBatchDocumentRequest): Pr
     },
     body: JSON.stringify(request),
   })
-
-  console.log('Batch response status:', response.status)
   
   if (!response.ok) {
     const errorData = await response.json()

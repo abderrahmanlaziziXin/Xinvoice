@@ -21,8 +21,6 @@ interface EnhancedGenerateResponse {
 }
 
 async function generateEnhancedDocument(request: EnhancedGenerateRequest): Promise<EnhancedGenerateResponse> {
-  console.log('Sending enhanced request:', request)
-  
   const response = await fetch('/api/generate-enhanced', {
     method: 'POST',
     headers: {
@@ -33,8 +31,6 @@ async function generateEnhancedDocument(request: EnhancedGenerateRequest): Promi
       ...request
     }),
   })
-
-  console.log('Enhanced response status:', response.status)
   
   if (!response.ok) {
     const errorData = await response.json()
@@ -48,14 +44,6 @@ async function generateEnhancedDocument(request: EnhancedGenerateRequest): Promi
 export function useGenerateEnhancedDocument() {
   return useMutation({
     mutationFn: generateEnhancedDocument,
-    onSuccess: (response) => {
-      console.log('Enhanced generation successful:', {
-        enhanced: response.enhanced,
-        hasContent: !!response.content,
-        hasFormattedDoc: !!response.formatted_document,
-        assumptions: response.assumptions?.length || 0
-      })
-    },
     onError: (error) => {
       console.error('Enhanced generation failed:', error)
     },

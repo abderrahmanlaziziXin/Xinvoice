@@ -15,8 +15,6 @@ interface GenerateDocumentResponse {
 }
 
 async function generateDocument(request: GenerateDocumentRequest): Promise<GenerateDocumentResponse> {
-  console.log('Sending request:', request)
-  
   const response = await fetch('/api/generate', {
     method: 'POST',
     headers: {
@@ -24,8 +22,6 @@ async function generateDocument(request: GenerateDocumentRequest): Promise<Gener
     },
     body: JSON.stringify(request),
   })
-
-  console.log('Response status:', response.status)
   
   if (!response.ok) {
     const errorData = await response.json()

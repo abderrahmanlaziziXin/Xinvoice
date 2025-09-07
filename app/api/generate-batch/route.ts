@@ -50,11 +50,9 @@ const GenerateBatchRequestSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    console.log('Batch API received body:', body)
     
     try {
       const { prompts, documentType, userContext } = GenerateBatchRequestSchema.parse(body)
-      console.log('Batch parsed data:', { prompts, documentType, userContext })
     } catch (parseError) {
       console.error('Batch schema validation error:', parseError)
       return NextResponse.json(

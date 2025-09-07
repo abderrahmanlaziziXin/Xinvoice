@@ -153,7 +153,6 @@ function NDAEditorContent() {
   }, [fromAI, setValue])
 
   const onSubmit = (data: NDAFormData) => {
-    console.log('NDA form submitted:', data)
     toast.success('✅ NDA ready for export!')
   }
 

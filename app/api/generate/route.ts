@@ -50,11 +50,9 @@ const GenerateRequestSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    console.log('API received body:', body)
     
     try {
       const { prompt, documentType, userContext } = GenerateRequestSchema.parse(body)
-      console.log('Parsed data:', { prompt, documentType, userContext })
     } catch (parseError) {
       console.error('Schema validation error:', parseError)
       return NextResponse.json(
@@ -94,15 +92,6 @@ export async function POST(request: NextRequest) {
     
     // Add default values for backward compatibility
     const enhancedDocument = addDefaultValues(cleanedDocument, userContext, documentType)
-
-    console.log('Enhanced document before validation:', {
-      type: enhancedDocument.type,
-      currency: enhancedDocument.currency,
-      locale: enhancedDocument.locale,
-      hasFrom: !!enhancedDocument.from,
-      hasTo: !!enhancedDocument.to,
-      itemsCount: enhancedDocument.items?.length || 0
-    })
 
     // Validate the generated document based on document type
     let validatedDocument

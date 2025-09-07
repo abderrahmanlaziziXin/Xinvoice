@@ -54,7 +54,6 @@ export default function NewInvoicePage() {
   }
 
   const handleSaveInvoice = (invoiceData: Invoice) => {
-    console.log('Saving invoice:', invoiceData)
     alert('Invoice saved! (PDF generation coming in Step 02)')
   }
 

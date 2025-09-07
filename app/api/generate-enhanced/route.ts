@@ -17,7 +17,6 @@ const EnhancedGenerateRequestSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    console.log('Enhanced API received body:', body)
     
     const { prompt, documentType, userContext, useEnhancedPrompts } = EnhancedGenerateRequestSchema.parse(body)
 
@@ -47,7 +46,6 @@ export async function POST(request: NextRequest) {
     let documentResponse: any
 
     if (useEnhancedPrompts && provider.generateEnhancedDocument) {
-      console.log('Using enhanced prompts for richer output')
       
       try {
         const enhancedResponse: EnhancedDocumentResponse = await provider.generateEnhancedDocument(
@@ -65,12 +63,7 @@ export async function POST(request: NextRequest) {
           enhanced: true
         }
         
-        console.log('Enhanced document generated successfully:', {
-          type: enhancedResponse.metadata.document_type,
-          client: enhancedResponse.metadata.client_name,
-          contentSections: enhancedResponse.content.sections?.length || 0,
-          assumptions: enhancedResponse.assumptions?.length || 0
-        })
+        return Response.json({ success: true, data: enhancedResponse })
         
       } catch (enhancedError) {
         console.warn('Enhanced generation failed, falling back to standard:', enhancedError)
@@ -85,7 +78,6 @@ export async function POST(request: NextRequest) {
         }
       }
     } else {
-      console.log('Using standard prompts')
       const standardDocument = await provider.generateDocument(prompt, documentType, userContext)
       documentResponse = {
         success: true,

@@ -95,8 +95,6 @@ export default function BatchInvoicePage() {
       return generateMultiItemPrompt(row, index, context)
     })
 
-    console.log('Generated prompts:', prompts.slice(0, 2)) // Log first 2 for debugging
-
     generateMutation.mutate(
       { prompts, documentType: 'invoice', userContext: context || undefined },
       {

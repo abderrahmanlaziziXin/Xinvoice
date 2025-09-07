@@ -103,7 +103,6 @@ export class InvoicePDFGenerator {
         }
       }
 
-      console.log('PDF generated successfully, size:', dataUri.length, 'characters')
       return dataUri
       
     } catch (error) {
