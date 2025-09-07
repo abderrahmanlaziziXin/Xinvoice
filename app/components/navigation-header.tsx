@@ -1,82 +1,90 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  HomeIcon, 
-  DocumentTextIcon, 
-  ShieldCheckIcon, 
-  ClockIcon, 
+import { useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  HomeIcon,
+  DocumentTextIcon,
+  ShieldCheckIcon,
+  ClockIcon,
   CogIcon,
   ChevronDownIcon,
   Bars3Icon,
-  XMarkIcon
-} from '@heroicons/react/24/outline'
-import Link from 'next/link'
-import { LogoWithText } from './logo'
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import Link from "next/link";
+import { LogoWithText } from "./logo";
 
 interface NavigationItem {
-  name: string
-  href: string
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
-  current?: boolean
-  children?: NavigationItem[]
+  name: string;
+  href: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  current?: boolean;
+  children?: NavigationItem[];
 }
 
 export function NavigationHeader() {
-  const router = useRouter()
-  const pathname = usePathname()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const navigation: NavigationItem[] = [
     {
-      name: 'Home',
-      href: '/',
+      name: "Home",
+      href: "/",
       icon: HomeIcon,
-      current: pathname === '/'
+      current: pathname === "/",
     },
     {
-      name: 'Invoice',
-      href: '/new/invoice',
+      name: "Invoice",
+      href: "/new/invoice",
       icon: DocumentTextIcon,
-      current: pathname.startsWith('/new/invoice') || pathname.startsWith('/invoice'),
+      current:
+        pathname?.startsWith("/new/invoice") || pathname?.startsWith("/invoice"),
       children: [
-        { name: 'Single Invoice', href: '/new/invoice', icon: DocumentTextIcon },
-        { name: 'Batch Processing', href: '/new/invoice-batch', icon: DocumentTextIcon }
-      ]
+        {
+          name: "Single Invoice",
+          href: "/new/invoice",
+          icon: DocumentTextIcon,
+        },
+        {
+          name: "Batch Processing",
+          href: "/new/invoice-batch",
+          icon: DocumentTextIcon,
+        },
+      ],
     },
     {
-      name: 'NDA',
-      href: '/new/nda',
+      name: "NDA",
+      href: "/new/nda",
       icon: ShieldCheckIcon,
-      current: pathname.startsWith('/new/nda') || pathname.startsWith('/nda'),
+      current: pathname?.startsWith("/new/nda") || pathname?.startsWith("/nda"),
       children: [
-        { name: 'Create NDA', href: '/new/nda', icon: ShieldCheckIcon },
-        { name: 'AI Assisted', href: '/nda/ai-assisted', icon: ShieldCheckIcon },
-        { name: 'Editor', href: '/nda/editor', icon: ShieldCheckIcon }
-      ]
+        { name: "Create NDA", href: "/new/nda", icon: ShieldCheckIcon },
+        {
+          name: "AI Assisted",
+          href: "/nda/ai-assisted",
+          icon: ShieldCheckIcon,
+        },
+        { name: "Editor", href: "/nda/editor", icon: ShieldCheckIcon },
+      ],
     },
-    {
-      name: 'Recent',
-      href: '/recent',
-      icon: ClockIcon,
-      current: pathname === '/recent'
-    }
-  ]
+    // {
+    //   name: 'Recent',
+    //   href: '/recent',
+    //   icon: ClockIcon,
+    //   current: pathname === '/recent'
+    // }
+  ];
 
   const handleDropdownToggle = (itemName: string) => {
-    setOpenDropdown(openDropdown === itemName ? null : itemName)
-  }
+    setOpenDropdown(openDropdown === itemName ? null : itemName);
+  };
 
   return (
-    <motion.header 
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-      className="sticky top-0 z-50 w-full xinfinity-nav"
-    >
+    <header className="sticky top-0 z-50 w-full xinfinity-nav animate-slideDown">
       <div className="max-w-fibonacci mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 lg:h-20">
           {/* Logo */}
@@ -101,21 +109,22 @@ export function NavigationHeader() {
                       onClick={() => handleDropdownToggle(item.name)}
                       className={`
                         flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
-                        ${item.current 
-                          ? 'xinfinity-gradient text-white shadow-xinfinity' 
-                          : 'text-gray-700 hover:text-xinfinity-primary hover:bg-white/50'
+                        ${
+                          item.current
+                            ? "xinfinity-gradient text-white shadow-xinfinity"
+                            : "text-gray-700 hover:text-xinfinity-primary hover:bg-white/50"
                         }
                       `}
                     >
                       <item.icon className="w-4 h-4 mr-2" />
                       {item.name}
-                      <ChevronDownIcon 
+                      <ChevronDownIcon
                         className={`w-4 h-4 ml-1 transition-transform duration-200 ${
-                          openDropdown === item.name ? 'rotate-180' : ''
-                        }`} 
+                          openDropdown === item.name ? "rotate-180" : ""
+                        }`}
                       />
                     </motion.button>
-                    
+
                     <AnimatePresence>
                       {openDropdown === item.name && (
                         <motion.div
@@ -149,9 +158,10 @@ export function NavigationHeader() {
                       href={item.href}
                       className={`
                         flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
-                        ${item.current 
-                          ? 'xinfinity-gradient text-white shadow-xinfinity' 
-                          : 'text-gray-700 hover:text-xinfinity-primary hover:bg-white/50'
+                        ${
+                          item.current
+                            ? "xinfinity-gradient text-white shadow-xinfinity"
+                            : "text-gray-700 hover:text-xinfinity-primary hover:bg-white/50"
                         }
                       `}
                     >
@@ -200,7 +210,7 @@ export function NavigationHeader() {
         {isMobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
             className="lg:hidden border-t border-white/20"
@@ -214,9 +224,10 @@ export function NavigationHeader() {
                         onClick={() => handleDropdownToggle(item.name)}
                         className={`
                           flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
-                          ${item.current 
-                            ? 'xinfinity-gradient text-white shadow-xinfinity' 
-                            : 'text-gray-700 hover:text-xinfinity-primary hover:bg-white/50'
+                          ${
+                            item.current
+                              ? "xinfinity-gradient text-white shadow-xinfinity"
+                              : "text-gray-700 hover:text-xinfinity-primary hover:bg-white/50"
                           }
                         `}
                       >
@@ -224,18 +235,18 @@ export function NavigationHeader() {
                           <item.icon className="w-5 h-5 mr-3" />
                           {item.name}
                         </div>
-                        <ChevronDownIcon 
+                        <ChevronDownIcon
                           className={`w-4 h-4 transition-transform duration-200 ${
-                            openDropdown === item.name ? 'rotate-180' : ''
-                          }`} 
+                            openDropdown === item.name ? "rotate-180" : ""
+                          }`}
                         />
                       </button>
-                      
+
                       <AnimatePresence>
                         {openDropdown === item.name && (
                           <motion.div
                             initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
+                            animate={{ opacity: 1, height: "auto" }}
                             exit={{ opacity: 0, height: 0 }}
                             transition={{ duration: 0.2 }}
                             className="mt-2 ml-4 space-y-1"
@@ -246,8 +257,8 @@ export function NavigationHeader() {
                                 href={child.href}
                                 className="flex items-center px-4 py-2 rounded-lg text-sm text-gray-600 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200"
                                 onClick={() => {
-                                  setIsMobileMenuOpen(false)
-                                  setOpenDropdown(null)
+                                  setIsMobileMenuOpen(false);
+                                  setOpenDropdown(null);
                                 }}
                               >
                                 <child.icon className="w-4 h-4 mr-3" />
@@ -263,9 +274,10 @@ export function NavigationHeader() {
                       href={item.href}
                       className={`
                         flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
-                        ${item.current 
-                          ? 'xinfinity-gradient text-white shadow-xinfinity' 
-                          : 'text-gray-700 hover:text-xinfinity-primary hover:bg-white/50'
+                        ${
+                          item.current
+                            ? "xinfinity-gradient text-white shadow-xinfinity"
+                            : "text-gray-700 hover:text-xinfinity-primary hover:bg-white/50"
                         }
                       `}
                       onClick={() => setIsMobileMenuOpen(false)}
@@ -276,7 +288,7 @@ export function NavigationHeader() {
                   )}
                 </div>
               ))}
-              
+
               {/* Mobile Settings */}
               <button className="flex items-center w-full px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200">
                 <CogIcon className="w-5 h-5 mr-3" />
@@ -286,6 +298,6 @@ export function NavigationHeader() {
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.header>
-  )
+    </header>
+  );
 }

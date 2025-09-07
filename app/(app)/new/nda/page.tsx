@@ -85,7 +85,7 @@ export default function NDAEditorPage() {
 function NDAEditorContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const fromAI = searchParams.get('from') === 'ai'
+  const fromAI = searchParams?.get('from') === 'ai'
   
   const [isLoading, setIsLoading] = useState(false)
   const [aiData, setAiData] = useState<any>(null)

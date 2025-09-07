@@ -2,14 +2,32 @@
 
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { InformationCircleIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { InvoiceSchema, Invoice, InvoiceItem } from '../../packages/core'
 import { EmailWarningModal } from './modal'
-import { PDFPreviewModal } from './pdf-preview-modal'
 import { InvoicePDFGenerator } from '../lib/pdf-generator'
 import { Tooltip } from './tooltip'
 import { motion, Variants } from 'framer-motion'
+
+// Lazy load the heavy PDF preview modal
+const PDFPreviewModal = lazy(() => import('./pdf-preview-modal').then(module => ({ 
+  default: module.PDFPreviewModal 
+})))
+
+// Simple loading component for PDF modal
+function PDFModalSkeleton() {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+      <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading PDF Preview...</p>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 interface InvoiceFormProps {
   initialData?: Partial<Invoice>
@@ -617,14 +635,16 @@ export default function InvoiceForm({
         </form>
       </motion.div>
       
-      {/* PDF Preview Modal */}
+      {/* PDF Preview Modal with Lazy Loading */}
       {showPDFPreview && formData && (
-        <PDFPreviewModal
-          isOpen={showPDFPreview}
-          onClose={() => setShowPDFPreview(false)}
-          invoice={formData}
-          onDownload={() => setShowPDFPreview(false)}
-        />
+        <Suspense fallback={<PDFModalSkeleton />}>
+          <PDFPreviewModal
+            isOpen={showPDFPreview}
+            onClose={() => setShowPDFPreview(false)}
+            invoice={formData}
+            onDownload={() => setShowPDFPreview(false)}
+          />
+        </Suspense>
       )}
     </>
   )

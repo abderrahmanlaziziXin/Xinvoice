@@ -1,10 +1,10 @@
-# Document Generator MVP - Enhanced AI System
+# Xinfoice - AI-Powered Document Generation Platform
 
 A Next.js 14 application for generating professional documents (invoices, NDAs) using advanced AI assistance with enhanced structured prompts.
 
 ## Features
 
-- 🤖 **Enhanced AI-powered document generation** (GPT-4o or Google Gemini with structured prompts)
+- 🤖 **Enhanced AI-powered document generation** (Advanced AI with structured prompts)
 - ✨ **Enhanced Prompt System**: Structured AI responses with validation and professional formatting
 - 📄 **Multi-Document Support**: Invoices, NDAs, and extensible architecture for more document types
 - 🚀 **Batch Processing**: Create multiple documents simultaneously with unique numbering and intelligent parsing
@@ -15,8 +15,9 @@ A Next.js 14 application for generating professional documents (invoices, NDAs) 
 - 🏢 **Company Settings**: Context saving with AI-powered pre-filling
 - 📧 **Email Validation**: Enhanced validation with warnings and error recovery
 - 📅 **Smart Date Handling**: AI calculates due dates with context awareness
-- 📄 **Professional PDF Export**: Multi-template system (Modern/Classic/Minimal) with real-time preview
-- 🔍 **PDF Preview Modal**: Real-time preview with blob URL fallback and error handling
+- 📄 **Enhanced PDF System**: Platform-consistent themes (Primary, Neutral, Dark) with professional layouts
+- 🎨 **Advanced Templates**: Modern, Classic, and Minimal styles with branded headers and footers
+- 🔍 **Enhanced PDF Preview**: Theme selection, real-time preview with fallback error handling
 - 💾 **Session-based History**: In-memory document management
 - 🎨 **Modern UI/UX**: Glass morphism design with Framer Motion animations and 3D effects
 - 💰 **Multi-Currency Support**: 28+ currencies (USD, EUR, GBP, DZD, MAD, TND, etc.) with RTL locale support

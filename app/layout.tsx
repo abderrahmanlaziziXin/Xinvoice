@@ -6,12 +6,12 @@ import { DocumentProvider } from './context/document-context'
 import { Metadata, Viewport } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Xinfinity AI - Enhanced Document Generation Platform',
-  description: 'AI-powered document generation with advanced features, structured prompts, and multi-document support. Create professional invoices, NDAs, and more with GPT-4o intelligence.',
-  keywords: 'AI, document generation, invoice, NDA, GPT-4o, automation, business documents',
-  authors: [{ name: 'Xinfinity AI Team' }],
-  creator: 'Xinfinity AI',
-  publisher: 'Xinfinity AI',
+  title: 'Xinfoice - AI-Powered Document Generation Platform',
+  description: 'AI-powered document generation with advanced features, structured prompts, and multi-document support. Create professional invoices, NDAs, and more with intelligent automation.',
+  keywords: 'AI, document generation, invoice, NDA, automation, business documents, Xinfoice',
+  authors: [{ name: 'Xinfoice Team' }],
+  creator: 'Xinfoice',
+  publisher: 'Xinfoice',
   icons: {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },
@@ -20,15 +20,15 @@ export const metadata: Metadata = {
     apple: '/icon.svg',
   },
   openGraph: {
-    title: 'Xinfinity AI - Enhanced Document Generation Platform',
+    title: 'Xinfoice - AI-Powered Document Generation Platform',
     description: 'AI-powered document generation with advanced features, structured prompts, and multi-document support.',
     type: 'website',
     locale: 'en_US',
-    siteName: 'Xinfinity AI',
+    siteName: 'Xinfoice',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Xinfinity AI - Enhanced Document Generation Platform',
+    title: 'Xinfoice - AI-Powered Document Generation Platform',
     description: 'AI-powered document generation with advanced features, structured prompts, and multi-document support.',
   },
 }

@@ -1,45 +1,47 @@
-'use client'
+"use client";
 
-import { motion, Variants } from 'framer-motion'
-import Link from 'next/link'
-import { 
-  DocumentTextIcon, 
-  SparklesIcon, 
+import { motion, Variants } from "framer-motion";
+import Link from "next/link";
+import {
+  DocumentTextIcon,
+  SparklesIcon,
   ShieldCheckIcon,
   ArrowRightIcon,
   CloudArrowUpIcon,
   BoltIcon,
-  ChatBubbleLeftRightIcon
-} from '@heroicons/react/24/outline'
-import { Logo } from './logo'
+  ChatBubbleLeftRightIcon,
+} from "@heroicons/react/24/outline";
+import { Logo } from "./logo";
 
 export function Hero() {
   const features = [
     {
       icon: SparklesIcon,
-      title: 'AI-Powered Generation',
-      description: 'Advanced GPT-4o intelligence creates perfect documents automatically',
-      gradient: 'from-xinfinity-primary to-xinfinity-secondary'
+      title: "AI-Powered Generation",
+      description:
+        "Advanced GPT-4o intelligence creates perfect documents automatically",
+      gradient: "from-xinfinity-primary to-xinfinity-secondary",
     },
     {
       icon: CloudArrowUpIcon,
-      title: 'File Upload Support',
-      description: 'Upload CSV/Excel files and let AI handle complex batch processing',
-      gradient: 'from-xinfinity-secondary to-xinfinity-accent'
+      title: "File Upload Support",
+      description:
+        "Upload CSV/Excel files and let AI handle complex batch processing",
+      gradient: "from-xinfinity-secondary to-xinfinity-accent",
     },
     {
       icon: BoltIcon,
-      title: 'Instant Processing',
-      description: 'Generate professional documents in seconds, not hours',
-      gradient: 'from-xinfinity-accent to-xinfinity-primary-light'
+      title: "Instant Processing",
+      description: "Generate professional documents in seconds, not hours",
+      gradient: "from-xinfinity-accent to-xinfinity-primary-light",
     },
     {
       icon: ChatBubbleLeftRightIcon,
-      title: 'Natural Language',
-      description: 'Just describe what you need in plain English',
-      gradient: 'from-xinfinity-primary-light to-xinfinity-secondary-light'
-    }
-  ]
+      title: "Natural Language",
+      description: "Just describe what you need in plain English",
+      gradient: "from-xinfinity-primary-light to-xinfinity-secondary-light",
+    },
+  ];
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -47,10 +49,10 @@ export function Hero() {
       opacity: 1,
       transition: {
         staggerChildren: 0.2,
-        delayChildren: 0.3
-      }
-    }
-  }
+        delayChildren: 0.3,
+      },
+    },
+  };
 
   const itemVariants: Variants = {
     hidden: { opacity: 0, y: 30 },
@@ -59,10 +61,10 @@ export function Hero() {
       y: 0,
       transition: {
         duration: 0.6,
-        ease: "easeOut"
-      }
-    }
-  }
+        ease: "easeOut",
+      },
+    },
+  };
 
   const floatingVariants: Variants = {
     float: {
@@ -70,17 +72,17 @@ export function Hero() {
       transition: {
         duration: 6,
         repeat: Infinity,
-        ease: "easeInOut"
-      }
-    }
-  }
+        ease: "easeInOut",
+      },
+    },
+  };
 
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Dynamic Background with Fibonacci-inspired gradients */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50" />
-        
+
         {/* Fibonacci-positioned floating orbs */}
         <motion.div
           variants={floatingVariants}
@@ -90,16 +92,16 @@ export function Hero() {
         <motion.div
           variants={floatingVariants}
           animate="float"
-          style={{ animationDelay: '2s' }}
+          style={{ animationDelay: "2s" }}
           className="absolute top-3/5 right-1/5 w-55 h-55 bg-gradient-to-r from-xinfinity-secondary/20 to-xinfinity-accent/20 rounded-full blur-3xl"
         />
         <motion.div
           variants={floatingVariants}
           animate="float"
-          style={{ animationDelay: '4s' }}
+          style={{ animationDelay: "4s" }}
           className="absolute bottom-1/4 left-1/2 w-34 h-34 bg-gradient-to-r from-xinfinity-accent/20 to-xinfinity-primary-light/20 rounded-full blur-3xl"
         />
-        
+
         {/* Grid Pattern with Fibonacci spacing */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(30,64,175,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(30,64,175,0.03)_1px,transparent_1px)] bg-[size:21px_21px]" />
       </div>
@@ -117,9 +119,9 @@ export function Hero() {
             variants={itemVariants}
             className="inline-flex items-center px-6 py-3 rounded-full xinfinity-card mb-8"
           >
-            <Logo size="sm" animated={true} className="mr-3" />
+            <Logo size="md" animated={true} className="mr-3" />
             <span className="text-sm font-medium xinfinity-text-gradient">
-              Powered by GPT-4o Advanced AI
+              Powered by Advanced AI
             </span>
           </motion.div>
 
@@ -128,11 +130,8 @@ export function Hero() {
             variants={itemVariants}
             className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight"
           >
-            <span className="block xinfinity-text-gradient mb-2">
-              AI-Powered
-            </span>
             <span className="block bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent">
-              Document Creation
+              AI Document Creation
             </span>
           </motion.h1>
 
@@ -141,8 +140,9 @@ export function Hero() {
             variants={itemVariants}
             className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed"
           >
-            Transform your document creation process with intelligent AI that understands context, 
-            generates professional content, and saves you hours of work.
+            Transform your document creation process with intelligent AI that
+            understands context, generates professional content, and saves you
+            hours of work.
           </motion.p>
 
           {/* CTA Buttons with Fibonacci spacing */}
@@ -155,9 +155,9 @@ export function Hero() {
               Create Invoice
               <ArrowRightIcon className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
             </Link>
-            
-            <Link 
-              href="/new/nda" 
+
+            <Link
+              href="/new/nda"
               className="px-8 py-3 rounded-lg font-medium text-xinfinity-primary border-2 border-xinfinity-primary/20 hover:border-xinfinity-primary/40 bg-white/50 hover:bg-white/70 transition-all duration-300 backdrop-blur-sm group"
             >
               <ShieldCheckIcon className="w-5 h-5 mr-2 inline-block" />
@@ -174,13 +174,15 @@ export function Hero() {
               <motion.div
                 key={feature.title}
                 variants={itemVariants}
-                whileHover={{ 
+                whileHover={{
                   y: -8,
-                  transition: { duration: 0.3 }
+                  transition: { duration: 0.3 },
                 }}
                 className="xinfinity-card group cursor-pointer"
               >
-                <div className={`inline-flex p-3 rounded-xl bg-gradient-to-r ${feature.gradient} mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                <div
+                  className={`inline-flex p-3 rounded-xl bg-gradient-to-r ${feature.gradient} mb-4 group-hover:scale-110 transition-transform duration-300`}
+                >
                   <feature.icon className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">
@@ -199,41 +201,50 @@ export function Hero() {
             className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8"
           >
             {[
-              { label: 'Documents Generated', value: '10,000+', gradient: 'from-xinfinity-primary to-xinfinity-secondary' },
-              { label: 'Time Saved', value: '500+ Hours', gradient: 'from-xinfinity-secondary to-xinfinity-accent' },
-              { label: 'User Satisfaction', value: '99.5%', gradient: 'from-xinfinity-accent to-xinfinity-primary-light' }
+              {
+                label: "Documents Generated",
+                value: "10,000+",
+                gradient: "from-xinfinity-primary to-xinfinity-secondary",
+              },
+              {
+                label: "Time Saved",
+                value: "500+ Hours",
+                gradient: "from-xinfinity-secondary to-xinfinity-accent",
+              },
+              {
+                label: "User Satisfaction",
+                value: "99.5%",
+                gradient: "from-xinfinity-accent to-xinfinity-primary-light",
+              },
             ].map((stat, index) => (
               <motion.div
                 key={stat.label}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ 
-                  duration: 0.6, 
-                  delay: 0.8 + (index * 0.2),
-                  ease: [0.4, 0, 0.2, 1]
+                transition={{
+                  duration: 0.6,
+                  delay: 0.8 + index * 0.2,
+                  ease: [0.4, 0, 0.2, 1],
                 }}
                 className="text-center"
               >
-                <div className={`text-4xl md:text-5xl font-bold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent mb-2`}>
+                <div
+                  className={`text-4xl md:text-5xl font-bold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent mb-2`}
+                >
                   {stat.value}
                 </div>
-                <div className="text-gray-600 font-medium">
-                  {stat.label}
-                </div>
+                <div className="text-gray-600 font-medium">{stat.label}</div>
               </motion.div>
             ))}
           </motion.div>
 
           {/* Bottom CTA */}
-          <motion.div
-            variants={itemVariants}
-            className="mt-16 text-center"
-          >
+          <motion.div variants={itemVariants} className="mt-16 text-center">
             <p className="text-gray-600 mb-6">
               Ready to revolutionize your document workflow?
             </p>
-            <Link 
-              href="/test/enhanced" 
+            <Link
+              href="/test/enhanced"
               className="inline-flex items-center text-xinfinity-primary hover:text-xinfinity-secondary font-medium group transition-colors duration-200"
             >
               Try Enhanced Features
@@ -243,5 +254,5 @@ export function Hero() {
         </motion.div>
       </div>
     </div>
-  )
+  );
 }

@@ -60,7 +60,7 @@ function EnhancedTestContent() {
 
   // Set document type from URL parameter
   useEffect(() => {
-    const typeParam = searchParams.get('type')
+    const typeParam = searchParams?.get('type')
     if (typeParam === 'nda' || typeParam === 'invoice') {
       setDocumentType(typeParam)
     }
@@ -264,7 +264,7 @@ function EnhancedTestContent() {
             </h1>
           </div>
           <p className="text-xinfinity-muted text-lg">
-            Create professional documents with AI-powered intelligence and optional parameters
+            Create professional documents with Xinfoice&apos;s AI-powered intelligence and optional parameters
           </p>
         </motion.div>
 
