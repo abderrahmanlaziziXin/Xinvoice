@@ -71,6 +71,12 @@ export function NavigationHeader() {
         { name: "Editor", href: "/nda/editor", icon: ShieldCheckIcon },
       ],
     },
+    {
+      name: "Multilingual",
+      href: "/demo/multilang-pdf",
+      icon: CogIcon,
+      current: pathname?.startsWith("/demo/multilang"),
+    },
     // {
     //   name: 'Recent',
     //   href: '/recent',

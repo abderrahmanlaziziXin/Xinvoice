@@ -83,3 +83,23 @@ export function usePersistedCurrency() {
 export function usePersistedLocale() {
   return useLocalStorage<string>('lastUsedLocale', 'en-US')
 }
+
+export function usePersistedSettings() {
+  const { settings } = usePersistedUserSettings()
+  
+  return {
+    userContext: {
+      companyName: settings.companyName || '',
+      companyAddress: settings.companyAddress || '',
+      companyEmail: settings.companyEmail || '',
+      companyPhone: settings.companyPhone || '',
+      defaultCurrency: settings.defaultCurrency || 'USD',
+      defaultLocale: settings.defaultLocale || 'en-US',
+      defaultTaxRate: settings.defaultTaxRate || 0,
+      logoUrl: settings.logoUrl || '',
+      website: settings.website || '',
+      taxNumber: settings.taxNumber || '',
+      bankDetails: settings.bankDetails || {}
+    }
+  }
+}

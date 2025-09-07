@@ -4,7 +4,7 @@ import { z } from 'zod'
 export const CurrencySchema = z.enum([
   'USD', 'EUR', 'GBP', 'CAD', 'AUD', 'JPY', 'CHF', 'SEK', 'NOK', 'DKK',
   'PLN', 'CZK', 'HUF', 'RUB', 'CNY', 'INR', 'BRL', 'MXN', 'ZAR', 'DZD',
-  'MAD', 'TND', 'EGP', 'NGN', 'KES', 'GHS', 'XOF', 'XAF'
+  'MAD', 'TND', 'EGP', 'NGN', 'KES', 'GHS', 'XOF', 'XAF', 'SAR'
 ])
 
 export const LocaleSchema = z.enum([

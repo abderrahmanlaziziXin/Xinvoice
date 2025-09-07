@@ -1,6 +1,6 @@
 import OpenAI from 'openai'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { DocumentType, UserContext } from './schemas'
+import { DocumentType, UserContext, Locale } from './schemas'
 import { 
   generateEnhancedSystemPrompt, 
   generateEnhancedBatchSystemPrompt,
@@ -8,11 +8,21 @@ import {
   type EnhancedDocumentResponse 
 } from './enhanced-prompts'
 
+// Multilingual support
+import { 
+  generateMultilingualSystemPrompt,
+  generateMultilingualBatchSystemPrompt,
+  type MultilingualPromptOptions,
+  type LocalizedDocumentResponse
+} from '../../app/lib/i18n/multilingual-prompts'
+
 export interface LLMProvider {
   generateDocument(prompt: string, documentType: DocumentType, userContext?: UserContext): Promise<any>
   generateBatchDocuments?(prompts: string[], documentType: DocumentType, userContext?: UserContext): Promise<any[]>
   generateEnhancedDocument?(prompt: string, documentType: DocumentType, userContext?: UserContext): Promise<EnhancedDocumentResponse>
   generateEnhancedBatchDocuments?(prompts: string[], documentType: DocumentType, userContext?: UserContext): Promise<EnhancedDocumentResponse[]>
+  generateMultilingualDocument?(prompt: string, options: MultilingualPromptOptions, userContext?: UserContext): Promise<LocalizedDocumentResponse>
+  generateMultilingualBatchDocuments?(prompts: string[], options: MultilingualPromptOptions, userContext?: UserContext): Promise<LocalizedDocumentResponse[]>
 }
 
 export class OpenAIProvider implements LLMProvider {
@@ -138,9 +148,70 @@ Process each request and return the structured batch response format.`
         validateEnhancedResponse(doc, documentType)
       )
     }
+
+    throw new Error('Invalid batch response format')
+  }
+
+  async generateMultilingualDocument(prompt: string, options: MultilingualPromptOptions, userContext?: UserContext): Promise<LocalizedDocumentResponse> {
+    const systemPrompt = generateMultilingualSystemPrompt(options)
     
-    // Fallback to single document array
-    return Array.isArray(result) ? result : [result]
+    const completion = await this.openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: prompt }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7
+    })
+
+    const content = completion.choices[0]?.message?.content
+    if (!content) {
+      throw new Error('No response from OpenAI')
+    }
+
+    const response = JSON.parse(content)
+    
+    // Validate the response structure
+    if (!response.metadata || !response.content || !response.formatted_document) {
+      throw new Error('Invalid multilingual document response format')
+    }
+
+    return response as LocalizedDocumentResponse
+  }
+
+  async generateMultilingualBatchDocuments(prompts: string[], options: MultilingualPromptOptions, userContext?: UserContext): Promise<LocalizedDocumentResponse[]> {
+    const systemPrompt = generateMultilingualBatchSystemPrompt(options)
+    
+    // Create a single prompt with all the individual prompts
+    const batchPrompt = `Generate ${options.documentType}s in ${options.locale} for the following requests:
+
+${prompts.map((prompt, index) => `${index + 1}. ${prompt}`).join('\n')}
+
+Return a JSON object with the batch structure as specified.`
+
+    const completion = await this.openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: batchPrompt }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7
+    })
+
+    const content = completion.choices[0]?.message?.content
+    if (!content) {
+      throw new Error('No response from OpenAI')
+    }
+
+    const batchResponse = JSON.parse(content)
+    
+    if (!batchResponse.documents || !Array.isArray(batchResponse.documents)) {
+      throw new Error('Invalid batch response format')
+    }
+
+    return batchResponse.documents as LocalizedDocumentResponse[]
   }
 
   private getSystemPrompt(documentType: DocumentType, userContext?: UserContext): string {

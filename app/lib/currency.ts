@@ -31,7 +31,8 @@ export const CURRENCY_SYMBOLS: Record<Currency, string> = {
   'KES': 'KSh',
   'GHS': '₵',
   'XOF': 'CFA',
-  'XAF': 'FCFA'
+  'XAF': 'FCFA',
+  'SAR': 'ر.س'
 }
 
 /**
@@ -65,7 +66,8 @@ export const CURRENCY_NAMES: Record<Currency, string> = {
   'KES': 'Kenyan Shilling',
   'GHS': 'Ghanaian Cedi',
   'XOF': 'West African CFA Franc',
-  'XAF': 'Central African CFA Franc'
+  'XAF': 'Central African CFA Franc',
+  'SAR': 'Saudi Riyal'
 }
 
 /**

@@ -51,8 +51,12 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     
+    let prompt: string, documentType: 'invoice' | 'nda', userContext: any
     try {
-      const { prompt, documentType, userContext } = GenerateRequestSchema.parse(body)
+      const parsed = GenerateRequestSchema.parse(body)
+      prompt = parsed.prompt
+      documentType = parsed.documentType
+      userContext = parsed.userContext
     } catch (parseError) {
       console.error('Schema validation error:', parseError)
       return NextResponse.json(
@@ -60,8 +64,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
-    
-    const { prompt, documentType, userContext } = GenerateRequestSchema.parse(body)
 
     // Get environment variables
     const llmProvider = process.env.LLM_PROVIDER as 'openai' | 'gemini'
