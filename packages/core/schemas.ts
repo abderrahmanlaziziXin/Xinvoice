@@ -38,7 +38,11 @@ export const UserContextSchema = z.object({
     bankName: z.string().optional(),
     iban: z.string().optional(),
     swift: z.string().optional()
-  }).optional()
+  }).optional(),
+  // Multilingual support properties
+  languageInstruction: z.string().optional(),
+  outputLanguage: LocaleSchema.optional(),
+  culturalContext: z.string().optional()
 })
 
 // Invoice schemas

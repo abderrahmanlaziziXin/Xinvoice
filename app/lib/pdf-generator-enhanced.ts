@@ -427,14 +427,27 @@ export class EnhancedInvoicePDFGenerator {
       if (isTotal) {
         this.pdf.setFont(this.theme.fonts.primary, 'bold')
         this.pdf.setFontSize(FONT_SCALE.subheading)
-        const [primaryR, primaryG, primaryB] = hexToRgbNormalized(this.theme.colors.primary)
-        this.pdf.setTextColor(primaryR, primaryG, primaryB)
+        // Use a more visible color for the total - ensure it's never black
+        // If primary is too dark, use the text color instead
+        const primaryColor = this.theme.colors.primary
+        const textColor = this.theme.colors.text
+        
+        // Use text color if primary is too dark (close to black)
+        const colorToUse = primaryColor === '#000000' || primaryColor === '#000' ? textColor : primaryColor
+        const [colorR, colorG, colorB] = hexToRgbNormalized(colorToUse)
+        this.pdf.setTextColor(colorR, colorG, colorB)
       }
       
       this.pdf.text(label, summaryX, this.currentY, { align: 'left' })
       this.pdf.text(value, summaryX + summaryWidth, this.currentY, { align: 'right' })
       this.currentY += SPACING_SCALE.md + 2
     })
+
+    // Reset text color and font after total section
+    const [textR, textG, textB] = hexToRgbNormalized(this.theme.colors.text)
+    this.pdf.setTextColor(textR, textG, textB)
+    this.pdf.setFont(this.theme.fonts.primary, 'normal')
+    this.pdf.setFontSize(FONT_SCALE.body)
 
     this.currentY += SPACING_SCALE.xl
   }

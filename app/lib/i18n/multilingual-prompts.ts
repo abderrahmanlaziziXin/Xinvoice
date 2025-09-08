@@ -90,6 +90,13 @@ CRITICAL MULTILINGUAL RULES:
 9. Ensure all dates, addresses, and contact information follow local formats
 10. Apply proper ${supportedLocale} grammar, punctuation, and capitalization rules
 
+PERSONAL INFORMATION PRESERVATION:
+- NEVER translate or modify: names, company names, email addresses, phone numbers, street addresses, or any personal identifiers
+- Keep all proper nouns (person names, company names, brand names) exactly as provided in the original text
+- Preserve original contact information, addresses, and identification numbers
+- Only translate: labels, descriptions, terms and conditions, legal text, and general content
+- Example: "John Smith from TechCorp Inc." becomes "Jean Smith de TechCorp Inc." (name preserved, preposition translated)
+
 ${getDocumentSpecificMultilingualInstructions(documentType, supportedLocale)}
 
 RESPONSE FORMAT:
