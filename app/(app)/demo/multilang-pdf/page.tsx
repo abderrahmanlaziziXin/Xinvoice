@@ -16,6 +16,7 @@ import { useToast } from '../../../hooks/use-toast'
 import { LoadingSpinner } from '../../../components/loading'
 import { Logo } from '../../../components/logo'
 import { CompanySettings } from '../../../components/company-settings'
+import { FileUpload } from '../../../components/file-upload'
 import { DocumentType, Locale, InvoiceSchema, NDASchema, Invoice, NDA } from '../../../../packages/core'
 import { 
   DocumentTextIcon, 
@@ -29,7 +30,8 @@ import {
   Cog6ToothIcon,
   ClipboardDocumentListIcon,
   DocumentDuplicateIcon,
-  BeakerIcon
+  BeakerIcon,
+  DocumentArrowUpIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 
@@ -121,6 +123,8 @@ export default function MultilingualDocumentPlatform() {
   const [prompt, setPrompt] = useState('')
   const [batchPrompts, setBatchPrompts] = useState<string[]>([''])
   const [mode, setMode] = useState<'single' | 'batch'>('single')
+  const [batchInputMode, setBatchInputMode] = useState<'text' | 'file'>('text')
+  const [uploadedData, setUploadedData] = useState<any[]>([])
   const [generatedDocument, setGeneratedDocument] = useState<any>(null)
   const [generatedBatch, setGeneratedBatch] = useState<any>(null)
   const [showForm, setShowForm] = useState(false)
@@ -130,6 +134,10 @@ export default function MultilingualDocumentPlatform() {
   const [isMounted, setIsMounted] = useState(false)
   const [showPDFPreview, setShowPDFPreview] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
+  
+  // New state for batch editing
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [editData, setEditData] = useState<any>(null)
 
   // Ensure component is mounted before allowing operations
   useEffect(() => {
@@ -175,9 +183,9 @@ export default function MultilingualDocumentPlatform() {
             defaultCurrency: userContext?.defaultCurrency as any,
             defaultLocale: userContext?.defaultLocale as any,
             // Add language instruction to ensure AI responds in selected language
-            languageInstruction: `Please generate the response in ${selectedLocaleData?.name || 'English'} language (${selectedLocale}), regardless of the input language.`,
+            languageInstruction: `Please generate the response in ${selectedLocaleData?.label || 'English'} language (${selectedLocale}), regardless of the input language.`,
             outputLanguage: selectedLocale,
-            culturalContext: selectedLocaleData?.name
+            culturalContext: selectedLocaleData?.label
           }
         })
 
@@ -369,7 +377,7 @@ export default function MultilingualDocumentPlatform() {
               _originalApiResponse: originalData,
               _processedAt: new Date().toISOString(),
               _selectedLanguage: selectedLocale,
-              _languageContext: selectedLocaleData?.name
+              _languageContext: selectedLocaleData?.label
             }
             
             // Auto-calculate missing financial data based on extracted items
@@ -442,7 +450,9 @@ export default function MultilingualDocumentPlatform() {
       // Batch mode
       const validPrompts = batchPrompts.filter(p => p.trim())
       if (validPrompts.length === 0) {
-        error('Please enter at least one prompt for batch generation')
+        error(batchInputMode === 'file' 
+          ? 'Please upload a file first'
+          : 'Please enter at least one prompt for batch generation')
         return
       }
 
@@ -454,7 +464,9 @@ export default function MultilingualDocumentPlatform() {
       try {
         console.log('🚀 Starting batch generation...', { 
           prompts: validPrompts, 
-          documentType: selectedDocumentType 
+          documentType: selectedDocumentType,
+          inputMode: batchInputMode,
+          uploadedDataCount: uploadedData.length
         })
         
         const result = await generateBatch.mutateAsync({
@@ -465,9 +477,9 @@ export default function MultilingualDocumentPlatform() {
             defaultCurrency: userContext?.defaultCurrency as any,
             defaultLocale: userContext?.defaultLocale as any,
             // Add language instruction for batch processing
-            languageInstruction: `Please generate all responses in ${selectedLocaleData?.name || 'English'} language (${selectedLocale}), regardless of the input language.`,
+            languageInstruction: `Please generate all responses in ${selectedLocaleData?.label || 'English'} language (${selectedLocale}), regardless of the input language.`,
             outputLanguage: selectedLocale,
-            culturalContext: selectedLocaleData?.name
+            culturalContext: selectedLocaleData?.label
           }
         })
 
@@ -499,6 +511,91 @@ export default function MultilingualDocumentPlatform() {
   const handleDocumentSave = (documentData: Invoice | NDA) => {
     console.log('Document saved:', documentData)
     success('Document saved successfully!')
+  }
+
+  const handleFileUpload = async (data: any[]) => {
+    try {
+      console.log('📂 File uploaded with data:', data)
+      
+      if (!data || data.length === 0) {
+        error('No data found in uploaded file')
+        return
+      }
+
+      // Store uploaded data and switch to file mode
+      setUploadedData(data)
+      setBatchInputMode('file')
+      
+      // Convert uploaded data to prompts for batch generation
+      const generatedPrompts = data.map((row, index) => {
+        if (selectedDocumentType === 'invoice') {
+          return `Create an invoice for ${row.client_name || row.customer || row.to || `Client ${index + 1}`} with amount ${row.total || row.amount || 'TBD'} ${row.currency || 'USD'}. ${row.description || row.services || row.items || ''}`
+        } else if (selectedDocumentType === 'nda') {
+          return `Create an NDA between ${row.party1 || row.disclosing_party || 'Company A'} and ${row.party2 || row.receiving_party || 'Company B'}. ${row.purpose || row.description || ''}`
+        }
+        return `Create a ${selectedDocumentType} document with the following data: ${JSON.stringify(row)}`
+      })
+
+      setBatchPrompts(generatedPrompts)
+      success(`📂 Uploaded ${data.length} records! Ready for batch generation.`)
+      
+    } catch (error) {
+      console.error('File upload error:', error)
+      error('Failed to process uploaded file')
+    }
+  }
+
+  const handleEditDocument = (index: number, document: any) => {
+    setEditingIndex(index)
+    setEditData({ ...document })
+  }
+
+  const handleSaveEdit = (updatedDocument: any) => {
+    if (editingIndex !== null && generatedBatch) {
+      const updatedDocuments = [...generatedBatch.documents]
+      updatedDocuments[editingIndex] = updatedDocument
+      setGeneratedBatch({
+        ...generatedBatch,
+        documents: updatedDocuments
+      })
+      setEditingIndex(null)
+      setEditData(null)
+      success('Document updated successfully!')
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setEditingIndex(null)
+    setEditData(null)
+  }
+
+  const handleDeleteDocument = (index: number) => {
+    if (generatedBatch && window.confirm('Are you sure you want to delete this document?')) {
+      const updatedDocuments = generatedBatch.documents.filter((_: any, i: number) => i !== index)
+      setGeneratedBatch({
+        ...generatedBatch,
+        documents: updatedDocuments,
+        count: updatedDocuments.length
+      })
+      success('Document deleted successfully!')
+    }
+  }
+
+  const handleDownloadAllBatch = async () => {
+    if (!generatedBatch?.documents || generatedBatch.documents.length === 0) {
+      error('No documents to download')
+      return
+    }
+
+    try {
+      const { downloadMultiplePDFsAsZip } = await import('../../../lib/pdf-generator')
+      toast.loading('📦 Creating ZIP file with all PDFs...', { id: 'download-batch' })
+      await downloadMultiplePDFsAsZip(generatedBatch.documents, `batch-${selectedDocumentType}s-${selectedLocale}`)
+      toast.success('✅ ZIP file downloaded successfully!', { id: 'download-batch' })
+    } catch (error) {
+      console.error('Download error:', error)
+      toast.error('❌ Failed to download ZIP file', { id: 'download-batch' })
+    }
   }
 
   const handleDownloadPDF = async (document?: any) => {
@@ -547,6 +644,47 @@ export default function MultilingualDocumentPlatform() {
           URL.revokeObjectURL(url)
           
           success('Invoice PDF downloaded successfully!')
+        } else {
+          throw new Error('Browser environment not available')
+        }
+      } else if (selectedDocumentType === 'nda') {
+        // Use the NDA PDF generator
+        const { NDAPDFGenerator } = await import('../../../lib/nda-pdf-generator')
+        
+        // Map AI-generated data to NDA format
+        const ndaData = {
+          disclosingParty: {
+            name: docToDownload.disclosingParty?.name || docToDownload.party1 || docToDownload.from?.name || 'Company A',
+            address: docToDownload.disclosingParty?.address || docToDownload.party1_address || docToDownload.from?.address || '',
+            type: docToDownload.disclosingParty?.type || 'corporation'
+          },
+          receivingParty: {
+            name: docToDownload.receivingParty?.name || docToDownload.party2 || docToDownload.to?.name || 'Company B',
+            address: docToDownload.receivingParty?.address || docToDownload.party2_address || docToDownload.to?.address || '',
+            type: docToDownload.receivingParty?.type || 'corporation'
+          },
+          title: docToDownload.title || 'Non-Disclosure Agreement',
+          effectiveDate: docToDownload.effectiveDate || docToDownload.date || new Date().toISOString().split('T')[0],
+          terminationDate: docToDownload.terminationDate || '',
+          governingLaw: docToDownload.governingLaw || docToDownload.jurisdiction || 'California',
+          confidentialityLevel: docToDownload.confidentialityLevel || 'standard',
+          purpose: docToDownload.purpose || docToDownload.description || 'Business collaboration',
+          definitions: docToDownload.definitions || docToDownload.confidential_information || 'All proprietary information shared between parties',
+          confidentialityObligations: docToDownload.confidentialityObligations || docToDownload.obligations || 'Standard confidentiality obligations apply',
+          exclusions: docToDownload.exclusions || 'Information in public domain',
+          termClause: docToDownload.termClause || docToDownload.term || 'This agreement shall remain in effect for the duration specified',
+          governingLawClause: docToDownload.governingLawClause || `This agreement shall be governed by the laws of ${docToDownload.governingLaw || 'California'}`,
+          additionalTerms: docToDownload.additionalTerms || '',
+          specialProvisions: docToDownload.specialProvisions || ''
+        }
+        
+        const pdfGenerator = new NDAPDFGenerator(ndaData, 'modern')
+        const pdfDoc = pdfGenerator.generate()
+        
+        // Download the PDF
+        if (typeof window !== 'undefined' && window.document) {
+          pdfDoc.save(`nda_${ndaData.disclosingParty.name.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.pdf`)
+          success('NDA PDF downloaded successfully!')
         } else {
           throw new Error('Browser environment not available')
         }
@@ -631,7 +769,9 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
 
   const isButtonDisabled = mode === 'single' 
     ? !prompt.trim() || isGenerating
-    : batchPrompts.filter(p => p.trim()).length === 0 || isGenerating
+    : (batchInputMode === 'file' 
+        ? uploadedData.length === 0 || isGenerating
+        : batchPrompts.filter(p => p.trim()).length === 0 || isGenerating)
 
   return (
     <div className="min-h-screen xinfinity-background relative overflow-hidden">
@@ -823,6 +963,77 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                       </div>
                     </div>
 
+                    {/* Batch Input Mode (only show when batch mode is selected) */}
+                    {mode === 'batch' && (
+                      <div className="xinfinity-card p-6">
+                        <div className="flex items-center mb-4">
+                          <DocumentArrowUpIcon className="w-5 h-5 text-xinfinity-primary mr-2" />
+                          <h3 className="text-lg font-semibold text-xinfinity-foreground">Batch Input Method</h3>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            onClick={() => setBatchInputMode('text')}
+                            className={`p-4 rounded-xl border-2 transition-all text-center ${
+                              batchInputMode === 'text'
+                                ? 'border-xinfinity-primary bg-xinfinity-primary/5 text-xinfinity-primary'
+                                : 'border-xinfinity-border hover:border-xinfinity-primary/50 text-xinfinity-foreground hover:bg-xinfinity-surface/50'
+                            }`}
+                          >
+                            <div className="flex flex-col items-center space-y-2">
+                              <DocumentTextIcon className={`w-6 h-6 ${batchInputMode === 'text' ? 'text-xinfinity-primary' : 'text-xinfinity-muted'}`} />
+                              <div>
+                                <h4 className="font-medium">Manual Input</h4>
+                                <p className="text-xs text-xinfinity-muted">Type prompts manually</p>
+                              </div>
+                            </div>
+                          </button>
+                          <button
+                            onClick={() => setBatchInputMode('file')}
+                            className={`p-4 rounded-xl border-2 transition-all text-center ${
+                              batchInputMode === 'file'
+                                ? 'border-xinfinity-primary bg-xinfinity-primary/5 text-xinfinity-primary'
+                                : 'border-xinfinity-border hover:border-xinfinity-primary/50 text-xinfinity-foreground hover:bg-xinfinity-surface/50'
+                            }`}
+                          >
+                            <div className="flex flex-col items-center space-y-2">
+                              <DocumentArrowUpIcon className={`w-6 h-6 ${batchInputMode === 'file' ? 'text-xinfinity-primary' : 'text-xinfinity-muted'}`} />
+                              <div>
+                                <h4 className="font-medium">File Upload</h4>
+                                <p className="text-xs text-xinfinity-muted">Upload CSV/Excel</p>
+                              </div>
+                            </div>
+                          </button>
+                        </div>
+                        
+                        {batchInputMode === 'file' && (
+                          <div className="mt-4">
+                            <FileUpload
+                              onFileProcessed={(result) => {
+                                if (result.success && result.data) {
+                                  handleFileUpload(result.data)
+                                } else {
+                                  error(result.error || 'Failed to process uploaded file')
+                                }
+                              }}
+                              onError={(errorMsg) => error(errorMsg)}
+                              accept=".csv,.xlsx,.xls"
+                              className="border-2 border-dashed border-xinfinity-border hover:border-xinfinity-primary rounded-xl p-6"
+                            />
+                            {uploadedData.length > 0 && (
+                              <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                <div className="text-sm text-green-800">
+                                  ✅ <strong>{uploadedData.length}</strong> records uploaded successfully!
+                                </div>
+                                <div className="text-xs text-green-600 mt-1">
+                                  Data has been converted to prompts for batch generation.
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {/* Options */}
                     <div className="xinfinity-card p-6">
                       <h3 className="text-lg font-semibold text-xinfinity-foreground mb-4">Generation Options</h3>
@@ -910,49 +1121,104 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                     ) : (
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-semibold text-xinfinity-foreground">Batch Prompts</h3>
-                          <button
-                            onClick={loadSamplePrompt}
-                            className="px-3 py-1 text-xs bg-xinfinity-surface hover:bg-xinfinity-border rounded-lg transition-colors"
-                          >
-                            Load Sample
-                          </button>
+                          <h3 className="text-lg font-semibold text-xinfinity-foreground">
+                            {batchInputMode === 'file' ? 'File-Based Batch Generation' : 'Batch Prompts'}
+                          </h3>
+                          {batchInputMode === 'text' && (
+                            <button
+                              onClick={loadSamplePrompt}
+                              className="px-3 py-1 text-xs bg-xinfinity-surface hover:bg-xinfinity-border rounded-lg transition-colors"
+                            >
+                              Load Sample
+                            </button>
+                          )}
                         </div>
-                        {batchPrompts.map((batchPrompt, index) => (
-                          <div key={index} className="flex gap-3">
-                            <div className="flex-1 relative">
-                              <textarea
-                                value={batchPrompt}
-                                onChange={(e) => updateBatchPrompt(index, e.target.value)}
-                                placeholder={`${currentDocType?.label} ${index + 1} in any language - output in ${selectedLocaleData?.label}...`}
-                                className="w-full h-24 p-4 border border-xinfinity-border rounded-xl resize-none focus:ring-2 focus:ring-xinfinity-primary focus:border-transparent bg-white"
-                                dir={isRTL ? 'rtl' : 'ltr'}
-                              />
-                              <div className="absolute top-2 left-2">
-                                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-xinfinity-primary/10 text-xinfinity-primary">
-                                  #{index + 1}
-                                </span>
+
+                        {batchInputMode === 'file' ? (
+                          // File-based batch input
+                          <div className="space-y-4">
+                            {uploadedData.length > 0 ? (
+                              <div className="space-y-4">
+                                <div className="xinfinity-card p-4 bg-blue-50 border border-blue-200">
+                                  <h4 className="font-medium text-blue-800 mb-2">
+                                    📂 Ready to generate {uploadedData.length} documents
+                                  </h4>
+                                  <p className="text-sm text-blue-700">
+                                    Your uploaded data has been converted to generation prompts. 
+                                    Click "Generate" to create all documents in {selectedLocaleData?.label}.
+                                  </p>
+                                </div>
+                                
+                                {/* Show preview of generated prompts */}
+                                <details className="xinfinity-card p-4">
+                                  <summary className="cursor-pointer font-medium text-xinfinity-foreground hover:text-xinfinity-primary">
+                                    🔍 Preview Generated Prompts ({batchPrompts.length})
+                                  </summary>
+                                  <div className="mt-3 space-y-2 max-h-48 overflow-y-auto">
+                                    {batchPrompts.slice(0, 5).map((prompt, index) => (
+                                      <div key={index} className="p-2 bg-xinfinity-surface/50 rounded text-sm">
+                                        <span className="font-medium text-xinfinity-primary">#{index + 1}:</span> {prompt.substring(0, 100)}...
+                                      </div>
+                                    ))}
+                                    {batchPrompts.length > 5 && (
+                                      <div className="text-xs text-xinfinity-muted text-center">
+                                        ... and {batchPrompts.length - 5} more prompts
+                                      </div>
+                                    )}
+                                  </div>
+                                </details>
                               </div>
-                            </div>
-                            {batchPrompts.length > 1 && (
-                              <button
-                                onClick={() => removeBatchPrompt(index)}
-                                className="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors self-start"
-                                title="Remove prompt"
-                              >
-                                <TrashIcon className="w-5 h-5" />
-                              </button>
+                            ) : (
+                              <div className="text-center py-8">
+                                <DocumentArrowUpIcon className="w-12 h-12 text-xinfinity-muted mx-auto mb-3" />
+                                <h4 className="font-medium text-xinfinity-foreground mb-2">Upload a file to get started</h4>
+                                <p className="text-sm text-xinfinity-muted">
+                                  Go to the "Batch Input Method" section above and select "File Upload" 
+                                  to upload your CSV or Excel file.
+                                </p>
+                              </div>
                             )}
                           </div>
-                        ))}
-                        <button
-                          onClick={addBatchPrompt}
-                          disabled={batchPrompts.length >= 10}
-                          className="w-full py-3 px-4 border-2 border-dashed border-xinfinity-border hover:border-xinfinity-primary rounded-xl text-xinfinity-muted hover:text-xinfinity-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <PlusIcon className="w-5 h-5 mx-auto mb-1" />
-                          Add Another Prompt ({batchPrompts.length}/10)
-                        </button>
+                        ) : (
+                          // Text-based batch input
+                          <>
+                            {batchPrompts.map((batchPrompt, index) => (
+                              <div key={index} className="flex gap-3">
+                                <div className="flex-1 relative">
+                                  <textarea
+                                    value={batchPrompt}
+                                    onChange={(e) => updateBatchPrompt(index, e.target.value)}
+                                    placeholder={`${currentDocType?.label} ${index + 1} in any language - output in ${selectedLocaleData?.label}...`}
+                                    className="w-full h-24 p-4 border border-xinfinity-border rounded-xl resize-none focus:ring-2 focus:ring-xinfinity-primary focus:border-transparent bg-white"
+                                    dir={isRTL ? 'rtl' : 'ltr'}
+                                  />
+                                  <div className="absolute top-2 left-2">
+                                    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-xinfinity-primary/10 text-xinfinity-primary">
+                                      #{index + 1}
+                                    </span>
+                                  </div>
+                                </div>
+                                {batchPrompts.length > 1 && (
+                                  <button
+                                    onClick={() => removeBatchPrompt(index)}
+                                    className="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors self-start"
+                                    title="Remove prompt"
+                                  >
+                                    <TrashIcon className="w-5 h-5" />
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                            <button
+                              onClick={addBatchPrompt}
+                              disabled={batchPrompts.length >= 10}
+                              className="w-full py-3 px-4 border-2 border-dashed border-xinfinity-border hover:border-xinfinity-primary rounded-xl text-xinfinity-muted hover:text-xinfinity-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <PlusIcon className="w-5 h-5 mx-auto mb-1" />
+                              Add Another Prompt ({batchPrompts.length}/10)
+                            </button>
+                          </>
+                        )}
                       </div>
                     )}
 
@@ -978,7 +1244,10 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                           <SparklesIcon className="w-5 h-5 mr-2" />
                           {mode === 'single' 
                             ? `Generate ${currentDocType?.label} in ${selectedLocaleData?.label}`
-                            : `Generate ${batchPrompts.filter(p => p.trim()).length} ${currentDocType?.label}s in ${selectedLocaleData?.label}`
+                            : `Generate ${batchInputMode === 'file' 
+                                ? uploadedData.length 
+                                : batchPrompts.filter(p => p.trim()).length
+                              } ${currentDocType?.label}s in ${selectedLocaleData?.label}`
                           }
                         </div>
                       )}
@@ -1236,40 +1505,67 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                     {generatedBatch && (
                       <>
                         {/* Batch Statistics */}
-                        <div className="xinfinity-card p-6 bg-blue-50 border border-blue-200">
-                          <h3 className="text-lg font-semibold text-blue-800 mb-4">📊 Batch Generation Results</h3>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                            <div className="text-center">
-                              <div className="text-2xl font-bold text-blue-600">{generatedBatch.count}</div>
-                              <div className="text-blue-600">Documents Generated</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="text-2xl font-bold text-green-600">100%</div>
-                              <div className="text-green-600">Success Rate</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="text-2xl font-bold text-purple-600">{selectedLocaleData?.label}</div>
-                              <div className="text-purple-600">Language</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="text-2xl font-bold text-orange-600">{currentDocType?.label}</div>
-                              <div className="text-orange-600">Document Type</div>
-                            </div>
+                        {/* Enhanced Batch Operations */}
+                        <div className="flex items-center justify-between mb-6">
+                          <div>
+                            <h3 className="text-lg font-semibold text-blue-800">📊 Batch Generation Results</h3>
+                            <p className="text-sm text-blue-700">Generated {generatedBatch.count} documents in {selectedLocaleData?.label}</p>
+                          </div>
+                          <div className="flex items-center space-x-3">
+                            <button
+                              onClick={handleDownloadAllBatch}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all flex items-center space-x-2"
+                            >
+                              <ArrowDownTrayIcon className="w-4 h-4" />
+                              <span>📦 Download All as ZIP</span>
+                            </button>
                           </div>
                         </div>
 
-                        {/* Individual Documents */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6">
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-blue-600">{generatedBatch.count}</div>
+                            <div className="text-blue-600">Documents Generated</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-green-600">100%</div>
+                            <div className="text-green-600">Success Rate</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-purple-600">{selectedLocaleData?.label}</div>
+                            <div className="text-purple-600">Language</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-orange-600">{currentDocType?.label}</div>
+                            <div className="text-orange-600">Document Type</div>
+                          </div>
+                        </div>
+
+                        {/* Individual Documents with Edit Capabilities */}
                         <div className="space-y-4">
                           {generatedBatch.documents.map((doc: any, index: number) => (
-                            <div key={index} className="xinfinity-card overflow-hidden">
-                              <div className="flex items-center justify-between p-4 bg-xinfinity-surface/50 border-b border-xinfinity-border">
-                                <div>
-                                  <h4 className="font-semibold text-xinfinity-foreground">
-                                    {currentDocType?.label} #{index + 1}
-                                  </h4>
-                                  <p className="text-sm text-xinfinity-muted">
+                            <motion.div 
+                              key={index} 
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                              className="xinfinity-card overflow-hidden border-l-4 border-l-xinfinity-primary"
+                            >
+                              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-xinfinity-surface/50 to-xinfinity-primary/5 border-b border-xinfinity-border">
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-3">
+                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-xinfinity-primary/10 text-xinfinity-primary">
+                                      #{index + 1}
+                                    </span>
+                                    <h4 className="font-semibold text-xinfinity-foreground">
+                                      {currentDocType?.label}
+                                    </h4>
+                                  </div>
+                                  <p className="text-sm text-xinfinity-muted mt-1">
                                     {selectedDocumentType === 'invoice' ? (
-                                      `${doc.clientName || 'Unknown Client'} • ${doc.total || 'No Total'} ${doc.currency || ''}`
+                                      `${doc.to?.name || doc.clientName || 'Unknown Client'} • ${doc.total || 'No Total'} ${doc.currency || ''}`
+                                    ) : selectedDocumentType === 'nda' ? (
+                                      `${doc.disclosingParty?.name || doc.party1 || 'Party A'} ⇄ ${doc.receivingParty?.name || doc.party2 || 'Party B'}`
                                     ) : (
                                       `${doc.title || 'Untitled Document'}`
                                     )}
@@ -1277,24 +1573,75 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                                 </div>
                                 <div className="flex items-center space-x-2">
                                   <button
-                                    onClick={() => handleDownloadPDF(doc)}
-                                    className="px-3 py-1 text-xs bg-xinfinity-primary text-white rounded-lg hover:bg-xinfinity-primary/90 transition-colors"
+                                    onClick={() => handleEditDocument(index, doc)}
+                                    className="px-3 py-1 text-xs bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors flex items-center space-x-1"
                                   >
-                                    📄 Download
+                                    <EyeIcon className="w-3 h-3" />
+                                    <span>Edit</span>
+                                  </button>
+                                  <button
+                                    onClick={() => handleDownloadPDF(doc)}
+                                    className="px-3 py-1 text-xs bg-xinfinity-primary text-white rounded-lg hover:bg-xinfinity-primary/90 transition-colors flex items-center space-x-1"
+                                  >
+                                    <ArrowDownTrayIcon className="w-3 h-3" />
+                                    <span>PDF</span>
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteDocument(index)}
+                                    className="px-3 py-1 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center space-x-1"
+                                  >
+                                    <TrashIcon className="w-3 h-3" />
+                                    <span>Delete</span>
                                   </button>
                                 </div>
                               </div>
+                              
+                              {/* Expandable Preview */}
                               <div className="p-4">
-                                <div className="text-sm text-xinfinity-muted">
-                                  <strong>Preview:</strong>
-                                </div>
-                                <div className="mt-2 p-3 bg-xinfinity-surface/30 rounded-lg text-sm">
-                                  <pre className="whitespace-pre-wrap text-xinfinity-foreground">
-                                    {JSON.stringify(doc, null, 2).substring(0, 300)}...
-                                  </pre>
-                                </div>
+                                <details className="group">
+                                  <summary className="cursor-pointer text-sm font-medium text-xinfinity-primary hover:text-xinfinity-secondary transition-colors list-none">
+                                    <div className="flex items-center space-x-2">
+                                      <span>🔍 Preview Document Data</span>
+                                      <span className="group-open:rotate-90 transition-transform">▶</span>
+                                    </div>
+                                  </summary>
+                                  <div className="mt-3 p-3 bg-xinfinity-surface/30 rounded-lg text-sm">
+                                    {selectedDocumentType === 'invoice' ? (
+                                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                                        <div>
+                                          <span className="font-medium text-xinfinity-muted">Invoice #:</span>
+                                          <div className="text-xinfinity-foreground">{doc.invoiceNumber || 'N/A'}</div>
+                                        </div>
+                                        <div>
+                                          <span className="font-medium text-xinfinity-muted">Client:</span>
+                                          <div className="text-xinfinity-foreground">{doc.to?.name || doc.clientName || 'N/A'}</div>
+                                        </div>
+                                        <div>
+                                          <span className="font-medium text-xinfinity-muted">Total:</span>
+                                          <div className="text-xinfinity-foreground">{doc.total || 'N/A'} {doc.currency || ''}</div>
+                                        </div>
+                                        <div>
+                                          <span className="font-medium text-xinfinity-muted">Due Date:</span>
+                                          <div className="text-xinfinity-foreground">{doc.dueDate || 'N/A'}</div>
+                                        </div>
+                                        <div>
+                                          <span className="font-medium text-xinfinity-muted">Items:</span>
+                                          <div className="text-xinfinity-foreground">{doc.items?.length || 0}</div>
+                                        </div>
+                                        <div>
+                                          <span className="font-medium text-xinfinity-muted">Status:</span>
+                                          <div className="text-green-600">✅ Generated</div>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <pre className="whitespace-pre-wrap text-xinfinity-foreground overflow-x-auto">
+                                        {JSON.stringify(doc, null, 2).substring(0, 500)}...
+                                      </pre>
+                                    )}
+                                  </div>
+                                </details>
                               </div>
-                            </div>
+                            </motion.div>
                           ))}
                         </div>
                       </>
@@ -1306,6 +1653,84 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
           </div>
         </div>
       </div>
+
+      {/* Edit Document Modal */}
+      {editingIndex !== null && editData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-4 my-8 max-h-[90vh] overflow-y-auto"
+          >
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Edit {currentDocType?.label} #{editingIndex + 1}
+                </h2>
+                <button
+                  onClick={handleCancelEdit}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <TrashIcon className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              {selectedDocumentType === 'invoice' && editData && (
+                <Suspense fallback={<FormSkeleton />}>
+                  <InvoiceForm
+                    key={`edit-invoice-${editingIndex}`}
+                    initialData={editData}
+                    onSubmit={handleSaveEdit}
+                    defaultCurrency={editData.currency || 'USD'}
+                    defaultLocale={selectedLocale}
+                    submitButtonText="Save Changes"
+                    onCancel={handleCancelEdit}
+                  />
+                </Suspense>
+              )}
+              
+              {selectedDocumentType === 'nda' && editData && (
+                <div className="space-y-6">
+                  <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-xl">
+                    <h3 className="text-lg font-semibold text-yellow-800 mb-2">NDA Editing</h3>
+                    <p className="text-yellow-700 mb-4">
+                      NDA editing form is coming soon. For now, you can view and modify the raw data below.
+                    </p>
+                    <textarea
+                      value={JSON.stringify(editData, null, 2)}
+                      onChange={(e) => {
+                        try {
+                          const newData = JSON.parse(e.target.value)
+                          setEditData(newData)
+                        } catch (err) {
+                          // Invalid JSON, don't update
+                        }
+                      }}
+                      className="w-full h-64 p-3 border border-yellow-300 rounded-lg font-mono text-sm"
+                    />
+                    <div className="flex space-x-3 mt-4">
+                      <button
+                        onClick={() => handleSaveEdit(editData)}
+                        className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
+                      >
+                        Save Changes
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       {/* Enhanced Company Settings Modal */}
       {showSettings && (

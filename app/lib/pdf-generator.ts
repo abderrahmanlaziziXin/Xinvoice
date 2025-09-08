@@ -2,6 +2,8 @@ import jsPDF from 'jspdf'
 import autoTable, { UserOptions } from 'jspdf-autotable'
 import { Invoice } from '../../packages/core'
 import { formatCurrency, formatDate, formatNumber } from './currency'
+import { downloadEnhancedInvoicePDF, previewEnhancedInvoicePDF } from './pdf-generator-enhanced'
+import JSZip from 'jszip'
 
 // Constants for better maintainability
 const PDF_CONSTANTS = {
@@ -522,20 +524,68 @@ export class InvoicePDFGenerator {
   }
 }
 
-// Utility function for bulk PDF download
+// Utility function for bulk PDF download (individual files)
 export function downloadMultiplePDFs(invoices: Invoice[], zipName: string = 'invoices') {
-  // For now, download individual files
-  // In a future enhancement, we could use JSZip to create a single archive
+  // Use the enhanced PDF generator function that we've already fixed
   invoices.forEach((invoice, index) => {
-    const generator = new InvoicePDFGenerator()
     setTimeout(() => {
-      generator.downloadPDF(invoice, `${zipName}-${invoice.invoiceNumber}.pdf`)
+      downloadEnhancedInvoicePDF(
+        invoice, 
+        `${zipName}-${invoice.invoiceNumber}.pdf`,
+        {
+          theme: 'primary',
+          includeWatermark: false,
+          customTemplate: 'modern'
+        }
+      )
     }, index * 500) // Stagger downloads to avoid browser blocking
   })
 }
 
+// Enhanced bulk download as single ZIP file
+export async function downloadMultiplePDFsAsZip(invoices: Invoice[], zipName: string = 'invoices') {
+  const zip = new JSZip()
+  
+  // Generate all PDFs and add to ZIP
+  for (const invoice of invoices) {
+    const { EnhancedInvoicePDFGenerator } = await import('./pdf-generator-enhanced')
+    const generator = new EnhancedInvoicePDFGenerator({
+      theme: 'primary',
+      includeWatermark: false,
+      customTemplate: 'modern'
+    })
+    
+    const pdfDataUri = generator.generateInvoicePDF(invoice)
+    const base64Data = pdfDataUri.split(',')[1]
+    const binaryData = atob(base64Data)
+    const bytes = new Uint8Array(binaryData.length)
+    
+    for (let i = 0; i < binaryData.length; i++) {
+      bytes[i] = binaryData.charCodeAt(i)
+    }
+    
+    zip.file(`invoice-${invoice.invoiceNumber}.pdf`, bytes)
+  }
+  
+  // Generate and download ZIP
+  const zipBlob = await zip.generateAsync({ type: 'blob' })
+  const url = URL.createObjectURL(zipBlob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${zipName}.zip`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
 // Preview function for displaying PDF in modal
 export function previewInvoicePDF(invoice: Invoice, options?: PDFGenerationOptions): string {
-  const generator = new InvoicePDFGenerator(options)
-  return generator.generateInvoicePDF(invoice)
+  // Use the enhanced preview function that we've already fixed
+  return previewEnhancedInvoicePDF(invoice, {
+    theme: 'primary',
+    includeWatermark: false,
+    customTemplate: 'modern',
+    ...options
+  })
 }
