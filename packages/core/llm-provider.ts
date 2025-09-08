@@ -75,6 +75,12 @@ export class OpenAIProvider implements LLMProvider {
 
     const response = JSON.parse(content)
     
+    // Debug log to see what AI actually returns
+    console.log('🤖 Raw AI Response:', JSON.stringify(response, null, 2))
+    if (response.content?.items) {
+      console.log('🔢 AI Items:', response.content.items)
+    }
+    
     // Validate the enhanced response
     if (!validateEnhancedResponse(response, documentType)) {
       throw new Error('Generated document does not meet quality standards')

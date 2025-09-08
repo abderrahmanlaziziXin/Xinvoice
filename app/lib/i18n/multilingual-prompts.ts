@@ -90,6 +90,15 @@ CRITICAL MULTILINGUAL RULES:
 9. Ensure all dates, addresses, and contact information follow local formats
 10. Apply proper ${supportedLocale} grammar, punctuation, and capitalization rules
 
+CRITICAL NUMBER EXTRACTION (EXTREMELY IMPORTANT):
+- READ the input text carefully and extract the EXACT amounts mentioned
+- If input says "Développement frontend (1 800 €)", use rate: 1800, NOT rate: 1
+- If input says "backend (1 100 €)", use rate: 1100, NOT rate: 1
+- If input says "base de données (300 €)", use rate: 300
+- NEVER use placeholder numbers like 1, 2, 3 for amounts
+- Parse French number formats: "1 800" = 1800, "3 200" = 3200
+- Be extremely careful with parenthetical amounts: "(1 800 €)" means 1800
+
 PERSONAL INFORMATION PRESERVATION:
 - NEVER translate or modify: names, company names, email addresses, phone numbers, street addresses, or any personal identifiers
 - Keep all proper nouns (person names, company names, brand names) exactly as provided in the original text
@@ -248,6 +257,15 @@ INVOICE-SPECIFIC MULTILINGUAL INSTRUCTIONS:
 - Include local banking information formats
 - Apply regional invoice numbering conventions
 
+CRITICAL NUMBER EXTRACTION RULES:
+- EXTRACT EXACT AMOUNTS from input text: if text says "1 800 €" or "(1 800 €)", use 1800 as the amount
+- NEVER use placeholder values like 1, 2, 3 for amounts
+- PRESERVE all numerical values exactly as specified in the input
+- If input says "Développement frontend (1 800 €)", the rate should be 1800, not 1
+- If input says "backend (1 100 €)", the rate should be 1100, not 1  
+- Parse amounts correctly: "3 200 €" = 3200, "1 800 €" = 1800, "1 100 €" = 1100
+- Amount = quantity × rate (so if quantity=1 and rate=1800, amount=1800)
+
 REALISTIC PRICING GUIDELINES:
 - Use realistic business amounts (avoid tiny decimals like 0.006)
 - Professional services: typically 500-5000 per item
@@ -282,10 +300,10 @@ function getLocalizedContentStructure(
     "items": [
       {
         "description": "string (in ${getLanguageName(locale)})",
-        "quantity": number,
-        "rate": number,
-        "amount": number,
-        "taxRate": number,
+        "quantity": number (usually 1),
+        "rate": number (EXTRACT from input: if text says "(1 800 €)" use 1800, NOT 1),
+        "amount": number (quantity × rate),
+        "taxRate": number (usually between 0.01-0.20),
         "category": "string (optional, in ${getLanguageName(locale)})"
       }
     ],
