@@ -194,12 +194,15 @@ export default function MultilingualDocumentPlatform() {
             // Check content.items first (where the real items are)
             if (fullResult?.content?.items && Array.isArray(fullResult.content.items) && fullResult.content.items.length > 0) {
               console.log('✅ Found items in content.items:', fullResult.content.items)
-              return fullResult.content.items.map((item: any) => ({
-                description: item.description || item.name || item.service || item.title || item.item_name || 'Service Item',
-                quantity: Number(item.quantity) || Number(item.qty) || Number(item.amount_quantity) || 1,
-                rate: Number(item.rate) || Number(item.price) || Number(item.unit_price) || Number(item.cost) || Number(item.amount) || 0,
-                amount: Number(item.amount) || Number(item.total) || Number(item.line_total) || (Number(item.quantity || item.qty || 1) * Number(item.rate || item.price || 0))
-              }))
+              return fullResult.content.items.map((item: any) => {
+                console.log('🔍 Raw item data:', item)
+                return {
+                  description: item.description || item.name || item.service || 'Service Item',
+                  quantity: item.quantity || 1,
+                  rate: item.rate || item.price || 0,
+                  amount: item.amount || (item.quantity * item.rate) || 0
+                }
+              })
             }
             
             // Check for any array that might contain items (flexible field names)
@@ -212,12 +215,15 @@ export default function MultilingualDocumentPlatform() {
             for (const itemArray of potentialItemArrays) {
               if (Array.isArray(itemArray) && itemArray.length > 0) {
                 console.log('✅ Found items in flexible array:', itemArray)
-                return itemArray.map((item: any) => ({
-                  description: item.description || item.name || item.service || item.title || item.item_name || Object.values(item)[0] || 'Service Item',
-                  quantity: Number(item.quantity) || Number(item.qty) || Number(item.count) || 1,
-                  rate: Number(item.rate) || Number(item.price) || Number(item.unit_price) || Number(item.cost) || 0,
-                  amount: Number(item.amount) || Number(item.total) || Number(item.line_total) || (Number(item.quantity || item.qty || 1) * Number(item.rate || item.price || 0))
-                }))
+                return itemArray.map((item: any) => {
+                  console.log('🔍 Raw flexible item data:', item)
+                  return {
+                    description: item.description || item.name || item.service || 'Service Item',
+                    quantity: item.quantity || 1,
+                    rate: item.rate || item.price || 0,
+                    amount: item.amount || (item.quantity * item.rate) || 0
+                  }
+                })
               }
             }
             

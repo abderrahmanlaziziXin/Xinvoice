@@ -226,7 +226,7 @@ export class EnhancedInvoicePDFGenerator {
     
     const rightMargin = pageWidth - this.theme.spacing.margin
     this.pdf.text(`Invoice #${invoice.invoiceNumber}`, rightMargin, 10, { align: 'right' })
-    this.pdf.text(formatDate(invoice.date), rightMargin, 18, { align: 'right' })
+    this.pdf.text(formatDate(invoice.date, invoice.locale), rightMargin, 18, { align: 'right' })
 
     this.currentY = headerHeight + SPACING_SCALE.xl
   }
@@ -321,8 +321,8 @@ export class EnhancedInvoicePDFGenerator {
     // Create details table
     const details = [
       ['Invoice Number:', invoice.invoiceNumber],
-      ['Issue Date:', formatDate(invoice.date)],
-      ['Due Date:', formatDate(invoice.dueDate)],
+      ['Issue Date:', formatDate(invoice.date, invoice.locale)],
+      ['Due Date:', formatDate(invoice.dueDate, invoice.locale)],
       ['Currency:', invoice.currency]
     ]
 
@@ -351,9 +351,9 @@ export class EnhancedInvoicePDFGenerator {
 
     const tableData = invoice.items.map(item => [
       item.description,
-      formatNumber(item.quantity),
-      formatCurrency(item.rate, invoice.currency),
-      formatCurrency(item.quantity * item.rate, invoice.currency)
+      formatNumber(item.quantity, invoice.locale, { minimumFractionDigits: 0, maximumFractionDigits: 2 }),
+      formatCurrency(item.rate, invoice.currency, invoice.locale),
+      formatCurrency(item.quantity * item.rate, invoice.currency, invoice.locale)
     ])
 
     autoTable(this.pdf, {
@@ -413,9 +413,9 @@ export class EnhancedInvoicePDFGenerator {
 
     // Summary lines
     const summaryLines = [
-      ['Subtotal:', formatCurrency(subtotal, invoice.currency)],
-      [`Tax (${invoice.taxRate}%):`, formatCurrency(taxAmount, invoice.currency)],
-      ['Total:', formatCurrency(total, invoice.currency)]
+      ['Subtotal:', formatCurrency(subtotal, invoice.currency, invoice.locale)],
+      [`Tax (${invoice.taxRate}%):`, formatCurrency(taxAmount, invoice.currency, invoice.locale)],
+      ['Total:', formatCurrency(total, invoice.currency, invoice.locale)]
     ]
 
     this.pdf.setFont(this.theme.fonts.primary, 'normal')

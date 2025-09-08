@@ -246,7 +246,16 @@ INVOICE-SPECIFIC MULTILINGUAL INSTRUCTIONS:
 - Apply local tax rates and calculation methods
 - Use culturally appropriate payment terms
 - Include local banking information formats
-- Apply regional invoice numbering conventions`,
+- Apply regional invoice numbering conventions
+
+REALISTIC PRICING GUIDELINES:
+- Use realistic business amounts (avoid tiny decimals like 0.006)
+- Professional services: typically 500-5000 per item
+- Web development: 1000-3000 per major component
+- Consulting: 100-300 per hour, 8-40 hours per service
+- Products: realistic market prices
+- Ensure amounts make business sense (not 0.05€ for development work)
+- Use whole numbers or realistic decimals (1500.00, not 0.006)`,
 
     nda: `
 NDA-SPECIFIC MULTILINGUAL INSTRUCTIONS:
