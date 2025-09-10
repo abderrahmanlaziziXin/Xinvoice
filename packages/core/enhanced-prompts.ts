@@ -52,58 +52,48 @@ COMPANY CONTEXT (use as defaults when relevant):
 - Company Phone: ${userContext.companyPhone || 'Not provided'}
 - Default Currency: ${userContext.defaultCurrency || 'USD'}
 - Default Locale: ${userContext.defaultLocale || 'en-US'}
-- Default Tax Rate: ${(userContext.defaultTaxRate || 0.08) * 100}%
+- Default Tax Rate: ${(userContext.defaultTaxRate || 0) * 100}%
 - Default Terms: ${userContext.defaultTerms || 'Payment due within 30 days'}
 - Jurisdiction: ${userContext.jurisdiction || 'Not provided'}
 ` : ''
 
-  return `You are a professional document generator for small businesses and enterprises. Given input details about a business transaction or agreement, you will create polished, legally coherent documents in the requested format.
+  return `You are an expert business document generator. Create professional, accurate documents based on user descriptions.
+
+**CRITICAL: Return the EXACT JSON structure specified below. No mapping or conversion will be done - your response must match the expected format perfectly.**
 
 CURRENT DATE: ${currentDate}
 ${contextInfo}
 
-PROCESS:
-1. Identify the document type requested (invoice, NDA, contract, receipt, etc.)
-2. Extract key information from the user's description:
-   - Parties involved (names, roles, addresses, contact information)
-   - Dates (agreement date, due date, termination date, effective date)
-   - Services, products, or obligations
-   - Payment terms and amounts
-   - Confidentiality clauses or special conditions
-   - Currency and locale preferences
-3. If critical information is missing, make reasonable professional assumptions
-4. Produce a structured JSON response with enhanced sections
-5. Use formal, professional language appropriate for business documents
-6. Respect locale and currency formatting conventions
-7. Include both structured data and formatted document text
-
-${getDocumentSpecificInstructions(documentType)}
-
-RESPONSE FORMAT:
-Return a JSON object with this exact structure:
+RESPONSE FORMAT (JSON only):
 {
   "metadata": {
     "document_type": "${documentType}",
-    "company_name": "string",
-    "client_name": "string", 
-    "issue_date": "YYYY-MM-DD",
-    "due_date": "YYYY-MM-DD",
-    "currency": "string (3-letter code)",
-    "locale": "string (locale code)",
-    "invoice_number": "string (for invoices)",
-    "effective_date": "YYYY-MM-DD (for NDAs/contracts)",
-    "termination_date": "YYYY-MM-DD (for NDAs/contracts)"
+    "generated_date": "${currentDate}",
+    "currency": "${userContext?.defaultCurrency || 'USD'}",
+    "locale": "${userContext?.defaultLocale || 'en-US'}"
   },
-  "content": ${getContentStructure(documentType)},
-  "formatted_document": "Complete formatted document text",
-  "assumptions": ["List any assumptions made due to missing information"]
+  "content": ${getContentStructure(documentType, userContext)},
+  "formatted_document": "Complete formatted document text here",
+  "assumptions": ["List any assumptions made"]
 }
+
+**IMPORTANT RULES:**
+1. Use the EXACT field names in the content structure
+2. Return valid JSON with all required fields
+3. Calculate all financial amounts accurately
+4. Use professional language and formatting
+5. Include all necessary business details
+6. Make reasonable assumptions for missing information
+7. ALWAYS use currency "${userContext?.defaultCurrency || 'USD'}" unless user specifies different currency
+8. ALWAYS use tax rate ${((userContext?.defaultTaxRate || 0) * 100).toFixed(1)}% unless user specifies different rate
+9. Use locale "${userContext?.defaultLocale || 'en-US'}" for formatting and language
+
+${getDocumentSpecificInstructions(documentType)}
 
 QUALITY STANDARDS:
 - Use clear, formal, professional language
 - Respect regional formatting conventions
 - Make logical assumptions for missing data
-- Separate structured data from formatted text
 - Include comprehensive details appropriate for business use
 - Ensure legal coherence and professional presentation
 - Handle multiple languages and currencies appropriately
@@ -114,7 +104,7 @@ CRITICAL RULES:
 - Calculate all amounts accurately
 - Include detailed professional descriptions
 - Make reasonable assumptions and document them
-- Ensure all required fields are present and valid`
+- Return the EXACT JSON structure - no variations allowed`
 }
 
 /**
@@ -144,6 +134,7 @@ Instead of "Web development - $2500", use:
 
     case 'nda':
       return `NDA-SPECIFIC INSTRUCTIONS:
+- CRITICAL: Generate complete party information including full addresses
 - Include standard NDA sections: Purpose, Definitions, Confidentiality Obligations
 - Add Exclusions, Term and Termination, Governing Law, Signatures
 - Handle both mutual and unilateral NDAs
@@ -152,7 +143,28 @@ Instead of "Web development - $2500", use:
 - Define confidential information clearly
 - Include standard legal language for enforceability
 - Handle different business structures (Corp, LLC, Partnership)
-- Include proper party identification and roles`
+- Include proper party identification and roles
+
+PARTY INFORMATION REQUIREMENTS:
+- Generate realistic business addresses (street, city, state, zip)
+- Include professional email addresses if companies are named
+- Add phone numbers in standard business format
+- Specify company type (Corporation, LLC, Partnership, etc.)
+- Use proper business entity suffixes (Inc., LLC, Corp., etc.)
+
+EXAMPLE PARTY STRUCTURE:
+"disclosingParty": {
+  "name": "TechCorp Solutions Inc.",
+  "address": "123 Innovation Drive, Suite 400, San Francisco, CA 94105",
+  "email": "legal@techcorp.com",
+  "phone": "+1 (415) 555-0123"
+},
+"receivingParty": {
+  "name": "DataLabs LLC",
+  "address": "456 Research Boulevard, Austin, TX 78701",
+  "email": "contracts@datalabs.com", 
+  "phone": "+1 (512) 555-0456"
+}`
 
     default:
       return `GENERAL DOCUMENT INSTRUCTIONS:
@@ -166,56 +178,73 @@ Instead of "Web development - $2500", use:
 /**
  * Get content structure for document type
  */
-function getContentStructure(documentType: DocumentType): string {
+function getContentStructure(documentType: DocumentType, userContext?: UserContext): string {
   switch (documentType) {
     case 'invoice':
       return `{
+    "invoiceNumber": "INV-XXXX",
+    "date": "YYYY-MM-DD",
+    "dueDate": "YYYY-MM-DD", 
+    "from": {
+      "name": "Company Name",
+      "address": "Full Address",
+      "email": "email@company.com",
+      "phone": "+1234567890"
+    },
+    "to": {
+      "name": "Client Name", 
+      "address": "Client Address",
+      "email": "client@email.com",
+      "phone": "+1234567890"
+    },
     "items": [
       {
         "description": "Detailed service description",
-        "quantity": number,
-        "rate": number,
-        "amount": number,
-        "taxRate": number,
-        "category": "string (optional)"
+        "quantity": 1,
+        "rate": 100.00,
+        "amount": 100.00
       }
     ],
-    "payment_instructions": "string",
-    "terms_and_conditions": "string"
+    "subtotal": 100.00,
+    "taxRate": ${userContext?.defaultTaxRate || 0},
+    "taxAmount": 10.00,
+    "total": 110.00,
+    "currency": "${userContext?.defaultCurrency || 'USD'}",
+    "locale": "${userContext?.defaultLocale || 'en-US'}",
+    "terms": "Payment terms and conditions",
+    "notes": "Additional notes"
   }`
 
     case 'nda':
       return `{
-    "sections": [
-      {
-        "title": "Purpose",
-        "body": "Description of the purpose and scope of the agreement"
-      },
-      {
-        "title": "Definitions", 
-        "body": "Definition of confidential information and key terms"
-      },
-      {
-        "title": "Confidentiality Obligations",
-        "body": "Specific obligations and restrictions on use of confidential information"
-      },
-      {
-        "title": "Exclusions",
-        "body": "Information that is not considered confidential"
-      },
-      {
-        "title": "Term and Termination",
-        "body": "Duration of the agreement and termination conditions"
-      },
-      {
-        "title": "Governing Law",
-        "body": "Applicable law and jurisdiction"
-      }
-    ],
-    "parties": {
-      "disclosing_party": "Party information",
-      "receiving_party": "Party information"
-    }
+    "type": "nda",
+    "title": "Non-Disclosure Agreement",
+    "effectiveDate": "YYYY-MM-DD",
+    "terminationDate": "YYYY-MM-DD",
+    "disclosingParty": {
+      "name": "Company A",
+      "address": "Full Address",
+      "email": "contact@companyA.com",
+      "phone": "+1234567890"
+    },
+    "receivingParty": {
+      "name": "Company B", 
+      "address": "Full Address",
+      "email": "contact@companyB.com",
+      "phone": "+1234567890"
+    },
+    "purpose": "Business collaboration purpose",
+    "termMonths": 12,
+    "jurisdiction": "California",
+    "mutualNda": false,
+    "confidentialityLevel": "standard",
+    "definitions": "Definition of confidential information",
+    "confidentialityObligations": "Specific confidentiality obligations",
+    "exclusions": "Information excluded from confidentiality",
+    "termClause": "Term and termination clause",
+    "governingLawClause": "Governing law details",
+    "additionalTerms": "Any additional terms",
+    "specialProvisions": "Special provisions"
   }`
 
     default:

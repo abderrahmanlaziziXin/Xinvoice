@@ -15,6 +15,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { LogoWithText } from "./logo";
+import { useTranslations } from "../lib/i18n/context";
 
 interface NavigationItem {
   name: string;
@@ -29,40 +30,41 @@ export function NavigationHeader() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const { t } = useTranslations();
 
   const navigation: NavigationItem[] = [
     {
-      name: "Home",
+      name: t('nav.home'),
       href: "/",
       icon: HomeIcon,
       current: pathname === "/",
     },
     {
-      name: "Invoice",
+      name: t('nav.newInvoice'),
       href: "/new/invoice",
       icon: DocumentTextIcon,
       current:
         pathname?.startsWith("/new/invoice") || pathname?.startsWith("/invoice"),
       children: [
         {
-          name: "Single Invoice",
+          name: t('nav.newInvoice'),
           href: "/new/invoice",
           icon: DocumentTextIcon,
         },
         {
-          name: "Batch Processing",
+          name: t('nav.batchInvoice'),
           href: "/new/invoice-batch",
           icon: DocumentTextIcon,
         },
       ],
     },
     {
-      name: "NDA",
+      name: t('nav.newNDA'),
       href: "/new/nda",
       icon: ShieldCheckIcon,
       current: pathname?.startsWith("/new/nda") || pathname?.startsWith("/nda"),
       children: [
-        { name: "Create NDA", href: "/new/nda", icon: ShieldCheckIcon },
+        { name: t('nav.newNDA'), href: "/new/nda", icon: ShieldCheckIcon },
         {
           name: "AI Assisted",
           href: "/nda/ai-assisted",
@@ -70,6 +72,12 @@ export function NavigationHeader() {
         },
         { name: "Editor", href: "/nda/editor", icon: ShieldCheckIcon },
       ],
+    },
+    {
+      name: t('nav.multilingualDemo'),
+      href: "/demo/multilang-pdf",
+      icon: CogIcon,
+      current: pathname?.startsWith("/demo/multilang"),
     },
     // {
     //   name: 'Recent',
@@ -292,7 +300,7 @@ export function NavigationHeader() {
               {/* Mobile Settings */}
               <button className="flex items-center w-full px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200">
                 <CogIcon className="w-5 h-5 mr-3" />
-                Settings
+                {t('nav.companySettings')}
               </button>
             </div>
           </motion.div>

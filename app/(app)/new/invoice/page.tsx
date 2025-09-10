@@ -8,6 +8,7 @@ import { CompanySettings } from '../../../components/company-settings'
 import { Logo } from '../../../components/logo'
 import { useUserContext } from '../../../lib/user-context'
 import { useDocumentContext } from '../../../context/document-context'
+import { useTranslations } from '../../../lib/i18n/context'
 import { Invoice } from '../../../../packages/core'
 import {
   SparklesIcon,
@@ -25,6 +26,7 @@ export default function NewInvoicePage() {
   const [showSettings, setShowSettings] = useState(false)
   const { context } = useUserContext()
   const { saveDocument, getDocument } = useDocumentContext()
+  const { t } = useTranslations()
 
   const generateMutation = useGenerateDocument()
 
@@ -137,7 +139,7 @@ export default function NewInvoicePage() {
                 <Logo size="sm" className="mr-xfi-4" />
                 <div>
                   <h1 className="text-3xl font-bold bg-gradient-to-r from-xinfinity-primary to-xinfinity-secondary bg-clip-text text-transparent">
-                    Create New Invoice
+                    {t('invoice.title')}
                   </h1>
                   <p className="mt-xfi-1 text-sm text-xinfinity-muted">
                     Generate professional invoices with AI assistance
@@ -224,11 +226,11 @@ export default function NewInvoicePage() {
                   >
                     <div className="text-sm text-xinfinity-muted">
                       {prompt.trim().length === 0 ? (
-                        'Enter some details about your invoice to get started'
+                        t('invoice.prompt.placeholder')
                       ) : (
                         <span className="text-xinfinity-accent font-medium flex items-center">
                           <SparklesIcon className="w-4 h-4 mr-1" />
-                          Ready to generate!
+                          {t('invoice.prompt.readyToGenerate')}
                         </span>
                       )}
                     </div>
@@ -241,12 +243,12 @@ export default function NewInvoicePage() {
                       {generateMutation.isPending ? (
                         <>
                           <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-xfi-3"></div>
-                          Generating...
+                          {t('invoice.prompt.generating')}
                         </>
                       ) : (
                         <>
                           <BoltIcon className="w-5 h-5 mr-xfi-2" />
-                          Generate Draft
+                          {t('invoice.prompt.generateDraft')}
                         </>
                       )}
                     </button>
@@ -261,7 +263,7 @@ export default function NewInvoicePage() {
                   >
                     <h3 className="text-lg font-semibold text-xinfinity-foreground mb-xfi-4 flex items-center">
                       <RocketLaunchIcon className="w-5 h-5 mr-xfi-2 text-xinfinity-accent" />
-                      Sample Prompts
+                      {t('invoice.prompt.samplePrompts')}
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-xfi-3 text-sm">
                       <div className="space-y-xfi-2">

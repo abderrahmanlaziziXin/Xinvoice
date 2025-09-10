@@ -149,7 +149,7 @@ COMPANY CONTEXT:
 - Company: ${userContext.companyName || 'Your Company'}
 - Email: ${userContext.companyEmail || 'your@company.com'}
 - Currency: ${userContext.defaultCurrency || 'USD'}
-- Tax Rate: ${(userContext.defaultTaxRate || 0.08) * 100}%
+- Tax Rate: ${(userContext.defaultTaxRate || 0) * 100}%
 ` : ''
 
   const prompt = `Generate a complete, professional invoice with the following details:

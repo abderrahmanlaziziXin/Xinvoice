@@ -1,6 +1,6 @@
 import OpenAI from 'openai'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { DocumentType, UserContext } from './schemas'
+import { DocumentType, UserContext, Locale } from './schemas'
 import { 
   generateEnhancedSystemPrompt, 
   generateEnhancedBatchSystemPrompt,
@@ -8,11 +8,21 @@ import {
   type EnhancedDocumentResponse 
 } from './enhanced-prompts'
 
+// Multilingual support
+import { 
+  generateMultilingualSystemPrompt,
+  generateMultilingualBatchSystemPrompt,
+  type MultilingualPromptOptions,
+  type LocalizedDocumentResponse
+} from '../../app/lib/i18n/multilingual-prompts'
+
 export interface LLMProvider {
   generateDocument(prompt: string, documentType: DocumentType, userContext?: UserContext): Promise<any>
   generateBatchDocuments?(prompts: string[], documentType: DocumentType, userContext?: UserContext): Promise<any[]>
   generateEnhancedDocument?(prompt: string, documentType: DocumentType, userContext?: UserContext): Promise<EnhancedDocumentResponse>
   generateEnhancedBatchDocuments?(prompts: string[], documentType: DocumentType, userContext?: UserContext): Promise<EnhancedDocumentResponse[]>
+  generateMultilingualDocument?(prompt: string, options: MultilingualPromptOptions, userContext?: UserContext): Promise<LocalizedDocumentResponse>
+  generateMultilingualBatchDocuments?(prompts: string[], options: MultilingualPromptOptions, userContext?: UserContext): Promise<LocalizedDocumentResponse[]>
 }
 
 export class OpenAIProvider implements LLMProvider {
@@ -64,6 +74,12 @@ export class OpenAIProvider implements LLMProvider {
     }
 
     const response = JSON.parse(content)
+    
+    // Debug log to see what AI actually returns
+    console.log('🤖 Raw AI Response:', JSON.stringify(response, null, 2))
+    if (response.content?.items) {
+      console.log('🔢 AI Items:', response.content.items)
+    }
     
     // Validate the enhanced response
     if (!validateEnhancedResponse(response, documentType)) {
@@ -138,9 +154,83 @@ Process each request and return the structured batch response format.`
         validateEnhancedResponse(doc, documentType)
       )
     }
+
+    throw new Error('Invalid batch response format')
+  }
+
+  async generateMultilingualDocument(prompt: string, options: MultilingualPromptOptions, userContext?: UserContext): Promise<LocalizedDocumentResponse> {
+    const systemPrompt = generateMultilingualSystemPrompt(options)
     
-    // Fallback to single document array
-    return Array.isArray(result) ? result : [result]
+    const completion = await this.openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: prompt }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7
+    })
+
+    const content = completion.choices[0]?.message?.content
+    if (!content) {
+      throw new Error('No response from OpenAI')
+    }
+
+    const response = JSON.parse(content)
+    
+    // Simple response structure - just use what AI gives us
+    return {
+      success: true,
+      document: response,
+      content: response,
+      formatted_document: JSON.stringify(response, null, 2),
+      assumptions: response.assumptions || []
+    } as LocalizedDocumentResponse
+  }
+
+  async generateMultilingualBatchDocuments(prompts: string[], options: MultilingualPromptOptions, userContext?: UserContext): Promise<LocalizedDocumentResponse[]> {
+    const systemPrompt = generateMultilingualBatchSystemPrompt(options)
+    
+    // Create a single prompt with all the individual prompts
+    const batchPrompt = `Generate ${options.documentType}s in ${options.locale} for the following requests:
+
+${prompts.map((prompt, index) => `${index + 1}. ${prompt}`).join('\n')}`
+
+    const completion = await this.openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: batchPrompt }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7
+    })
+
+    const content = completion.choices[0]?.message?.content
+    if (!content) {
+      throw new Error('No response from OpenAI')
+    }
+
+    const response = JSON.parse(content)
+    
+    // Handle both array response and object with documents array
+    let documents = []
+    if (Array.isArray(response)) {
+      documents = response
+    } else if (response.documents && Array.isArray(response.documents)) {
+      documents = response.documents
+    } else {
+      throw new Error('Invalid batch response format')
+    }
+
+    // Convert each document to LocalizedDocumentResponse format
+    return documents.map((doc: any) => ({
+      success: true,
+      document: doc,
+      content: doc,
+      formatted_document: JSON.stringify(doc, null, 2),
+      assumptions: doc.assumptions || []
+    }))
   }
 
   private getSystemPrompt(documentType: DocumentType, userContext?: UserContext): string {
@@ -153,7 +243,7 @@ Process each request and return the structured batch response format.`
     - Company Email: ${userContext.companyEmail || 'Not provided'}
     - Company Phone: ${userContext.companyPhone || 'Not provided'}
     - Default Currency: ${userContext.defaultCurrency || 'USD'}
-    - Default Tax Rate: ${(userContext.defaultTaxRate || 0.08) * 100}%
+    - Default Tax Rate: ${(userContext.defaultTaxRate || 0) * 100}%
     - Default Terms: ${userContext.defaultTerms || 'Not provided'}
     - Jurisdiction: ${userContext.jurisdiction || 'Not provided'}
     ` : ''
@@ -240,7 +330,7 @@ Process each request and return the structured batch response format.`
           }
         ],
         "subtotal": number,
-        "taxRate": number (as decimal, e.g., 0.08 for 8%),
+        "taxRate": number (as decimal, e.g., 0%),
         "taxAmount": number,
         "total": number,
         "terms": "string (optional)",
@@ -297,7 +387,7 @@ Process each request and return the structured batch response format.`
     - Company Email: ${userContext.companyEmail || 'Not provided'}
     - Company Phone: ${userContext.companyPhone || 'Not provided'}
     - Default Currency: ${userContext.defaultCurrency || 'USD'}
-    - Default Tax Rate: ${(userContext.defaultTaxRate || 0.08) * 100}%
+    - Default Tax Rate: ${(userContext.defaultTaxRate || 0) * 100}%
     - Default Terms: ${userContext.defaultTerms || 'Not provided'}
     - Jurisdiction: ${userContext.jurisdiction || 'Not provided'}
     ` : ''
@@ -347,7 +437,7 @@ Process each request and return the structured batch response format.`
               }
             ],
             "subtotal": number,
-            "taxRate": number (0-1, e.g., 0.08 for 8%),
+            "taxRate": number (0-1, e.g., 0 for 8%),
             "taxAmount": number,
             "total": number,
             "terms": "string (use context default)",
@@ -462,7 +552,7 @@ Process each request and return the structured batch response format.`
     - Company Email: ${userContext.companyEmail || 'Not provided'}
     - Company Phone: ${userContext.companyPhone || 'Not provided'}
     - Default Currency: ${userContext.defaultCurrency || 'USD'}
-    - Default Tax Rate: ${(userContext.defaultTaxRate || 0.08) * 100}%
+    - Default Tax Rate: ${(userContext.defaultTaxRate || 0) * 100}%
     - Default Terms: ${userContext.defaultTerms || 'Not provided'}
     - Jurisdiction: ${userContext.jurisdiction || 'Not provided'}
     ` : ''
@@ -518,7 +608,7 @@ Process each request and return the structured batch response format.`
           }
         ],
         "subtotal": number,
-        "taxRate": number (as decimal, e.g., 0.08 for 8%),
+        "taxRate": number (as decimal, e.g., 0 for 8%),
         "taxAmount": number,
         "total": number,
         "terms": "string (optional)",
@@ -600,7 +690,7 @@ Return a JSON object with an "invoices" array.`
     - Company Email: ${userContext.companyEmail || 'Not provided'}
     - Company Phone: ${userContext.companyPhone || 'Not provided'}
     - Default Currency: ${userContext.defaultCurrency || 'USD'}
-    - Default Tax Rate: ${(userContext.defaultTaxRate || 0.08) * 100}%
+    - Default Tax Rate: ${(userContext.defaultTaxRate || 0) * 100}%
     - Default Terms: ${userContext.defaultTerms || 'Not provided'}
     - Jurisdiction: ${userContext.jurisdiction || 'Not provided'}
     ` : ''

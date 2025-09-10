@@ -102,7 +102,7 @@ export function FileUpload({
           border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200
           ${
             isDragOver
-              ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+              ? "border-blue-500 bg-blue-50 "
               : "border-gray-300 hover:border-gray-400"
           }
           ${isProcessing ? "opacity-50 pointer-events-none" : "cursor-pointer"}

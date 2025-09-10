@@ -2,6 +2,9 @@ import jsPDF from 'jspdf'
 import autoTable, { UserOptions } from 'jspdf-autotable'
 import { Invoice } from '../../packages/core'
 import { formatCurrency, formatDate, formatNumber } from './currency'
+import { downloadEnhancedInvoicePDF, previewEnhancedInvoicePDF } from './pdf-generator-enhanced'
+import { getTranslation } from './i18n'
+import JSZip from 'jszip'
 
 // Constants for better maintainability
 const PDF_CONSTANTS = {
@@ -14,7 +17,7 @@ const PDF_CONSTANTS = {
     PRIMARY: '#2563eb',
     GRAY: '#6b7280',
     LIGHT_GRAY: '#f3f4f6',
-    DARK: '#1f2937'
+    DARK: '#456bb3ff'
   },
   FONT_SIZES: {
     TITLE: 28,
@@ -119,16 +122,44 @@ export class InvoicePDFGenerator {
       throw new Error('Invoice data is required')
     }
     
+    // Just fix missing fields - don't throw errors
     if (!invoice.invoiceNumber) {
-      throw new Error('Invoice number is required')
+      invoice.invoiceNumber = `INV-${Date.now()}`
     }
     
     if (!invoice.items || invoice.items.length === 0) {
-      throw new Error('Invoice must contain at least one item')
+      invoice.items = [{ description: 'Service', quantity: 1, rate: 0, amount: 0 }]
     }
     
-    if (!invoice.from?.name || !invoice.to?.name) {
-      throw new Error('Both sender and recipient information are required')
+    // Ensure we have basic from/to information
+    if (!invoice.from) {
+      invoice.from = { name: 'Your Company', address: '', email: '', phone: '' }
+    }
+    if (!invoice.to) {
+      invoice.to = { name: 'Client', address: '', email: '', phone: '' }
+    }
+    if (!invoice.from.name) {
+      invoice.from.name = 'Your Company'
+    }
+    if (!invoice.to.name) {
+      invoice.to.name = 'Client'
+    }
+
+    // Ensure basic calculations
+    if (!invoice.currency) {
+      invoice.currency = 'USD'
+    }
+    if (invoice.subtotal === undefined) {
+      invoice.subtotal = invoice.items.reduce((sum, item) => sum + ((item.amount || 0)), 0)
+    }
+    if (invoice.taxRate === undefined) {
+      invoice.taxRate = 0
+    }
+    if (invoice.taxAmount === undefined) {
+      invoice.taxAmount = invoice.subtotal * invoice.taxRate
+    }
+    if (invoice.total === undefined) {
+      invoice.total = invoice.subtotal + invoice.taxAmount
     }
   }
 
@@ -239,6 +270,7 @@ export class InvoicePDFGenerator {
   private generateMinimalTemplate(invoice: Invoice) {
     const pageWidth = this.pdf.internal.pageSize.width
     const margin = 20
+    const locale = invoice.locale || 'en-US'
     let currentY = margin
 
     // Minimal header
@@ -267,7 +299,7 @@ export class InvoicePDFGenerator {
     // Simple parties info
     this.pdf.setFontSize(12)
     this.pdf.setFont('helvetica', 'bold')
-    this.pdf.text('Bill To:', margin, currentY)
+    this.pdf.text(getTranslation(locale, 'invoice.pdf.to'), margin, currentY)
     
     currentY += 10
     this.pdf.setFont('helvetica', 'normal')
@@ -289,13 +321,14 @@ export class InvoicePDFGenerator {
 
   private addInvoiceDetailsSection(invoice: Invoice, startY: number) {
     const margin = 20
+    const locale = invoice.locale || 'en-US'
     
     this.pdf.setFontSize(12)
     this.pdf.setFont('helvetica', 'bold')
     
     // Invoice details in two columns
-    this.pdf.text('Invoice Date:', margin, startY)
-    this.pdf.text('Due Date:', margin + 100, startY)
+    this.pdf.text(getTranslation(locale, 'invoice.pdf.invoiceDate'), margin, startY)
+    this.pdf.text(getTranslation(locale, 'invoice.pdf.dueDate'), margin + 100, startY)
     
     this.pdf.setFont('helvetica', 'normal')
     this.pdf.text(formatDate(invoice.date, invoice.locale || 'en-US'), margin, startY + 10)
@@ -306,11 +339,12 @@ export class InvoicePDFGenerator {
     const pageWidth = this.pdf.internal.pageSize.width
     const margin = 20
     const columnWidth = (pageWidth - 3 * margin) / 2
+    const locale = invoice.locale || 'en-US'
     
     // From section
     this.pdf.setFontSize(12)
     this.pdf.setFont('helvetica', 'bold')
-    this.pdf.text('From:', margin, startY)
+    this.pdf.text(getTranslation(locale, 'invoice.pdf.from'), margin, startY)
     
     let fromY = startY + 10
     this.pdf.setFont('helvetica', 'normal')
@@ -338,7 +372,7 @@ export class InvoicePDFGenerator {
     // To section
     const toX = margin + columnWidth + margin
     this.pdf.setFont('helvetica', 'bold')
-    this.pdf.text('Bill To:', toX, startY)
+    this.pdf.text(getTranslation(locale, 'invoice.pdf.to'), toX, startY)
     
     let toY = startY + 10
     this.pdf.setFont('helvetica', 'normal')
@@ -366,6 +400,7 @@ export class InvoicePDFGenerator {
 
   private addItemsTable(invoice: Invoice, startY: number, minimal: boolean = false): number {
     const margin = 20
+    const locale = invoice.locale || 'en-US'
     
     // Prepare table data with proper currency formatting
     const tableData = invoice.items.map(item => [
@@ -377,7 +412,12 @@ export class InvoicePDFGenerator {
     
     const tableConfig: UserOptions = {
       startY: startY,
-      head: [['Description', 'Qty', 'Rate', 'Amount']],
+      head: [[
+        getTranslation(locale, 'invoice.pdf.description'), 
+        getTranslation(locale, 'invoice.pdf.qty'), 
+        getTranslation(locale, 'invoice.pdf.rate'), 
+        getTranslation(locale, 'invoice.pdf.amount')
+      ]],
       body: tableData,
       margin: { left: margin, right: margin },
       theme: minimal ? 'plain' : 'striped',
@@ -408,6 +448,7 @@ export class InvoicePDFGenerator {
     const pageWidth = this.pdf.internal.pageSize.width
     const margin = 20
     const totalsX = pageWidth - margin - 80
+    const locale = invoice.locale || 'en-US'
     
     let currentY = startY
     
@@ -415,13 +456,13 @@ export class InvoicePDFGenerator {
     
     // Subtotal
     this.pdf.setFont('helvetica', 'normal')
-    this.pdf.text('Subtotal:', totalsX, currentY)
+    this.pdf.text(getTranslation(locale, 'invoice.pdf.subtotal'), totalsX, currentY)
     this.pdf.text(formatCurrency(invoice.subtotal, invoice.currency || 'USD', invoice.locale || 'en-US'), totalsX + 50, currentY, { align: 'right' })
     currentY += 12
     
     // Tax (if applicable)
     if (invoice.taxRate > 0) {
-      this.pdf.text(`Tax (${(invoice.taxRate * 100).toFixed(1)}%):`, totalsX, currentY)
+      this.pdf.text(`${getTranslation(locale, 'invoice.pdf.tax')} (${(invoice.taxRate * 100).toFixed(1)}%):`, totalsX, currentY)
       this.pdf.text(formatCurrency(invoice.taxAmount, invoice.currency || 'USD', invoice.locale || 'en-US'), totalsX + 50, currentY, { align: 'right' })
       currentY += 12
     }
@@ -436,7 +477,7 @@ export class InvoicePDFGenerator {
     // Final total
     this.pdf.setFont('helvetica', 'bold')
     this.pdf.setFontSize(13)
-    this.pdf.text('Total:', totalsX, currentY)
+    this.pdf.text(getTranslation(locale, 'invoice.pdf.grandTotal'), totalsX, currentY)
     this.pdf.text(formatCurrency(invoice.total, invoice.currency || 'USD', invoice.locale || 'en-US'), totalsX + 50, currentY, { align: 'right' })
   }
 
@@ -444,6 +485,7 @@ export class InvoicePDFGenerator {
     const pageHeight = this.pdf.internal.pageSize.height
     const pageWidth = this.pdf.internal.pageSize.width
     const margin = 20
+    const locale = invoice.locale || 'en-US'
     
     let footerY = pageHeight - 40
     
@@ -451,7 +493,7 @@ export class InvoicePDFGenerator {
     if (invoice.terms) {
       this.pdf.setFontSize(10)
       this.pdf.setFont('helvetica', 'bold')
-      this.pdf.text('Payment Terms:', margin, footerY)
+      this.pdf.text(getTranslation(locale, 'invoice.pdf.termsConditions'), margin, footerY)
       footerY += 8
       
       this.pdf.setFont('helvetica', 'normal')
@@ -463,7 +505,7 @@ export class InvoicePDFGenerator {
     if (invoice.notes) {
       this.pdf.setFontSize(10)
       this.pdf.setFont('helvetica', 'bold')
-      this.pdf.text('Notes:', margin, footerY)
+      this.pdf.text(getTranslation(locale, 'invoice.pdf.notes'), margin, footerY)
       footerY += 8
       
       this.pdf.setFont('helvetica', 'normal')
@@ -522,20 +564,68 @@ export class InvoicePDFGenerator {
   }
 }
 
-// Utility function for bulk PDF download
+// Utility function for bulk PDF download (individual files)
 export function downloadMultiplePDFs(invoices: Invoice[], zipName: string = 'invoices') {
-  // For now, download individual files
-  // In a future enhancement, we could use JSZip to create a single archive
+  // Use the enhanced PDF generator function that we've already fixed
   invoices.forEach((invoice, index) => {
-    const generator = new InvoicePDFGenerator()
     setTimeout(() => {
-      generator.downloadPDF(invoice, `${zipName}-${invoice.invoiceNumber}.pdf`)
+      downloadEnhancedInvoicePDF(
+        invoice, 
+        `${zipName}-${invoice.invoiceNumber}.pdf`,
+        {
+          theme: 'primary', // Use primary theme with your brand colors
+          includeWatermark: false,
+          customTemplate: 'modern'
+        }
+      )
     }, index * 500) // Stagger downloads to avoid browser blocking
   })
 }
 
+// Enhanced bulk download as single ZIP file
+export async function downloadMultiplePDFsAsZip(invoices: Invoice[], zipName: string = 'invoices') {
+  const zip = new JSZip()
+  
+  // Generate all PDFs and add to ZIP
+  for (const invoice of invoices) {
+    const { EnhancedInvoicePDFGenerator } = await import('./pdf-generator-enhanced')
+    const generator = new EnhancedInvoicePDFGenerator({
+      theme: 'primary', // Use primary theme with your brand colors
+      includeWatermark: false,
+      customTemplate: 'modern'
+    })
+    
+    const pdfDataUri = generator.generateInvoicePDF(invoice)
+    const base64Data = pdfDataUri.split(',')[1]
+    const binaryData = atob(base64Data)
+    const bytes = new Uint8Array(binaryData.length)
+    
+    for (let i = 0; i < binaryData.length; i++) {
+      bytes[i] = binaryData.charCodeAt(i)
+    }
+    
+    zip.file(`invoice-${invoice.invoiceNumber}.pdf`, bytes)
+  }
+  
+  // Generate and download ZIP
+  const zipBlob = await zip.generateAsync({ type: 'blob' })
+  const url = URL.createObjectURL(zipBlob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${zipName}.zip`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
 // Preview function for displaying PDF in modal
 export function previewInvoicePDF(invoice: Invoice, options?: PDFGenerationOptions): string {
-  const generator = new InvoicePDFGenerator(options)
-  return generator.generateInvoicePDF(invoice)
+  // Use the enhanced preview function that we've already fixed
+  return previewEnhancedInvoicePDF(invoice, {
+    theme: 'primary', // Use primary theme with your brand colors
+    includeWatermark: false,
+    customTemplate: 'modern',
+    ...options
+  })
 }

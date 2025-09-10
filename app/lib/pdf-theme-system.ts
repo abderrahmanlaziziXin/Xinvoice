@@ -69,7 +69,7 @@ export const PRIMARY_THEME: PDFTheme = {
     textSecondary: '#64748b', // --xinfinity-gray-500
     border: '#e2e8f0',       // --xinfinity-gray-200
     borderLight: '#f1f5f9',  // --xinfinity-gray-100
-    tableHeader: '#1e40af',
+    tableHeader: '#06b6d4',  // Use your secondary brand color (cyan) for headers - more visible
     tableRowEven: '#ffffff',
     tableRowOdd: '#f8fafc',
     success: '#059669',
@@ -113,7 +113,7 @@ export const NEUTRAL_THEME: PDFTheme = {
     textSecondary: '#64748b',
     border: '#e2e8f0',
     borderLight: '#f1f5f9',
-    tableHeader: '#475569',
+    tableHeader: '#06b6d4',  // Use your secondary brand color (cyan) even in neutral theme
     tableRowEven: '#ffffff',
     tableRowOdd: '#f8fafc',
     success: '#059669',
@@ -139,27 +139,27 @@ export const NEUTRAL_THEME: PDFTheme = {
 }
 
 /**
- * Dark Theme - Modern dark mode appearance
- * Uses dark backgrounds with bright accents
+ * Dark Theme - Modern dark mode appearance using Xinfinity brand colors
+ * Updated to use your logo colors instead of black backgrounds
  */
 export const DARK_THEME: PDFTheme = {
   name: 'Dark',
   colors: {
-    primary: '#3b82f6',      // Bright blue for dark bg
-    primaryLight: '#60a5fa',
-    secondary: '#06b6d4',    // Cyan accent
+    primary: '#1e40af',      // Your primary brand color
+    primaryLight: '#3b82f6', // Your primary light brand color
+    secondary: '#06b6d4',    // Your secondary brand color
     secondaryLight: '#22d3ee',
-    accent: '#8b5cf6',       // Purple accent
-    accentLight: '#a78bfa',
-    background: '#1e293b',   // Dark gray background
-    surface: '#334155',      // Lighter dark surface
-    text: '#f1f5f9',         // Light text
-    textSecondary: '#94a3b8', // Muted light text
-    border: '#475569',       // Dark border
-    borderLight: '#64748b',  // Lighter dark border
-    tableHeader: '#3b82f6',
-    tableRowEven: '#1e293b',
-    tableRowOdd: '#334155',
+    accent: '#1e3a8a',       // Your accent brand color
+    accentLight: '#1d4ed8',  // Your accent light brand color
+    background: '#f8fafc',   // Light background instead of dark - no more black!
+    surface: '#ffffff',      // White surface instead of dark
+    text: '#1e293b',         // Dark text for readability
+    textSecondary: '#64748b', // Your brand gray for secondary text
+    border: '#e2e8f0',       // Light border using your brand colors
+    borderLight: '#f1f5f9',  // Lighter border
+    tableHeader: '#06b6d4',  // Use your secondary brand color (cyan) for headers - more visible
+    tableRowEven: '#f8fafc', // Light alternating rows using your brand colors
+    tableRowOdd: '#ffffff',  // White alternating rows
     success: '#10b981',
     warning: '#f59e0b',
     error: '#ef4444'
@@ -194,7 +194,7 @@ export const PDF_THEMES = {
 export type PDFThemeName = keyof typeof PDF_THEMES
 
 /**
- * Get theme by name with fallback to primary
+ * Get theme by name with fallback to primary (your brand colors)
  */
 export function getTheme(themeName?: PDFThemeName): PDFTheme {
   return PDF_THEMES[themeName || 'primary']
@@ -250,7 +250,7 @@ export function hexToRgbNormalized(hex: string): [number, number, number] {
 }
 
 /**
- * Generate gradient effect simulation for headers
+ * Generate gradient effect simulation for headers using your brand colors
  * Since jsPDF doesn't support real gradients, we create a subtle effect
  */
 export function createGradientEffect(theme: PDFTheme): {
@@ -259,8 +259,8 @@ export function createGradientEffect(theme: PDFTheme): {
   steps: number
 } {
   return {
-    startColor: hexToRgbNormalized(theme.colors.primary),
-    endColor: hexToRgbNormalized(theme.colors.secondary),
+    startColor: hexToRgbNormalized(theme.colors.secondary), // Start with cyan for visibility
+    endColor: hexToRgbNormalized(theme.colors.primary),     // End with blue
     steps: 5 // Number of gradient steps to simulate
   }
 }

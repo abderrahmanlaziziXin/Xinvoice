@@ -31,7 +31,8 @@ export const CURRENCY_SYMBOLS: Record<Currency, string> = {
   'KES': 'KSh',
   'GHS': '₵',
   'XOF': 'CFA',
-  'XAF': 'FCFA'
+  'XAF': 'FCFA',
+  'SAR': 'ر.س'
 }
 
 /**
@@ -65,7 +66,8 @@ export const CURRENCY_NAMES: Record<Currency, string> = {
   'KES': 'Kenyan Shilling',
   'GHS': 'Ghanaian Cedi',
   'XOF': 'West African CFA Franc',
-  'XAF': 'Central African CFA Franc'
+  'XAF': 'Central African CFA Franc',
+  'SAR': 'Saudi Riyal'
 }
 
 /**
@@ -103,6 +105,7 @@ export const LOCALE_CURRENCY_MAP: Record<string, Currency> = {
 
 /**
  * Format currency amount according to locale and currency
+ * Enhanced for PDF compatibility
  */
 export function formatCurrency(
   amount: number, 
@@ -115,12 +118,21 @@ export function formatCurrency(
       throw new Error('Invalid amount')
     }
     
-    return new Intl.NumberFormat(locale, {
+    const formatted = new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: currency,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(amount)
+    
+    // Fix potential character encoding issues for PDF generation
+    // Replace non-breaking space and other problematic characters with regular space
+    return formatted
+      .replace(/\u00A0/g, ' ')  // Non-breaking space
+      .replace(/\u202F/g, ' ')  // Narrow no-break space
+      .replace(/\u2009/g, ' ')  // Thin space
+      .replace(/[\u2000-\u200B]/g, ' ') // Various Unicode spaces
+    
   } catch (error) {
     console.warn(`Currency formatting failed for ${locale} ${currency}:`, error)
     
@@ -130,7 +142,7 @@ export function formatCurrency(
       const formattedAmount = amount.toLocaleString(locale, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      })
+      }).replace(/\u00A0/g, ' ').replace(/\u202F/g, ' ').replace(/\u2009/g, ' ')
       
       // For RTL locales (Arabic), adjust symbol placement
       if (locale.startsWith('ar-')) {
@@ -150,6 +162,7 @@ export function formatCurrency(
 
 /**
  * Format number according to locale
+ * Enhanced for PDF compatibility
  */
 export function formatNumber(
   number: number, 
@@ -162,11 +175,19 @@ export function formatNumber(
       throw new Error('Invalid number')
     }
     
-    return new Intl.NumberFormat(locale, {
+    const formatted = new Intl.NumberFormat(locale, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
       ...options
     }).format(number)
+    
+    // Fix potential character encoding issues for PDF generation
+    return formatted
+      .replace(/\u00A0/g, ' ')  // Non-breaking space
+      .replace(/\u202F/g, ' ')  // Narrow no-break space
+      .replace(/\u2009/g, ' ')  // Thin space
+      .replace(/[\u2000-\u200B]/g, ' ') // Various Unicode spaces
+    
   } catch (error) {
     console.warn(`Number formatting failed for ${locale}:`, error)
     
@@ -181,6 +202,7 @@ export function formatNumber(
 
 /**
  * Format date according to locale
+ * Enhanced for PDF compatibility
  */
 export function formatDate(
   date: string | Date, 
@@ -195,23 +217,39 @@ export function formatDate(
       throw new Error('Invalid date')
     }
     
-    return new Intl.DateTimeFormat(locale, {
+    const formatted = new Intl.DateTimeFormat(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       ...options
     }).format(dateObj)
+    
+    // Fix potential character encoding issues for PDF generation
+    return formatted
+      .replace(/\u00A0/g, ' ')  // Non-breaking space
+      .replace(/\u202F/g, ' ')  // Narrow no-break space
+      .replace(/\u2009/g, ' ')  // Thin space
+      .replace(/[\u2000-\u200B]/g, ' ') // Various Unicode spaces
+      .replace(/[\u0080-\u009F]/g, '') // Remove control characters
+      .replace(/[^\x20-\x7E\u00A1-\u017F\u0100-\u024F]/g, '?') // Replace problematic chars
+    
   } catch (error) {
     console.warn(`Date formatting failed for ${locale}:`, error)
     
     // Fallback to English formatting
     const dateObj = typeof date === 'string' ? new Date(date) : date
-    return new Intl.DateTimeFormat('en-US', {
+    const fallbackFormatted = new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
-      month: 'long',
+      month: 'long', 
       day: 'numeric',
       ...options
     }).format(dateObj)
+    
+    return fallbackFormatted
+      .replace(/\u00A0/g, ' ')
+      .replace(/\u202F/g, ' ')
+      .replace(/\u2009/g, ' ')
+      .replace(/[\u2000-\u200B]/g, ' ')
   }
 }
 
