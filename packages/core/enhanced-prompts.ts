@@ -69,10 +69,10 @@ RESPONSE FORMAT (JSON only):
   "metadata": {
     "document_type": "${documentType}",
     "generated_date": "${currentDate}",
-    "currency": "USD",
-    "locale": "en-US"
+    "currency": "${userContext?.defaultCurrency || 'USD'}",
+    "locale": "${userContext?.defaultLocale || 'en-US'}"
   },
-  "content": ${getContentStructure(documentType)},
+  "content": ${getContentStructure(documentType, userContext)},
   "formatted_document": "Complete formatted document text here",
   "assumptions": ["List any assumptions made"]
 }
@@ -84,6 +84,9 @@ RESPONSE FORMAT (JSON only):
 4. Use professional language and formatting
 5. Include all necessary business details
 6. Make reasonable assumptions for missing information
+7. ALWAYS use currency "${userContext?.defaultCurrency || 'USD'}" unless user specifies different currency
+8. ALWAYS use tax rate ${((userContext?.defaultTaxRate || 0) * 100).toFixed(1)}% unless user specifies different rate
+9. Use locale "${userContext?.defaultLocale || 'en-US'}" for formatting and language
 
 ${getDocumentSpecificInstructions(documentType)}
 
@@ -175,7 +178,7 @@ EXAMPLE PARTY STRUCTURE:
 /**
  * Get content structure for document type
  */
-function getContentStructure(documentType: DocumentType): string {
+function getContentStructure(documentType: DocumentType, userContext?: UserContext): string {
   switch (documentType) {
     case 'invoice':
       return `{
@@ -203,11 +206,11 @@ function getContentStructure(documentType: DocumentType): string {
       }
     ],
     "subtotal": 100.00,
-    "taxRate": 10,
+    "taxRate": ${userContext?.defaultTaxRate || 0},
     "taxAmount": 10.00,
     "total": 110.00,
-    "currency": "USD",
-    "locale": "en-US",
+    "currency": "${userContext?.defaultCurrency || 'USD'}",
+    "locale": "${userContext?.defaultLocale || 'en-US'}",
     "terms": "Payment terms and conditions",
     "notes": "Additional notes"
   }`

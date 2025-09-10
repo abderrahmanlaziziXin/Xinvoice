@@ -13,6 +13,7 @@ import { EmailWarningModal } from "./modal";
 import { downloadEnhancedInvoicePDF } from "../lib/pdf-generator-enhanced";
 import { formatCurrency, getCurrencySymbol } from "../lib/currency";
 import { useUserContext } from "../lib/user-context";
+import { useTranslations } from "../lib/i18n/context";
 import { Tooltip } from "./tooltip";
 import { motion, Variants } from "framer-motion";
 
@@ -30,7 +31,7 @@ function PDFModalSkeleton() {
       <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading PDF Preview...</p>
+          <p className="text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     </div>
@@ -66,6 +67,9 @@ export default function InvoiceForm({
 
   // Get user context for company settings
   const { context: userContext } = useUserContext();
+  
+  // Get translations
+  const { t } = useTranslations();
 
   const {
     register,
@@ -187,11 +191,11 @@ export default function InvoiceForm({
     const missing: string[] = [];
 
     if (!data.from.email) {
-      missing.push(`From: ${data.from.name || "Sender"}`);
+      missing.push(`${t('invoice.form.from')}: ${data.from.name || t('invoice.placeholders.companyName')}`);
     }
 
     if (!data.to.email) {
-      missing.push(`To: ${data.to.name || "Recipient"}`);
+      missing.push(`${t('invoice.form.to')}: ${data.to.name || t('invoice.placeholders.clientName')}`);
     }
 
     if (missing.length > 0) {
@@ -289,15 +293,15 @@ export default function InvoiceForm({
             <div className="lg:col-span-2">
               <div className="xinfinity-card">
                 <label className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                  Invoice Number
-                  <Tooltip content="A unique identifier for this invoice. Use a format like INV-001, INV-2024-001, etc.">
+                  {t('invoice.form.invoiceNumber')}
+                  <Tooltip content={t('invoice.tooltips.invoiceNumber')}>
                     <InformationCircleIcon className="w-4 h-4 ml-2 text-gray-400 cursor-help" />
                   </Tooltip>
                 </label>
                 <input
                   {...register("invoiceNumber")}
                   className="xinfinity-input"
-                  placeholder="INV-001"
+                  placeholder={t('invoice.placeholders.invoiceNumber')}
                   aria-describedby="invoice-number-help"
                 />
                 {errors.invoiceNumber && (
@@ -318,8 +322,8 @@ export default function InvoiceForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
               <div className="xinfinity-card">
                 <label className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                  Date
-                  <Tooltip content="The date this invoice was created/issued">
+                  {t('invoice.form.date')}
+                  <Tooltip content={t('invoice.tooltips.date')}>
                     <InformationCircleIcon className="w-4 h-4 ml-2 text-gray-400 cursor-help" />
                   </Tooltip>
                 </label>
@@ -338,8 +342,8 @@ export default function InvoiceForm({
 
               <div className="xinfinity-card">
                 <label className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                  Due Date
-                  <Tooltip content="When payment is expected. Typically 15-30 days from invoice date">
+                  {t('invoice.form.dueDate')}
+                  <Tooltip content={t('invoice.tooltips.dueDate')}>
                     <InformationCircleIcon className="w-4 h-4 ml-2 text-gray-400 cursor-help" />
                   </Tooltip>
                 </label>
@@ -368,17 +372,17 @@ export default function InvoiceForm({
           >
             <div className="xinfinity-card">
               <h3 className="text-lg font-semibold xinfinity-text-gradient mb-6">
-                From (Your Information)
+                {t('invoice.form.from')} ({t('invoice.form.companyDetails')})
               </h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Name
+                    {t('invoice.form.name')}
                   </label>
                   <input
                     {...register("from.name")}
                     className="xinfinity-input"
-                    placeholder="Your Company Name"
+                    placeholder={t('invoice.placeholders.companyName')}
                   />
                   {errors.from?.name && (
                     <p className="text-red-500 text-sm mt-2">
@@ -388,35 +392,35 @@ export default function InvoiceForm({
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Address
+                    {t('invoice.form.address')}
                   </label>
                   <textarea
                     {...register("from.address")}
                     className="xinfinity-input min-h-[80px] resize-none"
                     rows={3}
-                    placeholder="Your Address"
+                    placeholder={t('invoice.placeholders.companyAddress')}
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Email
+                      {t('invoice.form.email')}
                     </label>
                     <input
                       {...register("from.email")}
                       type="email"
                       className="xinfinity-input"
-                      placeholder="your@email.com"
+                      placeholder={t('invoice.placeholders.companyEmail')}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Phone
+                      {t('invoice.form.phone')}
                     </label>
                     <input
                       {...register("from.phone")}
                       className="xinfinity-input"
-                      placeholder="Your Phone Number"
+                      placeholder={t('invoice.placeholders.companyPhone')}
                     />
                   </div>
                 </div>
@@ -425,17 +429,17 @@ export default function InvoiceForm({
 
             <div className="xinfinity-card">
               <h3 className="text-lg font-semibold xinfinity-text-gradient mb-6">
-                To (Client Information)
+                {t('invoice.form.to')} ({t('invoice.form.clientDetails')})
               </h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Name
+                    {t('invoice.form.name')}
                   </label>
                   <input
                     {...register("to.name")}
                     className="xinfinity-input"
-                    placeholder="Client Company Name"
+                    placeholder={t('invoice.placeholders.clientName')}
                   />
                   {errors.to?.name && (
                     <p className="text-red-500 text-sm mt-2">
@@ -445,35 +449,35 @@ export default function InvoiceForm({
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Address
+                    {t('invoice.form.address')}
                   </label>
                   <textarea
                     {...register("to.address")}
                     className="xinfinity-input min-h-[80px] resize-none"
                     rows={3}
-                    placeholder="Client Address"
+                    placeholder={t('invoice.placeholders.clientAddress')}
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Email
+                      {t('invoice.form.email')}
                     </label>
                     <input
                       {...register("to.email")}
                       type="email"
                       className="xinfinity-input"
-                      placeholder="client@email.com"
+                      placeholder={t('invoice.placeholders.clientEmail')}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Phone
+                      {t('invoice.form.phone')}
                     </label>
                     <input
                       {...register("to.phone")}
                       className="xinfinity-input"
-                      placeholder="Client Phone Number"
+                      placeholder={t('invoice.placeholders.clientPhone')}
                     />
                   </div>
                 </div>
@@ -485,7 +489,7 @@ export default function InvoiceForm({
           <motion.div variants={itemVariants} className="xinfinity-card">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-semibold xinfinity-text-gradient">
-                Invoice Items
+                {t('invoice.form.items')}
               </h3>
               <motion.button
                 type="button"
@@ -495,7 +499,7 @@ export default function InvoiceForm({
                 className="xinfinity-button text-sm"
               >
                 <PlusIcon className="w-4 h-4 mr-2" />
-                Add Item
+                {t('invoice.actions.addItem')}
               </motion.button>
             </div>
 
@@ -511,17 +515,17 @@ export default function InvoiceForm({
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                     <div className="md:col-span-5">
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Description
+                        {t('invoice.form.description')}
                       </label>
                       <input
                         {...register(`items.${index}.description`)}
                         className="xinfinity-input"
-                        placeholder="Item description"
+                        placeholder={t('invoice.placeholders.enterDescription')}
                       />
                     </div>
                     <div className="md:col-span-2">
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Quantity
+                        {t('invoice.form.quantity')}
                       </label>
                       <input
                         {...register(`items.${index}.quantity`, {
@@ -531,12 +535,12 @@ export default function InvoiceForm({
                         min="0"
                         step="0.01"
                         className="xinfinity-input"
-                        placeholder="1"
+                        placeholder={t('invoice.placeholders.enterQuantity')}
                       />
                     </div>
                     <div className="md:col-span-2">
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Rate
+                        {t('invoice.form.rate')}
                       </label>
                       <input
                         {...register(`items.${index}.rate`, {
@@ -546,12 +550,12 @@ export default function InvoiceForm({
                         min="0"
                         step="0.01"
                         className="xinfinity-input"
-                        placeholder="0.00"
+                        placeholder={t('invoice.placeholders.enterRate')}
                       />
                     </div>
                     <div className="md:col-span-2">
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Amount
+                        {t('invoice.form.amount')}
                       </label>
                       <input
                         {...register(`items.${index}.amount`, {
@@ -586,12 +590,12 @@ export default function InvoiceForm({
           <motion.div variants={itemVariants} className="flex justify-end">
             <div className="w-full max-w-md xinfinity-card bg-gradient-to-br from-gray-50 to-blue-50/30">
               <h3 className="text-lg font-semibold xinfinity-text-gradient mb-4">
-                Invoice Totals
+                {t('invoice.totals.invoiceTotals')}
               </h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-700">
-                    Subtotal:
+                    {t('invoice.form.subtotal')}:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
                     {formatCurrency(
@@ -605,7 +609,7 @@ export default function InvoiceForm({
 
                 <div className="flex justify-between items-center">
                   <label className="text-sm font-medium text-gray-700">
-                    Tax Rate (%):
+                    {t('invoice.form.taxRate')}:
                   </label>
                   <div className="w-20">
                     <input
@@ -625,7 +629,7 @@ export default function InvoiceForm({
 
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-700">
-                    Tax Amount:
+                    {t('invoice.form.taxAmount')}:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
                     {formatCurrency(
@@ -640,7 +644,7 @@ export default function InvoiceForm({
                 <div className="border-t border-gray-200 pt-3">
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-bold text-gray-900">
-                      Total:
+                      {t('invoice.form.total')}:
                     </span>
                     <span className="text-lg font-bold xinfinity-text-gradient">
                       {formatCurrency(
@@ -663,24 +667,24 @@ export default function InvoiceForm({
           >
             <div className="xinfinity-card">
               <label className="block text-sm font-semibold text-gray-700 mb-3">
-                Terms & Conditions
+                {t('invoice.form.terms')}
               </label>
               <textarea
                 {...register("terms")}
                 className="xinfinity-input min-h-[120px] resize-none"
                 rows={5}
-                placeholder="Payment terms and conditions"
+                placeholder={t('invoice.placeholders.enterTerms')}
               />
             </div>
             <div className="xinfinity-card">
               <label className="block text-sm font-semibold text-gray-700 mb-3">
-                Notes
+                {t('invoice.form.notes')}
               </label>
               <textarea
                 {...register("notes")}
                 className="xinfinity-input min-h-[120px] resize-none"
                 rows={5}
-                placeholder="Additional notes"
+                placeholder={t('invoice.placeholders.enterNotes')}
               />
             </div>
           </motion.div>
@@ -701,7 +705,7 @@ export default function InvoiceForm({
               whileTap={{ scale: 0.98 }}
               className="px-8 py-3 rounded-lg font-medium text-xinfinity-primary border-2 border-xinfinity-primary/20 hover:border-xinfinity-primary/40 bg-white hover:bg-white/70 transition-all duration-300 backdrop-blur-sm"
             >
-              Preview PDF
+              {t('invoice.actions.preview')}
             </motion.button>
 
             <motion.button
@@ -722,7 +726,7 @@ export default function InvoiceForm({
               whileTap={{ scale: 0.98 }}
               className="px-8 py-3 rounded-lg font-medium text-white bg-gradient-to-r from-xinfinity-secondary to-xinfinity-primary-light hover:from-xinfinity-secondary/90 hover:to-xinfinity-primary-light/90 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
-              Download PDF
+              {t('invoice.actions.downloadPDF')}
             </motion.button>
 
             <motion.button

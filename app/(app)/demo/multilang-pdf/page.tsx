@@ -41,6 +41,7 @@ import {
   DocumentArrowUpIcon,
 } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
+import { useTranslations } from "../../../lib/i18n/context";
 
 // Lazy load components
 const InvoiceForm = lazy(() => import("../../../components/invoice-form"));
@@ -83,24 +84,6 @@ const supportedLocales: {
   { value: "it-IT", label: "Italiano (Italia)", flag: "🇮🇹", rtl: false },
   { value: "ru-RU", label: "Русский (Россия)", flag: "🇷🇺", rtl: false },
   { value: "hi-IN", label: "हिन्दी (भारत)", flag: "🇮🇳", rtl: false },
-];
-
-// Document type configurations
-const documentTypes = [
-  {
-    type: "invoice" as DocumentType,
-    label: "Invoice",
-    icon: DocumentTextIcon,
-    description: "Professional business invoices with AI-powered generation",
-    color: "blue",
-  },
-  {
-    type: "nda" as DocumentType,
-    label: "NDA",
-    icon: ClipboardDocumentListIcon,
-    description: "Legal non-disclosure agreements with regional compliance",
-    color: "purple",
-  },
 ];
 
 // Enhanced sample prompts with more professional examples
@@ -156,6 +139,35 @@ const samplePrompts = {
 };
 
 export default function MultilingualDocumentPlatform() {
+  const { t, locale: currentLocale } = useTranslations();
+  
+  // Helper function to replace placeholders in translation strings
+  const formatTranslation = (key: string, replacements: Record<string, string>) => {
+    let translation = t(key);
+    Object.entries(replacements).forEach(([placeholder, value]) => {
+      translation = translation.replace(`{${placeholder}}`, value);
+    });
+    return translation;
+  };
+  
+  // Document types with translations
+  const translatedDocumentTypes = [
+    {
+      type: "invoice" as DocumentType,
+      label: t('demo.invoice'),
+      icon: DocumentTextIcon,
+      description: t('demo.invoiceDesc'),
+      color: "blue",
+    },
+    {
+      type: "nda" as DocumentType,
+      label: t('demo.nda'),
+      icon: ClipboardDocumentListIcon,
+      description: t('demo.ndaDesc'),
+      color: "purple",
+    },
+  ];
+  
   const [selectedLocale, setSelectedLocale] = useState<Locale>("en-US");
   const [selectedDocumentType, setSelectedDocumentType] =
     useState<DocumentType>("invoice");
@@ -195,7 +207,7 @@ export default function MultilingualDocumentPlatform() {
   const isRTL = selectedLocaleData?.rtl || false;
 
   // Get current document type config
-  const currentDocType = documentTypes.find(
+  const currentDocType = translatedDocumentTypes.find(
     (dt) => dt.type === selectedDocumentType
   );
 
@@ -764,11 +776,10 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                     <GlobeAltIcon className="w-8 h-8 text-xinfinity-primary" />
                     <div>
                       <h1 className="text-3xl font-bold bg-gradient-to-r from-xinfinity-primary to-xinfinity-secondary bg-clip-text text-transparent">
-                        Multilingual Documents
+                        {t('demo.title')}
                       </h1>
                       <p className="mt-1 text-sm text-xinfinity-muted">
-                        AI-powered document generation in 11+ languages with
-                        cultural context
+                        {t('demo.subtitle')}
                       </p>
                     </div>
                   </div>
@@ -780,7 +791,7 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                   className="inline-flex items-center px-4 py-2 text-sm font-medium text-xinfinity-foreground bg-xinfinity-surface border border-xinfinity-border rounded-xl hover:bg-xinfinity-surface/80 focus:outline-none focus:ring-2 focus:ring-xinfinity-primary/20 transition-all"
                 >
                   <Cog6ToothIcon className="w-4 h-4 mr-2" />
-                  Company Settings
+                  {t('demo.companySettings')}
                 </button>
                 {showForm && (
                   <button
@@ -811,7 +822,7 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                       <div className="flex items-center mb-4">
                         <LanguageIcon className="w-5 h-5 text-xinfinity-primary mr-2" />
                         <h3 className="text-lg font-semibold text-xinfinity-foreground">
-                          Language Selection
+                          {t('demo.languageSelection')}
                         </h3>
                       </div>
                       <select
@@ -832,14 +843,14 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                         <div className="mt-3 p-3 bg-xinfinity-primary/5 rounded-lg">
                           <div className="text-xs text-xinfinity-muted space-y-1">
                             <div>
-                              Direction:{" "}
+                              {t('demo.direction')}:{" "}
                               {isRTL
-                                ? "Right-to-Left (RTL)"
-                                : "Left-to-Right (LTR)"}
+                                ? t('demo.rightToLeft')
+                                : t('demo.leftToRight')}
                             </div>
                             <div>
-                              Cultural Context:{" "}
-                              {culturalContext ? "Enabled" : "Disabled"}
+                              {t('demo.culturalContext')}:{" "}
+                              {culturalContext ? t('demo.enabled') : t('demo.disabled')}
                             </div>
                           </div>
                         </div>
@@ -851,11 +862,11 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                       <div className="flex items-center mb-4">
                         <DocumentDuplicateIcon className="w-5 h-5 text-xinfinity-primary mr-2" />
                         <h3 className="text-lg font-semibold text-xinfinity-foreground">
-                          Document Type
+                          {t('demo.documentType')}
                         </h3>
                       </div>
                       <div className="grid grid-cols-1 gap-3">
-                        {documentTypes.map((docType) => {
+                        {translatedDocumentTypes.map((docType) => {
                           const Icon = docType.icon;
                           const isSelected =
                             selectedDocumentType === docType.type;
@@ -899,7 +910,7 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                       <div className="flex items-center mb-4">
                         <BeakerIcon className="w-5 h-5 text-xinfinity-primary mr-2" />
                         <h3 className="text-lg font-semibold text-xinfinity-foreground">
-                          Generation Mode
+                          {t('demo.generationMode')}
                         </h3>
                       </div>
                       <div className="grid grid-cols-2 gap-3">
@@ -920,9 +931,9 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                               }`}
                             />
                             <div>
-                              <h4 className="font-medium">Single</h4>
+                              <h4 className="font-medium">{t('demo.single')}</h4>
                               <p className="text-xs text-xinfinity-muted">
-                                Generate one document
+                                {t('demo.singleDesc')}
                               </p>
                             </div>
                           </div>
@@ -944,9 +955,9 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                               }`}
                             />
                             <div>
-                              <h4 className="font-medium">Batch</h4>
+                              <h4 className="font-medium">{t('demo.batch')}</h4>
                               <p className="text-xs text-xinfinity-muted">
-                                Generate multiple documents
+                                {t('demo.batchDesc')}
                               </p>
                             </div>
                           </div>
@@ -1051,7 +1062,7 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                     {/* Options */}
                     <div className="xinfinity-card p-6">
                       <h3 className="text-lg font-semibold text-xinfinity-foreground mb-4">
-                        Generation Options
+                        {t('demo.generationOptions')}
                       </h3>
                       <div className="space-y-3">
                         <label className="flex items-center">
@@ -1064,7 +1075,7 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                             className="rounded border-xinfinity-border text-xinfinity-primary shadow-sm focus:border-xinfinity-primary focus:ring focus:ring-xinfinity-primary/20"
                           />
                           <span className="ml-3 text-sm text-xinfinity-foreground">
-                            Include UI translations
+                            {t('demo.includeUITranslations')}
                           </span>
                         </label>
                         <label className="flex items-center">
@@ -1077,7 +1088,7 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                             className="rounded border-xinfinity-border text-xinfinity-primary shadow-sm focus:border-xinfinity-primary focus:ring focus:ring-xinfinity-primary/20"
                           />
                           <span className="ml-3 text-sm text-xinfinity-foreground">
-                            Apply cultural context
+                            {t('demo.applyCulturalContext')}
                           </span>
                         </label>
                       </div>
@@ -1103,16 +1114,18 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                       )}
                     </motion.div>
                     <h2 className="text-3xl font-bold text-xinfinity-foreground mb-3">
-                      Create {currentDocType?.label} in{" "}
-                      {selectedLocaleData?.label}
+                      {formatTranslation('demo.createTitle', { 
+                        documentType: currentDocType?.label || '', 
+                        locale: selectedLocaleData?.label || ''
+                      })}
                     </h2>
                     <p
                       className="text-xinfinity-muted text-lg max-w-2xl mx-auto"
                       dir={isRTL ? "rtl" : "ltr"}
                     >
-                      Describe your {currentDocType?.label.toLowerCase()} and
-                      our AI will generate it with proper cultural context and
-                      language.
+                      {formatTranslation('demo.createDescription', { 
+                        documentType: currentDocType?.label.toLowerCase() || ''
+                      })}
                     </p>
                   </div>
 
@@ -1122,20 +1135,16 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                       <div className="flex items-center mb-2">
                         <LanguageIcon className="w-5 h-5 text-blue-600 mr-2" />
                         <h4 className="font-medium text-blue-800">
-                          🌍 Smart Language Processing
+                          🌍 {t('demo.smartLanguageProcessing')}
                         </h4>
                       </div>
                       <p className="text-sm text-blue-700">
-                        <strong>Write in any language you prefer!</strong> The
-                        AI will automatically generate the{" "}
-                        {currentDocType?.label.toLowerCase()} in{" "}
-                        <strong>{selectedLocaleData?.label}</strong> with proper
-                        cultural context, regardless of your input language.
+                        <strong>
+                          {formatTranslation('demo.smartLanguageDesc', { locale: selectedLocaleData?.label || '' })}
+                        </strong>
                       </p>
                       <div className="mt-2 text-xs text-blue-600">
-                        💡 Examples: Write in English → Get Arabic output |
-                        Write in French → Get German output | Mix languages →
-                        Get clean output
+                        💡 {t('demo.examplesTitle')}: {t('demo.examplesDesc')}
                       </div>
                     </div>
 
@@ -1145,9 +1154,10 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                         <textarea
                           value={prompt}
                           onChange={(e) => setPrompt(e.target.value)}
-                          placeholder={`Describe your ${currentDocType?.label.toLowerCase()} in any language - AI will respond in ${
-                            selectedLocaleData?.label
-                          }...`}
+                          placeholder={formatTranslation('demo.promptPlaceholder', { 
+                            documentType: currentDocType?.label.toLowerCase() || '',
+                            locale: selectedLocaleData?.label || ''
+                          })}
                           className="w-full h-32 p-4 border border-xinfinity-border rounded-xl resize-none focus:ring-2 focus:ring-xinfinity-primary focus:border-transparent bg-white"
                           dir={isRTL ? "rtl" : "ltr"}
                         />
@@ -1156,7 +1166,7 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                             onClick={loadSamplePrompt}
                             className="px-3 py-1 text-xs bg-xinfinity-surface hover:bg-xinfinity-border rounded-lg transition-colors"
                           >
-                            Load Sample
+                            {t('demo.loadSample')}
                           </button>
                         </div>
                       </div>
@@ -1309,7 +1319,10 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                         <div className="flex items-center justify-center">
                           <SparklesIcon className="w-5 h-5 mr-2" />
                           {mode === "single"
-                            ? `Generate ${currentDocType?.label} in ${selectedLocaleData?.label}`
+                            ? formatTranslation('demo.generateButton', { 
+                                documentType: currentDocType?.label || '', 
+                                locale: selectedLocaleData?.label || ''
+                              })
                             : `Generate ${
                                 batchInputMode === "file"
                                   ? uploadedData.length

@@ -14,6 +14,7 @@ import {
   usePersistedCurrency,
   usePersistedLocale,
 } from "../hooks/use-persisted-settings";
+import { LanguageSelector } from "./language-selector";
 
 interface CompanySettingsProps {
   isOpen: boolean;
@@ -209,53 +210,19 @@ export function CompanySettings({ isOpen, onClose }: CompanySettingsProps) {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Default Locale
-                </label>
-                <select
-                  value={formData.defaultLocale || "en-US"}
-                  onChange={(e) => {
-                    const newLocale = e.target.value as Locale;
-                    const suggestedCurrency = getSuggestedCurrency(newLocale);
-                    setFormData({
-                      ...formData,
-                      defaultLocale: newLocale,
-                      // Auto-suggest currency based on locale if not set
-                      defaultCurrency:
-                        formData.defaultCurrency || suggestedCurrency,
-                    });
-                  }}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <optgroup label="English">
-                    <option value="en-US">English (United States)</option>
-                    <option value="en-GB">English (United Kingdom)</option>
-                    <option value="en-CA">English (Canada)</option>
-                    <option value="en-AU">English (Australia)</option>
-                  </optgroup>
-                  <optgroup label="European">
-                    <option value="fr-FR">Français (France)</option>
-                    <option value="de-DE">Deutsch (Deutschland)</option>
-                    <option value="es-ES">Español (España)</option>
-                    <option value="it-IT">Italiano (Italia)</option>
-                    <option value="pt-PT">Português (Portugal)</option>
-                    <option value="nl-NL">Nederlands (Nederland)</option>
-                  </optgroup>
-                  <optgroup label="African & Middle Eastern">
-                    <option value="ar-DZ">العربية (الجزائر)</option>
-                    <option value="ar-MA">العربية (المغرب)</option>
-                    <option value="ar-TN">العربية (تونس)</option>
-                    <option value="ar-EG">العربية (مصر)</option>
-                  </optgroup>
-                  <optgroup label="Other">
-                    <option value="pt-BR">Português (Brasil)</option>
-                    <option value="zh-CN">中文 (中国)</option>
-                    <option value="ja-JP">日本語 (日本)</option>
-                    <option value="hi-IN">हिन्दी (भारत)</option>
-                  </optgroup>
-                </select>
-              </div>
+              <LanguageSelector
+                onLocaleChange={(newLocale) => {
+                  const suggestedCurrency = getSuggestedCurrency(newLocale);
+                  setFormData({
+                    ...formData,
+                    defaultLocale: newLocale,
+                    // Auto-suggest currency based on locale if not set
+                    defaultCurrency:
+                      formData.defaultCurrency || suggestedCurrency,
+                  });
+                }}
+                currentLocale={formData.defaultLocale || "en-US"}
+              />
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

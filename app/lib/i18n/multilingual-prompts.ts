@@ -53,6 +53,8 @@ IMPORTANT:
 - Don't validate or change anything - just create what they ask for
 - Keep names, companies, emails exactly as provided
 - Use proper ${locale} language for labels and descriptions
+- ALWAYS use currency: "${userContext?.defaultCurrency || 'USD'}" unless user specifically mentions a different currency
+- ALWAYS use taxRate: ${userContext?.defaultTaxRate || 0} unless user specifies a different tax rate
 
 For invoices, return JSON like:
 {
@@ -81,7 +83,7 @@ For invoices, return JSON like:
     }
   ],
   "subtotal": calculated_subtotal,
-  "taxRate": decimal_rate,
+  "taxRate": ${userContext?.defaultTaxRate || 0},
   "taxAmount": calculated_tax,
   "total": final_total,
   "currency": "${userContext?.defaultCurrency || 'USD'}",

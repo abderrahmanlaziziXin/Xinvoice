@@ -3,6 +3,7 @@ import autoTable, { UserOptions } from 'jspdf-autotable'
 import { Invoice } from '../../packages/core'
 import { formatCurrency, formatDate, formatNumber } from './currency'
 import { downloadEnhancedInvoicePDF, previewEnhancedInvoicePDF } from './pdf-generator-enhanced'
+import { getTranslation } from './i18n'
 import JSZip from 'jszip'
 
 // Constants for better maintainability
@@ -269,6 +270,7 @@ export class InvoicePDFGenerator {
   private generateMinimalTemplate(invoice: Invoice) {
     const pageWidth = this.pdf.internal.pageSize.width
     const margin = 20
+    const locale = invoice.locale || 'en-US'
     let currentY = margin
 
     // Minimal header
@@ -297,7 +299,7 @@ export class InvoicePDFGenerator {
     // Simple parties info
     this.pdf.setFontSize(12)
     this.pdf.setFont('helvetica', 'bold')
-    this.pdf.text('Bill To:', margin, currentY)
+    this.pdf.text(getTranslation(locale, 'invoice.pdf.to'), margin, currentY)
     
     currentY += 10
     this.pdf.setFont('helvetica', 'normal')
@@ -319,13 +321,14 @@ export class InvoicePDFGenerator {
 
   private addInvoiceDetailsSection(invoice: Invoice, startY: number) {
     const margin = 20
+    const locale = invoice.locale || 'en-US'
     
     this.pdf.setFontSize(12)
     this.pdf.setFont('helvetica', 'bold')
     
     // Invoice details in two columns
-    this.pdf.text('Invoice Date:', margin, startY)
-    this.pdf.text('Due Date:', margin + 100, startY)
+    this.pdf.text(getTranslation(locale, 'invoice.pdf.invoiceDate'), margin, startY)
+    this.pdf.text(getTranslation(locale, 'invoice.pdf.dueDate'), margin + 100, startY)
     
     this.pdf.setFont('helvetica', 'normal')
     this.pdf.text(formatDate(invoice.date, invoice.locale || 'en-US'), margin, startY + 10)
@@ -336,11 +339,12 @@ export class InvoicePDFGenerator {
     const pageWidth = this.pdf.internal.pageSize.width
     const margin = 20
     const columnWidth = (pageWidth - 3 * margin) / 2
+    const locale = invoice.locale || 'en-US'
     
     // From section
     this.pdf.setFontSize(12)
     this.pdf.setFont('helvetica', 'bold')
-    this.pdf.text('From:', margin, startY)
+    this.pdf.text(getTranslation(locale, 'invoice.pdf.from'), margin, startY)
     
     let fromY = startY + 10
     this.pdf.setFont('helvetica', 'normal')
@@ -368,7 +372,7 @@ export class InvoicePDFGenerator {
     // To section
     const toX = margin + columnWidth + margin
     this.pdf.setFont('helvetica', 'bold')
-    this.pdf.text('Bill To:', toX, startY)
+    this.pdf.text(getTranslation(locale, 'invoice.pdf.to'), toX, startY)
     
     let toY = startY + 10
     this.pdf.setFont('helvetica', 'normal')
@@ -396,6 +400,7 @@ export class InvoicePDFGenerator {
 
   private addItemsTable(invoice: Invoice, startY: number, minimal: boolean = false): number {
     const margin = 20
+    const locale = invoice.locale || 'en-US'
     
     // Prepare table data with proper currency formatting
     const tableData = invoice.items.map(item => [
@@ -407,7 +412,12 @@ export class InvoicePDFGenerator {
     
     const tableConfig: UserOptions = {
       startY: startY,
-      head: [['Description', 'Qty', 'Rate', 'Amount']],
+      head: [[
+        getTranslation(locale, 'invoice.pdf.description'), 
+        getTranslation(locale, 'invoice.pdf.qty'), 
+        getTranslation(locale, 'invoice.pdf.rate'), 
+        getTranslation(locale, 'invoice.pdf.amount')
+      ]],
       body: tableData,
       margin: { left: margin, right: margin },
       theme: minimal ? 'plain' : 'striped',
@@ -438,6 +448,7 @@ export class InvoicePDFGenerator {
     const pageWidth = this.pdf.internal.pageSize.width
     const margin = 20
     const totalsX = pageWidth - margin - 80
+    const locale = invoice.locale || 'en-US'
     
     let currentY = startY
     
@@ -445,13 +456,13 @@ export class InvoicePDFGenerator {
     
     // Subtotal
     this.pdf.setFont('helvetica', 'normal')
-    this.pdf.text('Subtotal:', totalsX, currentY)
+    this.pdf.text(getTranslation(locale, 'invoice.pdf.subtotal'), totalsX, currentY)
     this.pdf.text(formatCurrency(invoice.subtotal, invoice.currency || 'USD', invoice.locale || 'en-US'), totalsX + 50, currentY, { align: 'right' })
     currentY += 12
     
     // Tax (if applicable)
     if (invoice.taxRate > 0) {
-      this.pdf.text(`Tax (${(invoice.taxRate * 100).toFixed(1)}%):`, totalsX, currentY)
+      this.pdf.text(`${getTranslation(locale, 'invoice.pdf.tax')} (${(invoice.taxRate * 100).toFixed(1)}%):`, totalsX, currentY)
       this.pdf.text(formatCurrency(invoice.taxAmount, invoice.currency || 'USD', invoice.locale || 'en-US'), totalsX + 50, currentY, { align: 'right' })
       currentY += 12
     }
@@ -466,7 +477,7 @@ export class InvoicePDFGenerator {
     // Final total
     this.pdf.setFont('helvetica', 'bold')
     this.pdf.setFontSize(13)
-    this.pdf.text('Total:', totalsX, currentY)
+    this.pdf.text(getTranslation(locale, 'invoice.pdf.grandTotal'), totalsX, currentY)
     this.pdf.text(formatCurrency(invoice.total, invoice.currency || 'USD', invoice.locale || 'en-US'), totalsX + 50, currentY, { align: 'right' })
   }
 
@@ -474,6 +485,7 @@ export class InvoicePDFGenerator {
     const pageHeight = this.pdf.internal.pageSize.height
     const pageWidth = this.pdf.internal.pageSize.width
     const margin = 20
+    const locale = invoice.locale || 'en-US'
     
     let footerY = pageHeight - 40
     
@@ -481,7 +493,7 @@ export class InvoicePDFGenerator {
     if (invoice.terms) {
       this.pdf.setFontSize(10)
       this.pdf.setFont('helvetica', 'bold')
-      this.pdf.text('Payment Terms:', margin, footerY)
+      this.pdf.text(getTranslation(locale, 'invoice.pdf.termsConditions'), margin, footerY)
       footerY += 8
       
       this.pdf.setFont('helvetica', 'normal')
@@ -493,7 +505,7 @@ export class InvoicePDFGenerator {
     if (invoice.notes) {
       this.pdf.setFontSize(10)
       this.pdf.setFont('helvetica', 'bold')
-      this.pdf.text('Notes:', margin, footerY)
+      this.pdf.text(getTranslation(locale, 'invoice.pdf.notes'), margin, footerY)
       footerY += 8
       
       this.pdf.setFont('helvetica', 'normal')
