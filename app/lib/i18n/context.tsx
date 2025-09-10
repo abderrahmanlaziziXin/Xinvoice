@@ -17,11 +17,42 @@ interface LocaleContextType {
 
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined)
 
+// Browser language detection utility
+function getBrowserLocale(): Locale {
+  if (typeof window === 'undefined') return 'en-US'
+  
+  const supportedLocales: Locale[] = [
+    'en-US', 'en-GB', 'fr-FR', 'fr-CA', 'de-DE', 'es-ES',
+    'ar-DZ', 'ar-MA', 'ar-SA', 'ar-AE'
+  ]
+  
+  // Get browser language with fallbacks
+  const browserLang = navigator.language || navigator.languages?.[0] || 'en-US'
+  
+  // Direct match
+  if (supportedLocales.includes(browserLang as Locale)) {
+    return browserLang as Locale
+  }
+  
+  // Language family match (e.g., 'fr' -> 'fr-FR', 'ar' -> 'ar-DZ')
+  const langCode = browserLang.split('-')[0]
+  const fallbackMap: Record<string, Locale> = {
+    'en': 'en-US',
+    'fr': 'fr-FR', 
+    'de': 'de-DE',
+    'es': 'es-ES',
+    'ar': 'ar-DZ'
+  }
+  
+  return fallbackMap[langCode] || 'en-US'
+}
+
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
   const { context: userContext, updateContext } = useUserContext()
-  const [currentLocale, setCurrentLocale] = useState<Locale>(
-    userContext?.defaultLocale || 'en-US'
-  )
+  const [currentLocale, setCurrentLocale] = useState<Locale>(() => {
+    // Priority: user context > browser language > default
+    return userContext?.defaultLocale || getBrowserLocale()
+  })
 
   // Update locale when user context changes
   useEffect(() => {
@@ -29,6 +60,15 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
       setCurrentLocale(userContext.defaultLocale)
     }
   }, [userContext?.defaultLocale, currentLocale])
+
+  // Initialize with browser language on first load
+  useEffect(() => {
+    if (!userContext?.defaultLocale) {
+      const browserLocale = getBrowserLocale()
+      setCurrentLocale(browserLocale)
+      updateContext({ defaultLocale: browserLocale })
+    }
+  }, [userContext?.defaultLocale, updateContext])
 
   const setLocale = (locale: Locale) => {
     setCurrentLocale(locale)
