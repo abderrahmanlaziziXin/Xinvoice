@@ -166,7 +166,7 @@ export function BrandText({
 
   return (
     <span className={`${sizeClasses[size]} ${variantClasses[variant]} ${className} font-sans tracking-tight`}>
-      Xinfoice
+      Xinvoice
     </span>
   )
 }

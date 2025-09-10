@@ -12,33 +12,35 @@ import {
   ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import { Logo } from "./logo";
+import { useTranslations } from "../lib/i18n/context";
+import { LanguageSelector } from "./language-selector";
 
 export function Hero() {
+  const { t } = useTranslations();
+  
   const features = [
     {
       icon: SparklesIcon,
-      title: "AI-Powered Generation",
-      description:
-        "Advanced GPT-4o intelligence creates perfect documents automatically",
+      title: t("hero.features.aiGeneration.title"),
+      description: t("hero.features.aiGeneration.description"),
       gradient: "from-xinfinity-primary to-xinfinity-secondary",
     },
     {
       icon: CloudArrowUpIcon,
-      title: "File Upload Support",
-      description:
-        "Upload CSV/Excel files and let AI handle complex batch processing",
+      title: t("hero.features.fileUpload.title"),
+      description: t("hero.features.fileUpload.description"),
       gradient: "from-xinfinity-secondary to-xinfinity-accent",
     },
     {
       icon: BoltIcon,
-      title: "Instant Processing",
-      description: "Generate professional documents in seconds, not hours",
+      title: t("hero.features.instantProcessing.title"),
+      description: t("hero.features.instantProcessing.description"),
       gradient: "from-xinfinity-accent to-xinfinity-primary-light",
     },
     {
       icon: ChatBubbleLeftRightIcon,
-      title: "Natural Language",
-      description: "Just describe what you need in plain English",
+      title: t("hero.features.naturalLanguage.title"),
+      description: t("hero.features.naturalLanguage.description"),
       gradient: "from-xinfinity-primary-light to-xinfinity-secondary-light",
     },
   ];
@@ -114,6 +116,14 @@ export function Hero() {
           animate="visible"
           className="text-center"
         >
+          {/* Language Selector - Mobile/Top */}
+          <motion.div
+            variants={itemVariants}
+            className="flex justify-center mb-8 lg:hidden"
+          >
+            <LanguageSelector variant="compact" className="max-w-xs" />
+          </motion.div>
+
           {/* Animated Logo Badge */}
           <motion.div
             variants={itemVariants}
@@ -121,7 +131,7 @@ export function Hero() {
           >
             <Logo size="md" animated={true} className="mr-3" />
             <span className="text-sm font-medium xinfinity-text-gradient">
-              Powered by Advanced AI
+              {t("hero.poweredBy")}
             </span>
           </motion.div>
 
@@ -131,7 +141,7 @@ export function Hero() {
             className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight"
           >
             <span className="block bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent">
-              AI Document Creation
+              {t("hero.title")}
             </span>
           </motion.h1>
 
@@ -140,28 +150,18 @@ export function Hero() {
             variants={itemVariants}
             className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed"
           >
-            Transform your document creation process with intelligent AI that
-            understands context, generates professional content, and saves you
-            hours of work.
+            {t("hero.subtitle")}
           </motion.p>
 
-          {/* CTA Buttons with Fibonacci spacing */}
+          {/* CTA Button - Single button */}
           <motion.div
             variants={itemVariants}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
+            className="flex justify-center items-center mb-16"
           >
-            <Link href="/new/invoice" className="xinfinity-button group">
-              <DocumentTextIcon className="w-5 h-5 mr-2" />
-              Create Invoice
-              <ArrowRightIcon className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
-            </Link>
-
-            <Link
-              href="/new/nda"
-              className="px-8 py-3 rounded-lg font-medium text-xinfinity-primary border-2 border-xinfinity-primary/20 hover:border-xinfinity-primary/40 bg-white/50 hover:bg-white/70 transition-all duration-300 backdrop-blur-sm group"
-            >
-              <ShieldCheckIcon className="w-5 h-5 mr-2 inline-block" />
-              Generate NDA
+            <Link href="/demo/multilang-pdf" className="xinfinity-button group text-lg px-10 py-4">
+              <SparklesIcon className="w-6 h-6 mr-3" />
+              {t("hero.tryButton")}
+              <ArrowRightIcon className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform duration-200" />
             </Link>
           </motion.div>
 
@@ -202,17 +202,17 @@ export function Hero() {
           >
             {[
               {
-                label: "Documents Generated",
+                label: t("hero.stats.documents"),
                 value: "10,000+",
                 gradient: "from-xinfinity-primary to-xinfinity-secondary",
               },
               {
-                label: "Time Saved",
-                value: "500+ Hours",
+                label: t("hero.stats.timeSaved"),
+                value: "500+",
                 gradient: "from-xinfinity-secondary to-xinfinity-accent",
               },
               {
-                label: "User Satisfaction",
+                label: t("hero.stats.satisfaction"),
                 value: "99.5%",
                 gradient: "from-xinfinity-accent to-xinfinity-primary-light",
               },
@@ -238,19 +238,6 @@ export function Hero() {
             ))}
           </motion.div>
 
-          {/* Bottom CTA */}
-          <motion.div variants={itemVariants} className="mt-16 text-center">
-            <p className="text-gray-600 mb-6">
-              Ready to revolutionize your document workflow?
-            </p>
-            <Link
-              href="/test/enhanced"
-              className="inline-flex items-center text-xinfinity-primary hover:text-xinfinity-secondary font-medium group transition-colors duration-200"
-            >
-              Try Enhanced Features
-              <ArrowRightIcon className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform duration-200" />
-            </Link>
-          </motion.div>
         </motion.div>
       </div>
     </div>

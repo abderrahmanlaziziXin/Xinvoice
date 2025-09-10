@@ -1,8 +1,8 @@
-# 🚀 Xinfoice - Complete Application Rebuild Specification
+# 🚀 Xinvoice - Complete Application Rebuild Specification
 
 ## 📋 Project Overview
 
-**Xinfoice** is a premium AI-powered document generation platform that creates professional business documents (Invoices, NDAs) with advanced features including multilingual support, batch processing, and intelligent PDF generation.
+**Xinvoice** is a premium AI-powered document generation platform that creates professional business documents (Invoices, NDAs) with advanced features including multilingual support, batch processing, and intelligent PDF generation.
 
 ## 🎯 Core Value Proposition
 
@@ -33,7 +33,7 @@
 
 ### **Project Structure**
 ```
-xinfoice/
+xinvoice/
 ├── app/                          # Next.js App Router
 │   ├── (app)/                   # Main application routes
 │   │   ├── new/                 # Document creation
@@ -459,7 +459,7 @@ VERCEL_ANALYTICS_ID=...
 
 ```bash
 # Initialize project
-npx create-next-app@latest xinfoice --typescript --tailwind --app
+npx create-next-app@latest xinvoice --typescript --tailwind --app
 
 # Install dependencies
 npm install @tanstack/react-query framer-motion jspdf openai zod
@@ -474,7 +474,7 @@ npm run dev
 
 ---
 
-This specification provides a complete blueprint for rebuilding Xinfoice with premium quality, maintainable code, and all the advanced features. The modular architecture ensures easy maintenance and future enhancements while delivering a professional user experience that competes with enterprise solutions.
+This specification provides a complete blueprint for rebuilding Xinvoice with premium quality, maintainable code, and all the advanced features. The modular architecture ensures easy maintenance and future enhancements while delivering a professional user experience that competes with enterprise solutions.
 
 **Estimated Development Time**: 4-6 weeks for full implementation
 **Team Size**: 1-2 developers + 1 designer

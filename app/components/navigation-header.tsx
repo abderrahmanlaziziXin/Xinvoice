@@ -16,6 +16,7 @@ import {
 import Link from "next/link";
 import { LogoWithText } from "./logo";
 import { useTranslations } from "../lib/i18n/context";
+import { LanguageSelector } from "./language-selector";
 
 interface NavigationItem {
   name: string;
@@ -34,57 +35,17 @@ export function NavigationHeader() {
 
   const navigation: NavigationItem[] = [
     {
-      name: t('nav.home'),
+      name: t("nav.home"),
       href: "/",
       icon: HomeIcon,
       current: pathname === "/",
     },
     {
-      name: t('nav.newInvoice'),
-      href: "/new/invoice",
-      icon: DocumentTextIcon,
-      current:
-        pathname?.startsWith("/new/invoice") || pathname?.startsWith("/invoice"),
-      children: [
-        {
-          name: t('nav.newInvoice'),
-          href: "/new/invoice",
-          icon: DocumentTextIcon,
-        },
-        {
-          name: t('nav.batchInvoice'),
-          href: "/new/invoice-batch",
-          icon: DocumentTextIcon,
-        },
-      ],
-    },
-    {
-      name: t('nav.newNDA'),
-      href: "/new/nda",
-      icon: ShieldCheckIcon,
-      current: pathname?.startsWith("/new/nda") || pathname?.startsWith("/nda"),
-      children: [
-        { name: t('nav.newNDA'), href: "/new/nda", icon: ShieldCheckIcon },
-        {
-          name: "AI Assisted",
-          href: "/nda/ai-assisted",
-          icon: ShieldCheckIcon,
-        },
-        { name: "Editor", href: "/nda/editor", icon: ShieldCheckIcon },
-      ],
-    },
-    {
-      name: t('nav.multilingualDemo'),
+      name: t("nav.multilingualDemo"),
       href: "/demo/multilang-pdf",
-      icon: CogIcon,
+      icon: DocumentTextIcon,
       current: pathname?.startsWith("/demo/multilang"),
     },
-    // {
-    //   name: 'Recent',
-    //   href: '/recent',
-    //   icon: ClockIcon,
-    //   current: pathname === '/recent'
-    // }
   ];
 
   const handleDropdownToggle = (itemName: string) => {
@@ -182,8 +143,12 @@ export function NavigationHeader() {
             ))}
           </nav>
 
-          {/* Settings Button */}
-          <div className="hidden lg:flex items-center">
+          {/* Language Selector and Settings */}
+          <div className="hidden lg:flex items-center space-x-4">
+            {/* Language Selector */}
+            <LanguageSelector variant="compact" />
+            
+            {/* Settings Button */}
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -300,7 +265,7 @@ export function NavigationHeader() {
               {/* Mobile Settings */}
               <button className="flex items-center w-full px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200">
                 <CogIcon className="w-5 h-5 mr-3" />
-                {t('nav.companySettings')}
+                {t("nav.companySettings")}
               </button>
             </div>
           </motion.div>

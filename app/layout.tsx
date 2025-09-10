@@ -7,12 +7,12 @@ import { LocaleProvider } from './lib/i18n/context'
 import { Metadata, Viewport } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Xinfoice - AI-Powered Document Generation Platform',
+  title: 'Xinvoice - AI-Powered Document Generation Platform',
   description: 'AI-powered document generation with advanced features, structured prompts, and multi-document support. Create professional invoices, NDAs, and more with intelligent automation.',
-  keywords: 'AI, document generation, invoice, NDA, automation, business documents, Xinfoice',
-  authors: [{ name: 'Xinfoice Team' }],
-  creator: 'Xinfoice',
-  publisher: 'Xinfoice',
+  keywords: 'AI, document generation, invoice, NDA, automation, business documents, Xinvoice',
+  authors: [{ name: 'Xinvoice Team' }],
+  creator: 'Xinvoice',
+  publisher: 'Xinvoice',
   icons: {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },
@@ -21,15 +21,15 @@ export const metadata: Metadata = {
     apple: '/icon.svg',
   },
   openGraph: {
-    title: 'Xinfoice - AI-Powered Document Generation Platform',
+    title: 'Xinvoice - AI-Powered Document Generation Platform',
     description: 'AI-powered document generation with advanced features, structured prompts, and multi-document support.',
     type: 'website',
     locale: 'en_US',
-    siteName: 'Xinfoice',
+    siteName: 'Xinvoice',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Xinfoice - AI-Powered Document Generation Platform',
+    title: 'Xinvoice - AI-Powered Document Generation Platform',
     description: 'AI-powered document generation with advanced features, structured prompts, and multi-document support.',
   },
 }

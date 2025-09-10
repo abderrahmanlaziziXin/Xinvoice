@@ -1,4 +1,4 @@
-# Xinfoice - AI-Powered Document Generation Platform
+# Xinvoice - AI-Powered Document Generation Platform
 
 A Next.js 14 application for generating professional documents (invoices, NDAs) using advanced AI assistance with enhanced structured prompts.
 

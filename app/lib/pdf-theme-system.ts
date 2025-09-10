@@ -1,5 +1,5 @@
 /**
- * Enhanced PDF Theme System for Xinfoice Platform
+ * Enhanced PDF Theme System for Xinvoice Platform
  * 
  * This module provides a comprehensive theming system for PDF generation
  * that matches the platform's visual identity including:

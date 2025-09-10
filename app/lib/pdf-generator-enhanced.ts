@@ -1,5 +1,5 @@
 /**
- * Enhanced PDF Generator for Xinfoice Platform
+ * Enhanced PDF Generator for Xinvoice Platform
  * 
  * This module provides a redesigned PDF generation system that matches
  * the platform's visual identity with support for multiple themes,
@@ -60,7 +60,7 @@ export class EnhancedInvoicePDFGenerator {
       theme: 'primary', // Use primary theme with your brand colors as default
       accentColor: '',
       companyLogo: null,
-      websiteUrl: 'https://xinfoice.com',
+      websiteUrl: 'https://xinvoice.com',
       showQRCode: false,
       ...options
     }
@@ -503,7 +503,7 @@ export class EnhancedInvoicePDFGenerator {
     }
     
     // Powered by (right side)
-    this.pdf.text('Powered by Xinfoice', pageWidth - this.theme.spacing.margin, footerY, { align: 'right' })
+    this.pdf.text('Powered by Xinvoice', pageWidth - this.theme.spacing.margin, footerY, { align: 'right' })
   }
 
   /**

@@ -1,7 +1,7 @@
 {
-  "name": "xinfoice",
+  "name": "xinvoice",
   "version": "0.1.0",
-  "description": "Xinfoice - AI-powered document generator with multi-currency support and batch processing capabilities",
+  "description": "Xinvoice - AI-powered document generator with multi-currency support and batch processing capabilities",
   "private": true,
   "scripts": {
     "dev": "next dev",

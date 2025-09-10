@@ -20,7 +20,37 @@ export const translations: Record<string, Translations> = {
       batchInvoice: 'Batch Invoice', 
       newNDA: 'New NDA',
       companySettings: 'Company Settings',
-      multilingualDemo: 'Multilingual Demo'
+      multilingualDemo: 'AI Documents'
+    },
+    hero: {
+      poweredBy: 'Powered by Advanced AI',
+      title: 'Multilingual AI Documents',
+      subtitle: 'Create professional invoices and NDAs in 28+ languages with intelligent AI that understands cultural context and regional business practices.',
+      tryButton: 'Try Multilingual AI',
+      features: {
+        aiGeneration: {
+          title: 'AI-Powered Generation',
+          description: 'Advanced GPT-4o intelligence creates perfect documents automatically'
+        },
+        fileUpload: {
+          title: 'File Upload Support', 
+          description: 'Upload CSV/Excel files and let AI handle complex batch processing'
+        },
+        instantProcessing: {
+          title: 'Instant Processing',
+          description: 'Generate professional documents in seconds, not hours'
+        },
+        naturalLanguage: {
+          title: 'Natural Language',
+          description: 'Just describe what you need in plain English'
+        }
+      },
+      stats: {
+        documents: 'Documents Generated',
+        timeSaved: 'Hours Saved',
+        satisfaction: 'User Satisfaction'
+      },
+      finalCta: 'Ready to revolutionize your document workflow?'
     },
     demo: {
       title: 'Multilingual Documents',
@@ -187,7 +217,37 @@ export const translations: Record<string, Translations> = {
       batchInvoice: 'Factures en Lot',
       newNDA: 'Nouvel NDA',
       companySettings: 'Paramètres Entreprise',
-      multilingualDemo: 'Démo Multilingue'
+      multilingualDemo: 'Documents IA'
+    },
+    hero: {
+      poweredBy: 'Propulsé par l\'IA Avancée',
+      title: 'Documents IA Multilingues',
+      subtitle: 'Créez des factures et NDAs professionnels dans plus de 28 langues avec une IA intelligente qui comprend le contexte culturel et les pratiques commerciales régionales.',
+      tryButton: 'Essayer l\'IA Multilingue',
+      features: {
+        aiGeneration: {
+          title: 'Génération par IA',
+          description: 'L\'intelligence avancée GPT-4o crée automatiquement des documents parfaits'
+        },
+        fileUpload: {
+          title: 'Support de Fichiers',
+          description: 'Téléchargez des fichiers CSV/Excel et laissez l\'IA gérer le traitement complexe par lots'
+        },
+        instantProcessing: {
+          title: 'Traitement Instantané',
+          description: 'Générez des documents professionnels en secondes, pas en heures'
+        },
+        naturalLanguage: {
+          title: 'Langage Naturel',
+          description: 'Décrivez simplement ce dont vous avez besoin en français'
+        }
+      },
+      stats: {
+        documents: 'Documents Générés',
+        timeSaved: 'Heures Économisées',
+        satisfaction: 'Satisfaction Utilisateur'
+      },
+      finalCta: 'Prêt à révolutionner votre flux de travail documentaire ?'
     },
     demo: {
       title: 'Documents Multilingues',
@@ -354,7 +414,37 @@ export const translations: Record<string, Translations> = {
       batchInvoice: 'فواتير متعددة',
       newNDA: 'اتفاقية سرية جديدة',
       companySettings: 'إعدادات الشركة',
-      multilingualDemo: 'عرض متعدد اللغات'
+      multilingualDemo: 'وثائق ذكية'
+    },
+    hero: {
+      poweredBy: 'مدعوم بالذكاء الاصطناعي المتقدم',
+      title: 'وثائق ذكية متعددة اللغات',
+      subtitle: 'إنشاء فواتير واتفاقيات سرية احترافية بأكثر من 28 لغة مع ذكاء اصطناعي يفهم السياق الثقافي والممارسات التجارية الإقليمية.',
+      tryButton: 'جرب الذكاء الاصطناعي متعدد اللغات',
+      features: {
+        aiGeneration: {
+          title: 'توليد بالذكاء الاصطناعي',
+          description: 'ذكاء GPT-4o المتقدم ينشئ وثائق مثالية تلقائياً'
+        },
+        fileUpload: {
+          title: 'دعم رفع الملفات',
+          description: 'ارفع ملفات CSV/Excel ودع الذكاء الاصطناعي يعالج المعالجة المعقدة بكميات كبيرة'
+        },
+        instantProcessing: {
+          title: 'معالجة فورية',
+          description: 'أنشئ وثائق احترافية في ثوانٍ، وليس ساعات'
+        },
+        naturalLanguage: {
+          title: 'لغة طبيعية',
+          description: 'اوصف ما تحتاجه بالعربية البسيطة'
+        }
+      },
+      stats: {
+        documents: 'وثائق تم إنشاؤها',
+        timeSaved: 'ساعات توفرت',
+        satisfaction: 'رضا المستخدمين'
+      },
+      finalCta: 'هل أنت مستعد لثورة في سير عمل الوثائق؟'
     },
     demo: {
       title: 'وثائق متعددة اللغات',
