@@ -127,17 +127,17 @@ export function NDAPDFPreviewModal({ isOpen, onClose, ndaData }: NDAPDFPreviewMo
                       <span className="text-gray-600">Type:</span> Non-Disclosure Agreement
                     </div>
                     <div>
-                      <span className="text-gray-600">Disclosing Party:</span> {ndaData.disclosingParty.name}
+                      <span className="text-gray-600">Disclosing Party:</span> {ndaData.disclosingParty?.name || 'N/A'}
                     </div>
                     <div>
-                      <span className="text-gray-600">Receiving Party:</span> {ndaData.receivingParty.name}
+                      <span className="text-gray-600">Receiving Party:</span> {ndaData.receivingParty?.name || 'N/A'}
                     </div>
                     <div>
                       <span className="text-gray-600">Effective Date:</span>{' '}
-                      {new Date(ndaData.effectiveDate).toLocaleDateString()}
+                      {ndaData.effectiveDate ? new Date(ndaData.effectiveDate).toLocaleDateString() : 'N/A'}
                     </div>
                     <div>
-                      <span className="text-gray-600">Governing Law:</span> {ndaData.governingLaw}
+                      <span className="text-gray-600">Governing Law:</span> {ndaData.governingLaw || 'N/A'}
                     </div>
                   </div>
                 </div>

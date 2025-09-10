@@ -54,20 +54,18 @@ export async function POST(request: NextRequest) {
         // Parse the content to create a proper invoice object
         const invoiceData = {
           type: 'invoice' as const,
-          ...result.metadata,
           ...result.content,
-          locale: result.metadata.locale,
-          currency: result.metadata.currency,
+          locale: locale, // Use the provided locale
+          currency: result.content.currency || userContext?.defaultCurrency || 'USD',
         }
         validatedDocument = DocumentSchema.parse(invoiceData)
       } else if (documentType === 'nda') {
         // Parse the content to create a proper NDA object
         const ndaData = {
           type: 'nda' as const,
-          ...result.metadata,
           ...result.content,
-          locale: result.metadata.locale,
-          currency: result.metadata.currency,
+          locale: locale, // Use the provided locale
+          currency: result.content.currency || userContext?.defaultCurrency || 'USD',
         }
         validatedDocument = DocumentSchema.parse(ndaData)
       }
@@ -82,10 +80,10 @@ export async function POST(request: NextRequest) {
       success: true,
       document: validatedDocument,
       localization: {
-        locale: result.metadata.locale,
-        language: result.metadata.language,
-        direction: result.metadata.direction,
-        labels: result.localized_labels || {},
+        locale: locale,
+        language: locale.split('-')[0], // Extract language from locale (e.g., 'fr' from 'fr-FR')
+        direction: ['ar', 'he', 'fa'].some(lang => locale.startsWith(lang)) ? 'rtl' : 'ltr',
+        labels: result.content.labels || {},
       },
       formatted_document: result.formatted_document,
       assumptions: result.assumptions || [],

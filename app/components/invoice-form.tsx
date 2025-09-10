@@ -31,7 +31,7 @@ function PDFModalSkeleton() {
       <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('common.loading')}</p>
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     </div>
