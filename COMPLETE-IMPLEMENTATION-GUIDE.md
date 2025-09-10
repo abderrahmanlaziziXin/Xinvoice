@@ -2,7 +2,7 @@
 
 ## 📋 EXECUTIVE SUMMARY
 
-Build an **AI-powered document generation platform** identical to the current Xinfoice system. This platform generates professional invoices and NDAs using OpenAI GPT-4o, supports 11+ languages with cultural context, batch processing, multilingual PDF generation, and premium UI/UX with glass morphism design.
+Build an **AI-powered document generation platform** identical to the current Xinvoice system. This platform generates professional invoices and NDAs using OpenAI GPT-4o, supports 11+ languages with cultural context, batch processing, multilingual PDF generation, and premium UI/UX with glass morphism design.
 
 ---
 

@@ -140,34 +140,37 @@ const samplePrompts = {
 
 export default function MultilingualDocumentPlatform() {
   const { t, locale: currentLocale } = useTranslations();
-  
+
   // Helper function to replace placeholders in translation strings
-  const formatTranslation = (key: string, replacements: Record<string, string>) => {
+  const formatTranslation = (
+    key: string,
+    replacements: Record<string, string>
+  ) => {
     let translation = t(key);
     Object.entries(replacements).forEach(([placeholder, value]) => {
       translation = translation.replace(`{${placeholder}}`, value);
     });
     return translation;
   };
-  
+
   // Document types with translations
   const translatedDocumentTypes = [
     {
       type: "invoice" as DocumentType,
-      label: t('demo.invoice'),
+      label: t("demo.invoice"),
       icon: DocumentTextIcon,
-      description: t('demo.invoiceDesc'),
+      description: t("demo.invoiceDesc"),
       color: "blue",
     },
     {
       type: "nda" as DocumentType,
-      label: t('demo.nda'),
+      label: t("demo.nda"),
       icon: ClipboardDocumentListIcon,
-      description: t('demo.ndaDesc'),
+      description: t("demo.ndaDesc"),
       color: "purple",
     },
   ];
-  
+
   const [selectedLocale, setSelectedLocale] = useState<Locale>("en-US");
   const [selectedDocumentType, setSelectedDocumentType] =
     useState<DocumentType>("invoice");
@@ -776,10 +779,10 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                     <GlobeAltIcon className="w-8 h-8 text-xinfinity-primary" />
                     <div>
                       <h1 className="text-3xl font-bold bg-gradient-to-r from-xinfinity-primary to-xinfinity-secondary bg-clip-text text-transparent">
-                        {t('demo.title')}
+                        {t("demo.title")}
                       </h1>
                       <p className="mt-1 text-sm text-xinfinity-muted">
-                        {t('demo.subtitle')}
+                        {t("demo.subtitle")}
                       </p>
                     </div>
                   </div>
@@ -791,7 +794,7 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                   className="inline-flex items-center px-4 py-2 text-sm font-medium text-xinfinity-foreground bg-xinfinity-surface border border-xinfinity-border rounded-xl hover:bg-xinfinity-surface/80 focus:outline-none focus:ring-2 focus:ring-xinfinity-primary/20 transition-all"
                 >
                   <Cog6ToothIcon className="w-4 h-4 mr-2" />
-                  {t('demo.companySettings')}
+                  {t("demo.companySettings")}
                 </button>
                 {showForm && (
                   <button
@@ -822,7 +825,7 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                       <div className="flex items-center mb-4">
                         <LanguageIcon className="w-5 h-5 text-xinfinity-primary mr-2" />
                         <h3 className="text-lg font-semibold text-xinfinity-foreground">
-                          {t('demo.languageSelection')}
+                          {t("demo.languageSelection")}
                         </h3>
                       </div>
                       <select
@@ -843,14 +846,16 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                         <div className="mt-3 p-3 bg-xinfinity-primary/5 rounded-lg">
                           <div className="text-xs text-xinfinity-muted space-y-1">
                             <div>
-                              {t('demo.direction')}:{" "}
+                              {t("demo.direction")}:{" "}
                               {isRTL
-                                ? t('demo.rightToLeft')
-                                : t('demo.leftToRight')}
+                                ? t("demo.rightToLeft")
+                                : t("demo.leftToRight")}
                             </div>
                             <div>
-                              {t('demo.culturalContext')}:{" "}
-                              {culturalContext ? t('demo.enabled') : t('demo.disabled')}
+                              {t("demo.culturalContext")}:{" "}
+                              {culturalContext
+                                ? t("demo.enabled")
+                                : t("demo.disabled")}
                             </div>
                           </div>
                         </div>
@@ -862,7 +867,7 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                       <div className="flex items-center mb-4">
                         <DocumentDuplicateIcon className="w-5 h-5 text-xinfinity-primary mr-2" />
                         <h3 className="text-lg font-semibold text-xinfinity-foreground">
-                          {t('demo.documentType')}
+                          {t("demo.documentType")}
                         </h3>
                       </div>
                       <div className="grid grid-cols-1 gap-3">
@@ -910,7 +915,7 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                       <div className="flex items-center mb-4">
                         <BeakerIcon className="w-5 h-5 text-xinfinity-primary mr-2" />
                         <h3 className="text-lg font-semibold text-xinfinity-foreground">
-                          {t('demo.generationMode')}
+                          {t("demo.generationMode")}
                         </h3>
                       </div>
                       <div className="grid grid-cols-2 gap-3">
@@ -931,9 +936,11 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                               }`}
                             />
                             <div>
-                              <h4 className="font-medium">{t('demo.single')}</h4>
+                              <h4 className="font-medium">
+                                {t("demo.single")}
+                              </h4>
                               <p className="text-xs text-xinfinity-muted">
-                                {t('demo.singleDesc')}
+                                {t("demo.singleDesc")}
                               </p>
                             </div>
                           </div>
@@ -955,9 +962,9 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                               }`}
                             />
                             <div>
-                              <h4 className="font-medium">{t('demo.batch')}</h4>
+                              <h4 className="font-medium">{t("demo.batch")}</h4>
                               <p className="text-xs text-xinfinity-muted">
-                                {t('demo.batchDesc')}
+                                {t("demo.batchDesc")}
                               </p>
                             </div>
                           </div>
@@ -1062,7 +1069,7 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                     {/* Options */}
                     <div className="xinfinity-card p-6">
                       <h3 className="text-lg font-semibold text-xinfinity-foreground mb-4">
-                        {t('demo.generationOptions')}
+                        {t("demo.generationOptions")}
                       </h3>
                       <div className="space-y-3">
                         <label className="flex items-center">
@@ -1075,7 +1082,7 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                             className="rounded border-xinfinity-border text-xinfinity-primary shadow-sm focus:border-xinfinity-primary focus:ring focus:ring-xinfinity-primary/20"
                           />
                           <span className="ml-3 text-sm text-xinfinity-foreground">
-                            {t('demo.includeUITranslations')}
+                            {t("demo.includeUITranslations")}
                           </span>
                         </label>
                         <label className="flex items-center">
@@ -1088,7 +1095,7 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                             className="rounded border-xinfinity-border text-xinfinity-primary shadow-sm focus:border-xinfinity-primary focus:ring focus:ring-xinfinity-primary/20"
                           />
                           <span className="ml-3 text-sm text-xinfinity-foreground">
-                            {t('demo.applyCulturalContext')}
+                            {t("demo.applyCulturalContext")}
                           </span>
                         </label>
                       </div>
@@ -1114,17 +1121,17 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                       )}
                     </motion.div>
                     <h2 className="text-3xl font-bold text-xinfinity-foreground mb-3">
-                      {formatTranslation('demo.createTitle', { 
-                        documentType: currentDocType?.label || '', 
-                        locale: selectedLocaleData?.label || ''
+                      {formatTranslation("demo.createTitle", {
+                        documentType: currentDocType?.label || "",
+                        locale: selectedLocaleData?.label || "",
                       })}
                     </h2>
                     <p
                       className="text-xinfinity-muted text-lg max-w-2xl mx-auto"
                       dir={isRTL ? "rtl" : "ltr"}
                     >
-                      {formatTranslation('demo.createDescription', { 
-                        documentType: currentDocType?.label.toLowerCase() || ''
+                      {formatTranslation("demo.createDescription", {
+                        documentType: currentDocType?.label.toLowerCase() || "",
                       })}
                     </p>
                   </div>
@@ -1135,16 +1142,18 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                       <div className="flex items-center mb-2">
                         <LanguageIcon className="w-5 h-5 text-blue-600 mr-2" />
                         <h4 className="font-medium text-blue-800">
-                          🌍 {t('demo.smartLanguageProcessing')}
+                          🌍 {t("demo.smartLanguageProcessing")}
                         </h4>
                       </div>
                       <p className="text-sm text-blue-700">
                         <strong>
-                          {formatTranslation('demo.smartLanguageDesc', { locale: selectedLocaleData?.label || '' })}
+                          {formatTranslation("demo.smartLanguageDesc", {
+                            locale: selectedLocaleData?.label || "",
+                          })}
                         </strong>
                       </p>
                       <div className="mt-2 text-xs text-blue-600">
-                        💡 {t('demo.examplesTitle')}: {t('demo.examplesDesc')}
+                        💡 {t("demo.examplesTitle")}: {t("demo.examplesDesc")}
                       </div>
                     </div>
 
@@ -1154,10 +1163,14 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                         <textarea
                           value={prompt}
                           onChange={(e) => setPrompt(e.target.value)}
-                          placeholder={formatTranslation('demo.promptPlaceholder', { 
-                            documentType: currentDocType?.label.toLowerCase() || '',
-                            locale: selectedLocaleData?.label || ''
-                          })}
+                          placeholder={formatTranslation(
+                            "demo.promptPlaceholder",
+                            {
+                              documentType:
+                                currentDocType?.label.toLowerCase() || "",
+                              locale: selectedLocaleData?.label || "",
+                            }
+                          )}
                           className="w-full h-32 p-4 border border-xinfinity-border rounded-xl resize-none focus:ring-2 focus:ring-xinfinity-primary focus:border-transparent bg-white"
                           dir={isRTL ? "rtl" : "ltr"}
                         />
@@ -1166,7 +1179,7 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                             onClick={loadSamplePrompt}
                             className="px-3 py-1 text-xs bg-xinfinity-surface hover:bg-xinfinity-border rounded-lg transition-colors"
                           >
-                            {t('demo.loadSample')}
+                            {t("demo.loadSample")}
                           </button>
                         </div>
                       </div>
@@ -1319,9 +1332,9 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                         <div className="flex items-center justify-center">
                           <SparklesIcon className="w-5 h-5 mr-2" />
                           {mode === "single"
-                            ? formatTranslation('demo.generateButton', { 
-                                documentType: currentDocType?.label || '', 
-                                locale: selectedLocaleData?.label || ''
+                            ? formatTranslation("demo.generateButton", {
+                                documentType: currentDocType?.label || "",
+                                locale: selectedLocaleData?.label || "",
                               })
                             : `Generate ${
                                 batchInputMode === "file"
@@ -1519,76 +1532,6 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                           {/* Invoice Form */}
                           <div className="space-y-6">
                             {/* Debug: Show what we actually received */}
-                            <div className="xinfinity-card p-4 bg-gray-50 border border-gray-200">
-                              <h4 className="font-medium text-gray-800 mb-3">
-                                🔍 Debug: Generated Data Analysis
-                              </h4>
-                              <div className="space-y-2 text-sm">
-                                <div>
-                                  <span className="font-medium">
-                                    Has generatedDocument:
-                                  </span>
-                                  <span
-                                    className={
-                                      generatedDocument
-                                        ? "text-green-600"
-                                        : "text-red-600"
-                                    }
-                                  >
-                                    {generatedDocument ? "✅ Yes" : "❌ No"}
-                                  </span>
-                                </div>
-                                <div>
-                                  <span className="font-medium">
-                                    Has document property:
-                                  </span>
-                                  <span
-                                    className={
-                                      generatedDocument?.document
-                                        ? "text-green-600"
-                                        : "text-red-600"
-                                    }
-                                  >
-                                    {generatedDocument?.document
-                                      ? "✅ Yes"
-                                      : "❌ No"}
-                                  </span>
-                                </div>
-                                <div>
-                                  <span className="font-medium">
-                                    Document keys count:
-                                  </span>
-                                  <span className="text-blue-600">
-                                    {generatedDocument?.document
-                                      ? Object.keys(generatedDocument.document)
-                                          .length
-                                      : 0}
-                                  </span>
-                                </div>
-                                <div>
-                                  <span className="font-medium">
-                                    Document keys:
-                                  </span>
-                                  <span className="text-blue-600">
-                                    {generatedDocument?.document
-                                      ? JSON.stringify(
-                                          Object.keys(
-                                            generatedDocument.document
-                                          )
-                                        )
-                                      : "None"}
-                                  </span>
-                                </div>
-                              </div>
-                              <details className="mt-3">
-                                <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-800">
-                                  🔍 View Full Generated Data (Debug)
-                                </summary>
-                                <pre className="mt-2 p-3 bg-white rounded text-xs overflow-auto max-h-48">
-                                  {JSON.stringify(generatedDocument, null, 2)}
-                                </pre>
-                              </details>
-                            </div>
 
                             {/* Show form based on more flexible conditions */}
                             {generatedDocument?.document ? (
