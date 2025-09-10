@@ -91,7 +91,7 @@ export default function InvoiceForm({
       to: { name: "", address: "", email: "", phone: "" },
       items: [{ description: "", quantity: 1, rate: 0, amount: 0 }],
       subtotal: 0,
-      taxRate: userContext?.defaultTaxRate || 0,
+      taxRate: userContext?.defaultTaxRate ? (userContext.defaultTaxRate * 100) : 0,
       taxAmount: 0,
       total: 0,
       currency: (userContext?.defaultCurrency || defaultCurrency) as any,
@@ -137,7 +137,9 @@ export default function InvoiceForm({
           ? initialData.items
           : [{ description: "", quantity: 1, rate: 0, amount: 0 }],
         subtotal: initialData.subtotal ?? 0,
-        taxRate: initialData.taxRate ?? userContext?.defaultTaxRate ?? 0,
+      taxRate: initialData.taxRate !== undefined 
+        ? (initialData.taxRate * 100) // Convert decimal to percentage for display
+        : (userContext?.defaultTaxRate ? userContext.defaultTaxRate * 100 : 0),
         taxAmount: initialData.taxAmount ?? 0,
         total: initialData.total ?? 0,
         currency: (initialData.currency ||
@@ -193,6 +195,12 @@ export default function InvoiceForm({
   };
 
   const validateEmailsAndSubmit = (data: Invoice) => {
+    // Convert tax rate from percentage to decimal for storage/processing
+    const processedData = {
+      ...data,
+      taxRate: (data.taxRate || 0) / 100
+    };
+    
     const missing: string[] = [];
 
     if (!data.from.email) {
@@ -213,16 +221,16 @@ export default function InvoiceForm({
 
     if (missing.length > 0) {
       setMissingEmails(missing);
-      setPendingSubmitData(data);
+      setPendingSubmitData(processedData);
       setShowEmailWarning(true);
     } else {
-      onSubmit(data);
+      onSubmit(processedData);
     }
   };
 
   const handleContinueWithoutEmails = () => {
     if (pendingSubmitData) {
-      onSubmit(pendingSubmitData);
+      onSubmit(pendingSubmitData); // Already processed in validateEmailsAndSubmit
       setPendingSubmitData(null);
     }
   };
@@ -650,9 +658,9 @@ export default function InvoiceForm({
                       step="0.1"
                       className="xinfinity-input text-right text-sm"
                       placeholder={(
-                        userContext?.defaultTaxRate || 0
-                      ).toString()}
-                      defaultValue={userContext?.defaultTaxRate || 0}
+                        userContext?.defaultTaxRate ? (userContext.defaultTaxRate * 100).toString() : "0"
+                      )}
+                      defaultValue={userContext?.defaultTaxRate ? (userContext.defaultTaxRate * 100) : 0}
                     />
                   </div>
                 </div>
