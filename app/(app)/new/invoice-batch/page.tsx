@@ -1,11 +1,11 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import toast from 'react-hot-toast'
-import { useRouter } from 'next/navigation'
-import { 
-  DocumentDuplicateIcon, 
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import {
+  DocumentDuplicateIcon,
   CloudArrowUpIcon,
   SparklesIcon,
   Cog6ToothIcon,
@@ -17,197 +17,229 @@ import {
   InformationCircleIcon,
   DocumentTextIcon,
   RocketLaunchIcon,
-  BoltIcon
-} from '@heroicons/react/24/outline'
-import { useGenerateBatchDocuments } from '../../../hooks/use-generate-batch-documents'
-import { CompanySettings } from '../../../components/company-settings'
-import { FileUpload } from '../../../components/file-upload'
-import { LoadingSpinner } from '../../../components/loading'
-import { Logo } from '../../../components/logo'
-import { useUserContext } from '../../../lib/user-context'
-import { usePersistedUserSettings, usePersistedCurrency, usePersistedLocale } from '../../../hooks/use-persisted-settings'
-import { convertFileDataToPrompt, FileParseResult } from '../../../lib/file-parser'
-import { generateMultiItemPrompt, detectTemplateType } from '../../../lib/csv-template-enhanced'
-import { downloadMultiplePDFs, downloadMultiplePDFsAsZip } from '../../../lib/pdf-generator'
-import { downloadCSVTemplate, getTemplateFieldDescriptions } from '../../../lib/csv-template-enhanced'
-import { Invoice } from '../../../../packages/core'
+  BoltIcon,
+} from "@heroicons/react/24/outline";
+import { useGenerateBatchDocuments } from "../../../hooks/use-generate-batch-documents";
+import { CompanySettings } from "../../../components/company-settings";
+import { FileUpload } from "../../../components/file-upload";
+import { LoadingSpinner } from "../../../components/loading";
+import { Logo } from "../../../components/logo";
+import { useUserContext } from "../../../lib/user-context";
+import {
+  usePersistedUserSettings,
+  usePersistedCurrency,
+  usePersistedLocale,
+} from "../../../hooks/use-persisted-settings";
+import {
+  convertFileDataToPrompt,
+  FileParseResult,
+} from "../../../lib/file-parser";
+import {
+  generateMultiItemPrompt,
+  detectTemplateType,
+} from "../../../lib/csv-template-enhanced";
+import {
+  downloadMultiplePDFs,
+  downloadMultiplePDFsAsZip,
+} from "../../../lib/pdf-generator";
+import {
+  downloadCSVTemplate,
+  getTemplateFieldDescriptions,
+} from "../../../lib/csv-template-enhanced";
+import { Invoice } from "../../../../packages/core";
 
 export default function BatchInvoicePage() {
-  const router = useRouter()
-  const [uploadedData, setUploadedData] = useState<FileParseResult | null>(null)
-  const [generatedInvoices, setGeneratedInvoices] = useState<Invoice[]>([])
-  const [showForm, setShowForm] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
-  const [editingIndex, setEditingIndex] = useState<number | null>(null)
-  const [editData, setEditData] = useState<Invoice | null>(null)
-  const [detectedTemplate, setDetectedTemplate] = useState<string>('Simple Invoice')
-  const { context } = useUserContext()
-  const { settings } = usePersistedUserSettings()
-  const [lastUsedCurrency, setLastUsedCurrency] = usePersistedCurrency()
-  const [lastUsedLocale, setLastUsedLocale] = usePersistedLocale()
+  const router = useRouter();
+  const [uploadedData, setUploadedData] = useState<FileParseResult | null>(
+    null
+  );
+  const [generatedInvoices, setGeneratedInvoices] = useState<Invoice[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editData, setEditData] = useState<Invoice | null>(null);
+  const [detectedTemplate, setDetectedTemplate] =
+    useState<string>("Simple Invoice");
+  const { context } = useUserContext();
+  const { settings } = usePersistedUserSettings();
+  const [lastUsedCurrency, setLastUsedCurrency] = usePersistedCurrency();
+  const [lastUsedLocale, setLastUsedLocale] = usePersistedLocale();
 
-  const generateMutation = useGenerateBatchDocuments()
+  const generateMutation = useGenerateBatchDocuments();
 
   // Helper function to recalculate invoice totals
   const recalculateInvoiceTotals = (invoice: Invoice): Invoice => {
-    const subtotal = invoice.items.reduce((sum, item) => sum + item.amount, 0)
-    const taxAmount = subtotal * invoice.taxRate
-    const total = subtotal + taxAmount + (invoice.shippingAmount || 0) - (invoice.discountAmount || 0)
-    
+    const subtotal = invoice.items.reduce((sum, item) => sum + item.amount, 0);
+    const taxAmount = subtotal * invoice.taxRate;
+    const total =
+      subtotal +
+      taxAmount +
+      (invoice.shippingAmount || 0) -
+      (invoice.discountAmount || 0);
+
     return {
       ...invoice,
       subtotal,
       taxAmount,
-      total
-    }
-  }
+      total,
+    };
+  };
 
   // Helper function to update edit data with recalculation
   const updateEditData = (updates: Partial<Invoice>) => {
     if (editData) {
-      const updated = { ...editData, ...updates }
-      setEditData(recalculateInvoiceTotals(updated))
+      const updated = { ...editData, ...updates };
+      setEditData(recalculateInvoiceTotals(updated));
     }
-  }
+  };
 
   const handleFileProcessed = (result: FileParseResult) => {
-    setUploadedData(result)
-    
+    setUploadedData(result);
+
     // Detect template type from headers
-    const templateType = detectTemplateType(result.headers)
-    setDetectedTemplate(templateType)
-    
-    toast.success(`✅ File uploaded! Detected: ${templateType}`)
-  }
+    const templateType = detectTemplateType(result.headers);
+    setDetectedTemplate(templateType);
+
+    toast.success(`✅ File uploaded! Detected: ${templateType}`);
+  };
 
   const handleFileError = (error: string) => {
-    toast.error(`❌ Failed to process file: ${error}`)
-  }
+    toast.error(`❌ Failed to process file: ${error}`);
+  };
 
   const handleBatchGenerate = async () => {
     if (!uploadedData) {
-      toast.error('Please upload a file first')
-      return
+      toast.error("Please upload a file first");
+      return;
     }
 
     // Use enhanced multi-item prompt generation
     const prompts = uploadedData.data.map((row: any, index: number) => {
-      return generateMultiItemPrompt(row, index, context)
-    })
+      return generateMultiItemPrompt(row, index, context);
+    });
 
     generateMutation.mutate(
-      { prompts, documentType: 'invoice', userContext: context || undefined },
+      { prompts, documentType: "invoice", userContext: context || undefined },
       {
         onSuccess: (response) => {
-          setGeneratedInvoices(response.documents)
-          setShowForm(true)
-          toast.success(`🎉 Generated ${response.documents.length} invoices successfully!`)
+          setGeneratedInvoices(response.documents);
+          setShowForm(true);
+          toast.success(
+            `🎉 Generated ${response.documents.length} invoices successfully!`
+          );
         },
         onError: (error: Error) => {
-          toast.error('❌ Failed to generate invoices: ' + error.message)
-        }
+          toast.error("❌ Failed to generate invoices: " + error.message);
+        },
       }
-    )
-  }
+    );
+  };
 
   const handleEdit = (index: number) => {
-    setEditingIndex(index)
-    setEditData({ ...generatedInvoices[index] })
-  }
+    setEditingIndex(index);
+    setEditData({ ...generatedInvoices[index] });
+  };
 
   const handleSave = () => {
     if (editingIndex !== null && editData) {
       // Recalculate totals using helper function
-      const updatedInvoice = recalculateInvoiceTotals(editData)
-      
-      const updated = [...generatedInvoices]
-      updated[editingIndex] = updatedInvoice
-      setGeneratedInvoices(updated)
-      setEditingIndex(null)
-      setEditData(null)
-      toast.success('✅ Invoice updated successfully!')
+      const updatedInvoice = recalculateInvoiceTotals(editData);
+
+      const updated = [...generatedInvoices];
+      updated[editingIndex] = updatedInvoice;
+      setGeneratedInvoices(updated);
+      setEditingIndex(null);
+      setEditData(null);
+      toast.success("✅ Invoice updated successfully!");
     }
-  }
+  };
 
   const handleCancel = () => {
-    setEditingIndex(null)
-    setEditData(null)
-  }
+    setEditingIndex(null);
+    setEditData(null);
+  };
 
   const handleOpenEditor = (index: number) => {
-    const invoice = generatedInvoices[index]
-    
+    const invoice = generatedInvoices[index];
+
     // Store invoice data with persisted settings for the editor
-    localStorage.setItem('editingInvoice', JSON.stringify({
-      invoice,
-      fromBatch: true,
-      batchIndex: index,
-      defaultCurrency: settings.defaultCurrency || lastUsedCurrency,
-      defaultLocale: settings.defaultLocale || lastUsedLocale
-    }))
-    
+    localStorage.setItem(
+      "editingInvoice",
+      JSON.stringify({
+        invoice,
+        fromBatch: true,
+        batchIndex: index,
+        defaultCurrency: settings.defaultCurrency || lastUsedCurrency,
+        defaultLocale: settings.defaultLocale || lastUsedLocale,
+      })
+    );
+
     // Navigate to single invoice editor
-    router.push('/new/invoice?edit=true')
-    toast.success('Opening invoice in full editor...')
-  }
+    router.push("/new/invoice?edit=true");
+    toast.success("Opening invoice in full editor...");
+  };
 
   const handleDelete = (index: number) => {
-    const updated = generatedInvoices.filter((_, i) => i !== index)
-    setGeneratedInvoices(updated)
-    toast.success('🗑️ Invoice deleted')
-  }
+    const updated = generatedInvoices.filter((_, i) => i !== index);
+    setGeneratedInvoices(updated);
+    toast.success("🗑️ Invoice deleted");
+  };
 
   const handleDownloadAll = async () => {
     if (generatedInvoices.length === 0) {
-      toast.error('No invoices to download')
-      return
+      toast.error("No invoices to download");
+      return;
     }
 
     try {
-      toast.loading('� Creating ZIP file with all PDFs...', { id: 'download' })
-      await downloadMultiplePDFsAsZip(generatedInvoices, 'batch-invoices')
-      toast.success('✅ ZIP file downloaded successfully!', { id: 'download' })
+      toast.loading("� Creating ZIP file with all PDFs...", { id: "download" });
+      await downloadMultiplePDFsAsZip(generatedInvoices, "batch-invoices");
+      toast.success("✅ ZIP file downloaded successfully!", { id: "download" });
     } catch (error) {
-      console.error('Download error:', error)
-      toast.error('❌ Failed to download ZIP file', { id: 'download' })
+      console.error("Download error:", error);
+      toast.error("❌ Failed to download ZIP file", { id: "download" });
     }
-  }
+  };
 
   const handleDownloadIndividual = async () => {
     if (generatedInvoices.length === 0) {
-      toast.error('No invoices to download')
-      return
+      toast.error("No invoices to download");
+      return;
     }
 
     try {
-      toast.loading('📄 Downloading individual PDFs...', { id: 'download-individual' })
-      await downloadMultiplePDFs(generatedInvoices, 'invoice')
-      toast.success('✅ Individual PDFs downloading!', { id: 'download-individual' })
+      toast.loading("📄 Downloading individual PDFs...", {
+        id: "download-individual",
+      });
+      await downloadMultiplePDFs(generatedInvoices, "invoice");
+      toast.success("✅ Individual PDFs downloading!", {
+        id: "download-individual",
+      });
     } catch (error) {
-      console.error('Download error:', error)
-      toast.error('❌ Failed to download PDFs', { id: 'download-individual' })
+      console.error("Download error:", error);
+      toast.error("❌ Failed to download PDFs", { id: "download-individual" });
     }
-  }
+  };
 
   return (
     <div className="min-h-screen xinfinity-background relative overflow-hidden">
       {/* Animated Background Elements */}
       <motion.div
-        animate={{ 
+        animate={{
           x: [0, 60, 0],
           y: [0, -40, 0],
           scale: [1, 1.2, 1],
         }}
-        transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
         className="absolute top-16 right-16 w-72 h-72 bg-gradient-to-r from-xinfinity-accent/10 to-xinfinity-tertiary/10 rounded-full blur-3xl"
       />
       <motion.div
-        animate={{ 
+        animate={{
           x: [0, -50, 0],
           y: [0, 70, 0],
           scale: [1.2, 1, 1.2],
         }}
-        transition={{ duration: 28, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
         className="absolute bottom-16 left-16 w-96 h-96 bg-gradient-to-r from-xinfinity-primary/10 to-xinfinity-secondary/10 rounded-full blur-3xl"
       />
 
@@ -235,7 +267,7 @@ export default function BatchInvoicePage() {
                     <DocumentDuplicateIcon className="w-10 h-10 text-white" />
                   </motion.div>
                 </div>
-                
+
                 <motion.h1
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -246,14 +278,15 @@ export default function BatchInvoicePage() {
                     Batch Invoice Generation
                   </span>
                 </motion.h1>
-                
+
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.4 }}
                   className="text-xl text-xinfinity-muted max-w-2xl mx-auto"
                 >
-                  Upload your CSV or Excel file and generate multiple professional invoices at once
+                  Upload your CSV or Excel file and generate multiple
+                  professional invoices at once
                 </motion.p>
               </div>
 
@@ -267,8 +300,12 @@ export default function BatchInvoicePage() {
                 {/* Settings Button */}
                 <div className="flex justify-between items-center p-xfi-8 border-b border-xinfinity-border">
                   <div>
-                    <h2 className="text-2xl font-semibold text-xinfinity-foreground">Bulk Invoice Processing</h2>
-                    <p className="text-xinfinity-muted mt-xfi-1">Upload your data file and generate multiple invoices</p>
+                    <h2 className="text-2xl font-semibold text-xinfinity-foreground">
+                      Bulk Invoice Processing
+                    </h2>
+                    <p className="text-xinfinity-muted mt-xfi-1">
+                      Upload your data file and generate multiple invoices
+                    </p>
                   </div>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -294,16 +331,19 @@ export default function BatchInvoicePage() {
                         <InformationCircleIcon className="w-6 h-6 text-blue-600" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-blue-900 mb-2">Need a template?</h3>
+                        <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                          Need a template?
+                        </h3>
                         <p className="text-blue-700 mb-4">
-                          Download our CSV template to ensure your data is formatted correctly for batch processing.
+                          Download our CSV template to ensure your data is
+                          formatted correctly for batch processing.
                         </p>
-                        
+
                         <div className="flex flex-col sm:flex-row gap-4 mb-4">
                           <button
                             onClick={() => {
-                              downloadCSVTemplate()
-                              toast.success('📄 CSV template downloaded!')
+                              downloadCSVTemplate();
+                              toast.success("📄 CSV template downloaded!");
                             }}
                             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                           >
@@ -311,38 +351,59 @@ export default function BatchInvoicePage() {
                             Download CSV Template
                           </button>
                         </div>
-                        
+
                         {/* Required Fields Info */}
                         <div className="bg-white/60 rounded-lg p-4">
-                          <h4 className="font-medium text-gray-900 mb-2">Required Fields:</h4>
+                          <h4 className="font-medium text-gray-900 mb-2">
+                            Required Fields:
+                          </h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                             {getTemplateFieldDescriptions()
-                              .filter(field => field.required)
+                              .filter((field) => field.required)
                               .map((field) => (
-                                <div key={field.field} className="flex items-center">
+                                <div
+                                  key={field.field}
+                                  className="flex items-center"
+                                >
                                   <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                                  <span className="font-mono text-gray-700">{field.field}</span>
-                                  <span className="text-gray-500 ml-2">- {field.description}</span>
+                                  <span className="font-mono text-gray-700">
+                                    {field.field}
+                                  </span>
+                                  <span className="text-gray-500 ml-2">
+                                    - {field.description}
+                                  </span>
                                 </div>
                               ))}
                           </div>
-                          
-                          <h4 className="font-medium text-gray-900 mb-2 mt-4">Optional Fields:</h4>
+
+                          <h4 className="font-medium text-gray-900 mb-2 mt-4">
+                            Optional Fields:
+                          </h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                             {getTemplateFieldDescriptions()
-                              .filter(field => !field.required)
+                              .filter((field) => !field.required)
                               .slice(0, 4) // Show first 4 optional fields
                               .map((field) => (
-                                <div key={field.field} className="flex items-center">
+                                <div
+                                  key={field.field}
+                                  className="flex items-center"
+                                >
                                   <span className="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
-                                  <span className="font-mono text-gray-700">{field.field}</span>
-                                  <span className="text-gray-500 ml-2">- {field.description}</span>
+                                  <span className="font-mono text-gray-700">
+                                    {field.field}
+                                  </span>
+                                  <span className="text-gray-500 ml-2">
+                                    - {field.description}
+                                  </span>
                                 </div>
                               ))}
                           </div>
-                          
+
                           <p className="text-xs text-gray-500 mt-3">
-                            💡 Tip: The AI can understand various column names and formats. Even if your headers don&apos;t match exactly, the system will try to map them intelligently.
+                            💡 Tip: The AI can understand various column names
+                            and formats. Even if your headers don&apos;t match
+                            exactly, the system will try to map them
+                            intelligently.
                           </p>
                         </div>
                       </div>
@@ -359,7 +420,7 @@ export default function BatchInvoicePage() {
                       onFileProcessed={handleFileProcessed}
                       onError={handleFileError}
                     />
-                    
+
                     {uploadedData && (
                       <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
@@ -374,20 +435,26 @@ export default function BatchInvoicePage() {
                               {uploadedData.fileName} processed successfully
                             </h3>
                             <p className="text-emerald-600">
-                              {uploadedData.data.length} rows detected • Ready for batch processing
+                              {uploadedData.data.length} rows detected • Ready
+                              for batch processing
                             </p>
                           </div>
                         </div>
-                        
+
                         {/* Data Preview */}
                         <div className="bg-white/60 rounded-xl p-4 max-h-48 overflow-auto">
-                          <h4 className="font-semibold text-gray-800 mb-2">Data Preview:</h4>
+                          <h4 className="font-semibold text-gray-800 mb-2">
+                            Data Preview:
+                          </h4>
                           <div className="text-sm">
                             <div className="font-medium text-gray-600 mb-1">
-                              Headers: {uploadedData.headers.join(', ')}
+                              Headers: {uploadedData.headers.join(", ")}
                             </div>
                             <div className="text-gray-500">
-                              First row: {uploadedData.data[0] ? Object.values(uploadedData.data[0]).join(', ') : 'No data'}
+                              First row:{" "}
+                              {uploadedData.data[0]
+                                ? Object.values(uploadedData.data[0]).join(", ")
+                                : "No data"}
                             </div>
                           </div>
                         </div>
@@ -453,7 +520,7 @@ export default function BatchInvoicePage() {
                     Review, edit, and download your batch-generated invoices
                   </motion.p>
                 </div>
-                
+
                 <div className="flex space-x-3">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -463,7 +530,7 @@ export default function BatchInvoicePage() {
                   >
                     ← Back to Upload
                   </motion.button>
-                  
+
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -473,7 +540,7 @@ export default function BatchInvoicePage() {
                     <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
                     📦 Download ZIP
                   </motion.button>
-                  
+
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -526,11 +593,17 @@ export default function BatchInvoicePage() {
                               </label>
                               <input
                                 type="text"
-                                value={editData?.invoiceNumber || ''}
-                                onChange={(e) => setEditData(prev => prev ? {
-                                  ...prev,
-                                  invoiceNumber: e.target.value
-                                } : null)}
+                                value={editData?.invoiceNumber || ""}
+                                onChange={(e) =>
+                                  setEditData((prev) =>
+                                    prev
+                                      ? {
+                                          ...prev,
+                                          invoiceNumber: e.target.value,
+                                        }
+                                      : null
+                                  )
+                                }
                                 className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
                               />
                             </div>
@@ -540,11 +613,17 @@ export default function BatchInvoicePage() {
                               </label>
                               <input
                                 type="date"
-                                value={editData?.date || ''}
-                                onChange={(e) => setEditData(prev => prev ? {
-                                  ...prev,
-                                  date: e.target.value
-                                } : null)}
+                                value={editData?.date || ""}
+                                onChange={(e) =>
+                                  setEditData((prev) =>
+                                    prev
+                                      ? {
+                                          ...prev,
+                                          date: e.target.value,
+                                        }
+                                      : null
+                                  )
+                                }
                                 className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
                               />
                             </div>
@@ -554,11 +633,17 @@ export default function BatchInvoicePage() {
                               </label>
                               <input
                                 type="date"
-                                value={editData?.dueDate || ''}
-                                onChange={(e) => setEditData(prev => prev ? {
-                                  ...prev,
-                                  dueDate: e.target.value
-                                } : null)}
+                                value={editData?.dueDate || ""}
+                                onChange={(e) =>
+                                  setEditData((prev) =>
+                                    prev
+                                      ? {
+                                          ...prev,
+                                          dueDate: e.target.value,
+                                        }
+                                      : null
+                                  )
+                                }
                                 className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
                               />
                             </div>
@@ -567,11 +652,17 @@ export default function BatchInvoicePage() {
                                 Status
                               </label>
                               <select
-                                value={editData?.status || 'draft'}
-                                onChange={(e) => setEditData(prev => prev ? {
-                                  ...prev,
-                                  status: e.target.value as any
-                                } : null)}
+                                value={editData?.status || "draft"}
+                                onChange={(e) =>
+                                  setEditData((prev) =>
+                                    prev
+                                      ? {
+                                          ...prev,
+                                          status: e.target.value as any,
+                                        }
+                                      : null
+                                  )
+                                }
                                 className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
                               >
                                 <option value="draft">Draft</option>
@@ -585,7 +676,9 @@ export default function BatchInvoicePage() {
 
                           {/* Client Information */}
                           <div className="border-t pt-4">
-                            <h4 className="font-medium text-gray-900 mb-3">Client Information</h4>
+                            <h4 className="font-medium text-gray-900 mb-3">
+                              Client Information
+                            </h4>
                             <div className="grid md:grid-cols-2 gap-4">
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -593,11 +686,20 @@ export default function BatchInvoicePage() {
                                 </label>
                                 <input
                                   type="text"
-                                  value={editData?.to.name || ''}
-                                  onChange={(e) => setEditData(prev => prev ? {
-                                    ...prev,
-                                    to: { ...prev.to, name: e.target.value }
-                                  } : null)}
+                                  value={editData?.to.name || ""}
+                                  onChange={(e) =>
+                                    setEditData((prev) =>
+                                      prev
+                                        ? {
+                                            ...prev,
+                                            to: {
+                                              ...prev.to,
+                                              name: e.target.value,
+                                            },
+                                          }
+                                        : null
+                                    )
+                                  }
                                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
                                 />
                               </div>
@@ -607,11 +709,20 @@ export default function BatchInvoicePage() {
                                 </label>
                                 <input
                                   type="email"
-                                  value={editData?.to.email || ''}
-                                  onChange={(e) => setEditData(prev => prev ? {
-                                    ...prev,
-                                    to: { ...prev.to, email: e.target.value }
-                                  } : null)}
+                                  value={editData?.to.email || ""}
+                                  onChange={(e) =>
+                                    setEditData((prev) =>
+                                      prev
+                                        ? {
+                                            ...prev,
+                                            to: {
+                                              ...prev.to,
+                                              email: e.target.value,
+                                            },
+                                          }
+                                        : null
+                                    )
+                                  }
                                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
                                 />
                               </div>
@@ -620,11 +731,20 @@ export default function BatchInvoicePage() {
                                   Address
                                 </label>
                                 <textarea
-                                  value={editData?.to.address || ''}
-                                  onChange={(e) => setEditData(prev => prev ? {
-                                    ...prev,
-                                    to: { ...prev.to, address: e.target.value }
-                                  } : null)}
+                                  value={editData?.to.address || ""}
+                                  onChange={(e) =>
+                                    setEditData((prev) =>
+                                      prev
+                                        ? {
+                                            ...prev,
+                                            to: {
+                                              ...prev.to,
+                                              address: e.target.value,
+                                            },
+                                          }
+                                        : null
+                                    )
+                                  }
                                   rows={2}
                                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
                                 />
@@ -635,18 +755,23 @@ export default function BatchInvoicePage() {
                           {/* Items */}
                           <div className="border-t pt-4">
                             <div className="flex justify-between items-center mb-3">
-                              <h4 className="font-medium text-gray-900">Invoice Items</h4>
+                              <h4 className="font-medium text-gray-900">
+                                Invoice Items
+                              </h4>
                               <button
                                 onClick={() => {
                                   if (editData) {
                                     updateEditData({
-                                      items: [...editData.items, {
-                                        description: '',
-                                        quantity: 1,
-                                        rate: 0,
-                                        amount: 0
-                                      }]
-                                    })
+                                      items: [
+                                        ...editData.items,
+                                        {
+                                          description: "",
+                                          quantity: 1,
+                                          rate: 0,
+                                          amount: 0,
+                                        },
+                                      ],
+                                    });
                                   }
                                 }}
                                 className="text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200"
@@ -656,66 +781,82 @@ export default function BatchInvoicePage() {
                             </div>
                             <div className="space-y-3 max-h-48 overflow-y-auto">
                               {editData?.items.map((item, itemIndex) => (
-                                <div key={itemIndex} className="grid grid-cols-12 gap-2 items-end">
+                                <div
+                                  key={itemIndex}
+                                  className="grid grid-cols-12 gap-2 items-end"
+                                >
                                   <div className="col-span-4">
-                                    <label className="block text-xs text-gray-600 mb-1">Description</label>
+                                    <label className="block text-xs text-gray-600 mb-1">
+                                      Description
+                                    </label>
                                     <input
                                       type="text"
                                       value={item.description}
                                       onChange={(e) => {
                                         if (editData) {
-                                          const newItems = [...editData.items]
-                                          newItems[itemIndex] = { ...item, description: e.target.value }
-                                          updateEditData({ items: newItems })
+                                          const newItems = [...editData.items];
+                                          newItems[itemIndex] = {
+                                            ...item,
+                                            description: e.target.value,
+                                          };
+                                          updateEditData({ items: newItems });
                                         }
                                       }}
                                       className="w-full px-2 py-1 border border-gray-200 rounded text-xs"
                                     />
                                   </div>
                                   <div className="col-span-2">
-                                    <label className="block text-xs text-gray-600 mb-1">Qty</label>
+                                    <label className="block text-xs text-gray-600 mb-1">
+                                      Qty
+                                    </label>
                                     <input
                                       type="number"
                                       step="0.01"
                                       value={item.quantity}
                                       onChange={(e) => {
                                         if (editData) {
-                                          const qty = parseFloat(e.target.value) || 0
-                                          const newItems = [...editData.items]
-                                          newItems[itemIndex] = { 
-                                            ...item, 
+                                          const qty =
+                                            parseFloat(e.target.value) || 0;
+                                          const newItems = [...editData.items];
+                                          newItems[itemIndex] = {
+                                            ...item,
                                             quantity: qty,
-                                            amount: qty * item.rate
-                                          }
-                                          updateEditData({ items: newItems })
+                                            amount: qty * item.rate,
+                                          };
+                                          updateEditData({ items: newItems });
                                         }
                                       }}
                                       className="w-full px-2 py-1 border border-gray-200 rounded text-xs"
                                     />
                                   </div>
                                   <div className="col-span-2">
-                                    <label className="block text-xs text-gray-600 mb-1">Rate</label>
+                                    <label className="block text-xs text-gray-600 mb-1">
+                                      Rate
+                                    </label>
                                     <input
                                       type="number"
                                       step="0.01"
                                       value={item.rate}
                                       onChange={(e) => {
                                         if (editData) {
-                                          const rate = parseFloat(e.target.value) || 0
-                                          const newItems = [...editData.items]
-                                          newItems[itemIndex] = { 
-                                            ...item, 
+                                          const rate =
+                                            parseFloat(e.target.value) || 0;
+                                          const newItems = [...editData.items];
+                                          newItems[itemIndex] = {
+                                            ...item,
                                             rate: rate,
-                                            amount: item.quantity * rate
-                                          }
-                                          updateEditData({ items: newItems })
+                                            amount: item.quantity * rate,
+                                          };
+                                          updateEditData({ items: newItems });
                                         }
                                       }}
                                       className="w-full px-2 py-1 border border-gray-200 rounded text-xs"
                                     />
                                   </div>
                                   <div className="col-span-2">
-                                    <label className="block text-xs text-gray-600 mb-1">Amount</label>
+                                    <label className="block text-xs text-gray-600 mb-1">
+                                      Amount
+                                    </label>
                                     <input
                                       type="number"
                                       value={item.amount.toFixed(2)}
@@ -726,9 +867,15 @@ export default function BatchInvoicePage() {
                                   <div className="col-span-2">
                                     <button
                                       onClick={() => {
-                                        if (editData && editData.items.length > 1) {
-                                          const newItems = editData.items.filter((_, i) => i !== itemIndex)
-                                          updateEditData({ items: newItems })
+                                        if (
+                                          editData &&
+                                          editData.items.length > 1
+                                        ) {
+                                          const newItems =
+                                            editData.items.filter(
+                                              (_, i) => i !== itemIndex
+                                            );
+                                          updateEditData({ items: newItems });
                                         }
                                       }}
                                       className="w-full px-2 py-1 text-red-600 hover:bg-red-50 rounded text-xs"
@@ -750,12 +897,19 @@ export default function BatchInvoicePage() {
                                 </label>
                                 <input
                                   type="number"
+                                  min="0"
+                                  max="100"
                                   step="0.01"
-                                  value={(editData?.taxRate || 0) * 100}
+                                  value={(
+                                    (editData?.taxRate ?? 0) * 100
+                                  ).toFixed(2)}
                                   onChange={(e) => {
                                     if (editData) {
-                                      const taxRate = (parseFloat(e.target.value) || 0) / 100
-                                      updateEditData({ taxRate })
+                                      const taxRate =
+                                        e.target.value === ""
+                                          ? 0
+                                          : parseFloat(e.target.value) / 100;
+                                      updateEditData({ taxRate });
                                     }
                                   }}
                                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
@@ -771,8 +925,9 @@ export default function BatchInvoicePage() {
                                   value={editData?.discountAmount || 0}
                                   onChange={(e) => {
                                     if (editData) {
-                                      const discountAmount = parseFloat(e.target.value) || 0
-                                      updateEditData({ discountAmount })
+                                      const discountAmount =
+                                        parseFloat(e.target.value) || 0;
+                                      updateEditData({ discountAmount });
                                     }
                                   }}
                                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
@@ -788,8 +943,9 @@ export default function BatchInvoicePage() {
                                   value={editData?.shippingAmount || 0}
                                   onChange={(e) => {
                                     if (editData) {
-                                      const shippingAmount = parseFloat(e.target.value) || 0
-                                      updateEditData({ shippingAmount })
+                                      const shippingAmount =
+                                        parseFloat(e.target.value) || 0;
+                                      updateEditData({ shippingAmount });
                                     }
                                   }}
                                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
@@ -806,11 +962,17 @@ export default function BatchInvoicePage() {
                                   Terms & Conditions
                                 </label>
                                 <textarea
-                                  value={editData?.terms || ''}
-                                  onChange={(e) => setEditData(prev => prev ? {
-                                    ...prev,
-                                    terms: e.target.value
-                                  } : null)}
+                                  value={editData?.terms || ""}
+                                  onChange={(e) =>
+                                    setEditData((prev) =>
+                                      prev
+                                        ? {
+                                            ...prev,
+                                            terms: e.target.value,
+                                          }
+                                        : null
+                                    )
+                                  }
                                   rows={3}
                                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
                                 />
@@ -820,11 +982,17 @@ export default function BatchInvoicePage() {
                                   Notes
                                 </label>
                                 <textarea
-                                  value={editData?.notes || ''}
-                                  onChange={(e) => setEditData(prev => prev ? {
-                                    ...prev,
-                                    notes: e.target.value
-                                  } : null)}
+                                  value={editData?.notes || ""}
+                                  onChange={(e) =>
+                                    setEditData((prev) =>
+                                      prev
+                                        ? {
+                                            ...prev,
+                                            notes: e.target.value,
+                                          }
+                                        : null
+                                    )
+                                  }
                                   rows={3}
                                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm"
                                 />
@@ -899,12 +1067,12 @@ export default function BatchInvoicePage() {
             </motion.div>
           )}
         </AnimatePresence>
-        
-        <CompanySettings 
+
+        <CompanySettings
           isOpen={showSettings}
           onClose={() => setShowSettings(false)}
         />
       </div>
     </div>
-  )
+  );
 }

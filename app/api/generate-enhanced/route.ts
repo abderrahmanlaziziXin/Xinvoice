@@ -57,36 +57,34 @@ export async function POST(request: NextRequest) {
         )
 
         if (hasLanguageInstructions && provider.generateMultilingualDocument) {
-          console.log('🌍 Using multilingual generation with language enforcement')
+          console.log('🌍 Using simplified multilingual generation')
           
           // Use multilingual generation for better language control
           const multilingualOptions: MultilingualPromptOptions = {
             documentType,
             locale: userContext.outputLanguage || userContext.defaultLocale || 'en-US',
             userContext,
-            includeTranslations: true,
-            culturalContext: true
+            includeTranslations: false,
+            culturalContext: false
           }
 
-          // Create enhanced prompt with strong language enforcement but preserve personal info
-          const enhancedPrompt = `${userContext.languageInstruction || ''}\n\n${prompt}\n\nIMPORTANT INSTRUCTIONS:
-1. Generate the entire response in ${userContext.outputLanguage || 'English'} language, regardless of the input language above.
-2. PRESERVE PERSONAL INFORMATION: Keep all names, addresses, emails, phone numbers, and company names exactly as provided in the original text - do NOT translate personal information.
-3. Translate only: labels, descriptions, terms, legal text, and general content.
-4. Example: If input has "John Smith" and "TechCorp Inc.", keep them as "John Smith" and "TechCorp Inc." even in French output.`
+          // Simple prompt
+          const simplePrompt = `${prompt}
+
+Generate this ${documentType} in ${userContext.outputLanguage || 'English'} language.
+Include all the details requested and use exact amounts from the request.`
 
           const multilingualResponse = await provider.generateMultilingualDocument(
-            enhancedPrompt,
+            simplePrompt,
             multilingualOptions,
             userContext
           )
           
           return NextResponse.json({ 
             success: true, 
-            document: multilingualResponse.metadata,
+            document: multilingualResponse.document,
             content: multilingualResponse.content,
             formatted_document: multilingualResponse.formatted_document,
-            localized_labels: multilingualResponse.localized_labels,
             assumptions: multilingualResponse.assumptions || [],
             enhanced: true,
             multilingual: true

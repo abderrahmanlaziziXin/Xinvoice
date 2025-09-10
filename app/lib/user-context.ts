@@ -35,7 +35,7 @@ export class UserContextManager {
     const updated: UserContext = { 
       defaultCurrency: 'USD',
       defaultLocale: 'en-US',
-      defaultTaxRate: 0.08,
+      defaultTaxRate: 0,
       ...current, 
       ...updates 
     }

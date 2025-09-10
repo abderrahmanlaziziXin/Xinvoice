@@ -52,42 +52,40 @@ export async function POST(request: NextRequest) {
       let validatedDocument
       try {
         if (documentType === 'invoice') {
-          // Parse the content to create a proper invoice object
+          // Use simplified approach - just use the document content
           const invoiceData = {
             type: 'invoice' as const,
-            ...result.metadata,
-            ...result.content,
-            locale: result.metadata.locale,
-            currency: result.metadata.currency,
+            ...result.document,
+            locale: locale,
+            currency: userContext?.defaultCurrency || 'USD',
           }
           validatedDocument = DocumentSchema.parse(invoiceData)
         } else if (documentType === 'nda') {
-          // Parse the content to create a proper NDA object
+          // Use simplified approach - just use the document content
           const ndaData = {
             type: 'nda' as const,
-            ...result.metadata,
-            ...result.content,
-            locale: result.metadata.locale,
-            currency: result.metadata.currency,
+            ...result.document,
+            locale: locale,
+            currency: userContext?.defaultCurrency || 'USD',
           }
           validatedDocument = DocumentSchema.parse(ndaData)
         }
       } catch (validationError) {
         console.warn(`Document ${index} validation failed, returning raw result:`, validationError)
         // If validation fails, return the raw result with additional metadata
-        validatedDocument = result
+        validatedDocument = result.document || result.content || result
       }
 
       return {
         id: index + 1,
         document: validatedDocument,
         localization: {
-          locale: result.metadata.locale,
-          language: result.metadata.language,
-          direction: result.metadata.direction,
-          labels: result.localized_labels || {},
+          locale: locale,
+          language: locale.split('-')[0],
+          direction: 'ltr',
+          labels: {},
         },
-        formatted_document: result.formatted_document,
+        formatted_document: result.formatted_document || JSON.stringify(validatedDocument),
         assumptions: result.assumptions || [],
         status: 'success'
       }
@@ -99,7 +97,7 @@ export async function POST(request: NextRequest) {
       total_generated: processedDocuments.length,
       success_rate: (processedDocuments.length / prompts.length) * 100,
       locale: locale,
-      language: results[0]?.metadata?.language || 'Unknown',
+      language: locale.split('-')[0] || 'en',
     }
 
     // Return the complete multilingual batch response

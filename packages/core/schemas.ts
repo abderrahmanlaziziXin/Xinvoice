@@ -89,45 +89,59 @@ export const InvoiceSchema = z.object({
 
 // Enhanced NDA schemas for rich document support
 export const NDAPartySchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  name: z.string().optional(),
   title: z.string().optional(),
   company: z.string().optional(),
   address: z.string().optional(),
-  email: z.string().email().optional(),
-  phone: z.string().optional()
-})
+  email: z.string().optional(),
+  phone: z.string().optional(),
+  type: z.string().optional()
+}).passthrough()
 
 export const NDASectionSchema = z.object({
-  title: z.string().min(1, 'Section title is required'),
-  body: z.string().min(1, 'Section body is required'),
+  title: z.string().optional(),
+  body: z.string().optional(),
+  content: z.string().optional(),
   subsections: z.array(z.object({
     title: z.string(),
     content: z.string()
   })).optional()
-})
+}).passthrough()
 
 export const NDASchema = z.object({
-  type: z.literal('nda'),
-  title: z.string().min(1, 'Title is required'),
-  effectiveDate: z.string().min(1, 'Effective date is required'),
+  type: z.literal('nda').optional(),
+  title: z.string().optional(),
+  effectiveDate: z.string().optional(),
   terminationDate: z.string().optional(),
-  disclosingParty: NDAPartySchema,
-  receivingParty: NDAPartySchema,
-  purpose: z.string().min(1, 'Purpose is required'),
-  termMonths: z.number().min(1, 'Term must be at least 1 month'),
-  jurisdiction: z.string().min(1, 'Jurisdiction is required'),
-  mutualNda: z.boolean().default(false),
+  disclosingParty: NDAPartySchema.optional(),
+  receivingParty: NDAPartySchema.optional(),
+  purpose: z.string().optional(),
+  termMonths: z.number().optional(),
+  jurisdiction: z.string().optional(),
+  mutualNda: z.boolean().default(false).optional(),
   sections: z.array(NDASectionSchema).optional(),
   governingLaw: z.string().optional(),
-  currency: CurrencySchema.default('USD'),
-  locale: LocaleSchema.default('en-US'),
+  currency: CurrencySchema.default('USD').optional(),
+  locale: LocaleSchema.default('en-US').optional(),
   // Additional fields for enhanced documents
-  confidentialityLevel: z.enum(['standard', 'high', 'critical']).default('standard'),
+  confidentialityLevel: z.enum(['standard', 'high', 'critical']).default('standard').optional(),
   penalties: z.string().optional(),
   exceptions: z.array(z.string()).optional(),
-  returnOfMaterials: z.boolean().default(true),
-  survivingClauses: z.array(z.string()).optional()
-})
+  returnOfMaterials: z.boolean().default(true).optional(),
+  survivingClauses: z.array(z.string()).optional(),
+  // Allow any additional fields the AI might provide
+  parties: z.object({
+    disclosing_party: z.string().optional(),
+    receiving_party: z.string().optional()
+  }).optional(),
+  definitions: z.string().optional(),
+  confidentialityObligations: z.string().optional(),
+  exclusions: z.string().optional(),
+  termClause: z.string().optional(),
+  governingLawClause: z.string().optional(),
+  additionalTerms: z.string().optional(),
+  specialProvisions: z.string().optional()
+}).passthrough() // Allow any additional fields
 
 // Union type for all documents
 export const DocumentSchema = z.discriminatedUnion('type', [

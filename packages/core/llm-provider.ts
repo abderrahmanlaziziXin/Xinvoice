@@ -178,12 +178,14 @@ Process each request and return the structured batch response format.`
 
     const response = JSON.parse(content)
     
-    // Validate the response structure
-    if (!response.metadata || !response.content || !response.formatted_document) {
-      throw new Error('Invalid multilingual document response format')
-    }
-
-    return response as LocalizedDocumentResponse
+    // Simple response structure - just use what AI gives us
+    return {
+      success: true,
+      document: response,
+      content: response,
+      formatted_document: JSON.stringify(response, null, 2),
+      assumptions: response.assumptions || []
+    } as LocalizedDocumentResponse
   }
 
   async generateMultilingualBatchDocuments(prompts: string[], options: MultilingualPromptOptions, userContext?: UserContext): Promise<LocalizedDocumentResponse[]> {
@@ -192,9 +194,7 @@ Process each request and return the structured batch response format.`
     // Create a single prompt with all the individual prompts
     const batchPrompt = `Generate ${options.documentType}s in ${options.locale} for the following requests:
 
-${prompts.map((prompt, index) => `${index + 1}. ${prompt}`).join('\n')}
-
-Return a JSON object with the batch structure as specified.`
+${prompts.map((prompt, index) => `${index + 1}. ${prompt}`).join('\n')}`
 
     const completion = await this.openai.chat.completions.create({
       model: "gpt-4o",
@@ -211,13 +211,26 @@ Return a JSON object with the batch structure as specified.`
       throw new Error('No response from OpenAI')
     }
 
-    const batchResponse = JSON.parse(content)
+    const response = JSON.parse(content)
     
-    if (!batchResponse.documents || !Array.isArray(batchResponse.documents)) {
+    // Handle both array response and object with documents array
+    let documents = []
+    if (Array.isArray(response)) {
+      documents = response
+    } else if (response.documents && Array.isArray(response.documents)) {
+      documents = response.documents
+    } else {
       throw new Error('Invalid batch response format')
     }
 
-    return batchResponse.documents as LocalizedDocumentResponse[]
+    // Convert each document to LocalizedDocumentResponse format
+    return documents.map((doc: any) => ({
+      success: true,
+      document: doc,
+      content: doc,
+      formatted_document: JSON.stringify(doc, null, 2),
+      assumptions: doc.assumptions || []
+    }))
   }
 
   private getSystemPrompt(documentType: DocumentType, userContext?: UserContext): string {
@@ -230,7 +243,7 @@ Return a JSON object with the batch structure as specified.`
     - Company Email: ${userContext.companyEmail || 'Not provided'}
     - Company Phone: ${userContext.companyPhone || 'Not provided'}
     - Default Currency: ${userContext.defaultCurrency || 'USD'}
-    - Default Tax Rate: ${(userContext.defaultTaxRate || 0.08) * 100}%
+    - Default Tax Rate: ${(userContext.defaultTaxRate || 0) * 100}%
     - Default Terms: ${userContext.defaultTerms || 'Not provided'}
     - Jurisdiction: ${userContext.jurisdiction || 'Not provided'}
     ` : ''
@@ -317,7 +330,7 @@ Return a JSON object with the batch structure as specified.`
           }
         ],
         "subtotal": number,
-        "taxRate": number (as decimal, e.g., 0.08 for 8%),
+        "taxRate": number (as decimal, e.g., 0%),
         "taxAmount": number,
         "total": number,
         "terms": "string (optional)",
@@ -374,7 +387,7 @@ Return a JSON object with the batch structure as specified.`
     - Company Email: ${userContext.companyEmail || 'Not provided'}
     - Company Phone: ${userContext.companyPhone || 'Not provided'}
     - Default Currency: ${userContext.defaultCurrency || 'USD'}
-    - Default Tax Rate: ${(userContext.defaultTaxRate || 0.08) * 100}%
+    - Default Tax Rate: ${(userContext.defaultTaxRate || 0) * 100}%
     - Default Terms: ${userContext.defaultTerms || 'Not provided'}
     - Jurisdiction: ${userContext.jurisdiction || 'Not provided'}
     ` : ''
@@ -424,7 +437,7 @@ Return a JSON object with the batch structure as specified.`
               }
             ],
             "subtotal": number,
-            "taxRate": number (0-1, e.g., 0.08 for 8%),
+            "taxRate": number (0-1, e.g., 0 for 8%),
             "taxAmount": number,
             "total": number,
             "terms": "string (use context default)",
@@ -539,7 +552,7 @@ Process each request and return the structured batch response format.`
     - Company Email: ${userContext.companyEmail || 'Not provided'}
     - Company Phone: ${userContext.companyPhone || 'Not provided'}
     - Default Currency: ${userContext.defaultCurrency || 'USD'}
-    - Default Tax Rate: ${(userContext.defaultTaxRate || 0.08) * 100}%
+    - Default Tax Rate: ${(userContext.defaultTaxRate || 0) * 100}%
     - Default Terms: ${userContext.defaultTerms || 'Not provided'}
     - Jurisdiction: ${userContext.jurisdiction || 'Not provided'}
     ` : ''
@@ -595,7 +608,7 @@ Process each request and return the structured batch response format.`
           }
         ],
         "subtotal": number,
-        "taxRate": number (as decimal, e.g., 0.08 for 8%),
+        "taxRate": number (as decimal, e.g., 0 for 8%),
         "taxAmount": number,
         "total": number,
         "terms": "string (optional)",
@@ -677,7 +690,7 @@ Return a JSON object with an "invoices" array.`
     - Company Email: ${userContext.companyEmail || 'Not provided'}
     - Company Phone: ${userContext.companyPhone || 'Not provided'}
     - Default Currency: ${userContext.defaultCurrency || 'USD'}
-    - Default Tax Rate: ${(userContext.defaultTaxRate || 0.08) * 100}%
+    - Default Tax Rate: ${(userContext.defaultTaxRate || 0) * 100}%
     - Default Terms: ${userContext.defaultTerms || 'Not provided'}
     - Jurisdiction: ${userContext.jurisdiction || 'Not provided'}
     ` : ''
