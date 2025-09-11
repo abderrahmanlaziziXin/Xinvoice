@@ -248,9 +248,11 @@ export async function downloadMultilingualBatchDocumentsAsZIP(
   }
 }
 
-export default {
+const multilingualDocumentHooks = {
   useGenerateMultilingualDocument,
   useGenerateMultilingualBatchDocuments,
   downloadMultilingualDocumentAsPDF,
   downloadMultilingualBatchDocumentsAsZIP,
 }
+
+export default multilingualDocumentHooks
