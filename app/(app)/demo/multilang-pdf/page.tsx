@@ -21,9 +21,7 @@ import {
   DocumentType,
   Locale,
   InvoiceSchema,
-  NDASchema,
   Invoice,
-  NDA,
 } from "../../../../packages/core";
 import {
   DocumentTextIcon,
@@ -45,11 +43,6 @@ import { useTranslations } from "../../../lib/i18n/context";
 
 // Lazy load components
 const InvoiceForm = lazy(() => import("../../../components/invoice-form"));
-const NDAPreviewModal = lazy(() =>
-  import("../../../components/nda-pdf-preview-modal").then((module) => ({
-    default: module.NDAPDFPreviewModal,
-  }))
-);
 
 // Loading fallback for forms
 function FormSkeleton() {
@@ -112,30 +105,6 @@ const samplePrompts = {
     "hi-IN":
       "TechCorp Inc. के लिए ₹3,50,000 का चालान बनाएं जिसमें शामिल है: React/TypeScript के साथ फ्रंटएंड डेवलपमेंट (₹2,00,000), Node.js के साथ बैकएंड API डेवलपमेंट (₹1,20,000), और डेटाबेस डिज़ाइन और इम्प्लीमेंटेशन (₹30,000)। 30 दिन में देय।",
   },
-  nda: {
-    "en-US":
-      "Create a comprehensive NDA between DataCorp Technologies and InnovateLabs for a 24-month strategic partnership involving proprietary AI algorithms, customer data, and trade secrets. Include mutual confidentiality, exclusions for publicly available information, and specify California jurisdiction.",
-    "fr-FR":
-      "Créer un accord de confidentialité complet entre DataCorp Technologies et InnovateLabs pour un partenariat stratégique de 24 mois impliquant des algorithmes d'IA propriétaires, des données clients et des secrets commerciaux. Inclure la confidentialité mutuelle, les exclusions pour les informations publiques et spécifier la juridiction de Californie.",
-    "de-DE":
-      "Erstellen Sie eine umfassende Geheimhaltungsvereinbarung zwischen DataCorp Technologies und InnovateLabs für eine 24-monatige strategische Partnerschaft mit proprietären KI-Algorithmen, Kundendaten und Geschäftsgeheimnissen. Inklusive gegenseitiger Vertraulichkeit, Ausschlüsse für öffentlich verfügbare Informationen und Spezifikation der kalifornischen Gerichtsbarkeit.",
-    "es-ES":
-      "Crear un acuerdo de confidencialidad integral entre DataCorp Technologies e InnovateLabs para una asociación estratégica de 24 meses que involucra algoritmos de IA propietarios, datos de clientes y secretos comerciales. Incluir confidencialidad mutua, exclusiones para información disponible públicamente y especificar jurisdicción de California.",
-    "ar-SA":
-      "إنشاء اتفاقية سرية شاملة بين DataCorp Technologies و InnovateLabs لشراكة استراتيجية مدتها 24 شهراً تتضمن خوارزميات ذكاء اصطناعي مملوكة وبيانات العملاء والأسرار التجارية. تشمل السرية المتبادلة والاستثناءات للمعلومات المتاحة للعامة وتحديد الولاية القضائية لكاليفورنيا.",
-    "zh-CN":
-      "为DataCorp Technologies和InnovateLabs创建一份全面的保密协议，用于为期24个月的战略合作伙伴关系，涉及专有AI算法、客户数据和商业机密。包括相互保密、公开可用信息的排除条款，并指定加利福尼亚州管辖权。",
-    "ja-JP":
-      "DataCorp TechnologiesとInnovateLabsの间で、独自のAIアルゴリズム、顧客データ、企業秘密を含む24ヶ月間の戦略的パートナーシップのための包括的なNDAを作成してください。相互機密保持、公開情報の除外事項を含み、カリフォルニア州の管轄権を指定してください。",
-    "pt-BR":
-      "Criar um acordo de confidencialidade abrangente entre DataCorp Technologies e InnovateLabs para uma parceria estratégica de 24 meses envolvendo algoritmos de IA proprietários, dados de clientes e segredos comerciais. Incluir confidencialidade mútua, exclusões para informações publicamente disponíveis e especificar jurisdição da Califórnia.",
-    "it-IT":
-      "Creare un accordo di riservatezza completo tra DataCorp Technologies e InnovateLabs per una partnership strategica di 24 mesi che coinvolge algoritmi AI proprietari, dati dei clienti e segreti commerciali. Includere riservatezza reciproca, esclusioni per informazioni pubblicamente disponibili e specificare giurisdizione della California.",
-    "ru-RU":
-      "Создать комплексное соглашение о неразглашении между DataCorp Technologies и InnovateLabs для 24-месячного стратегического партнерства, включающего собственные алгоритмы ИИ, данные клиентов и коммерческие тайны. Включить взаимную конфиденциальность, исключения для общедоступной информации и указать юрисдикцию Калифорнии.",
-    "hi-IN":
-      "DataCorp Technologies और InnovateLabs के बीच 24 महीने की रणनीतिक साझेदारी के लिए एक व्यापक गुप्तता समझौता बनाएं जिसमें मालिकाना AI एल्गोरिदम, ग्राहक डेटा और व्यापारिक रहस्य शामिल हैं। पारस्परिक गोपनीयता, सार्वजनिक रूप से उपलब्ध जानकारी के लिए अपवाद शामिल करें और कैलिफोर्निया क्षेत्राधिकार निर्दिष्ट करें।",
-  },
 };
 
 export default function MultilingualDocumentPlatform() {
@@ -161,13 +130,6 @@ export default function MultilingualDocumentPlatform() {
       icon: DocumentTextIcon,
       description: t("demo.invoiceDesc"),
       color: "blue",
-    },
-    {
-      type: "nda" as DocumentType,
-      label: t("demo.nda"),
-      icon: ClipboardDocumentListIcon,
-      description: t("demo.ndaDesc"),
-      color: "purple",
     },
   ];
 
@@ -446,7 +408,7 @@ export default function MultilingualDocumentPlatform() {
     }
   };
 
-  const handleDocumentSave = (documentData: Invoice | NDA) => {
+  const handleDocumentSave = (documentData: Invoice) => {
     console.log("Document saved:", documentData);
     success("Document saved successfully!");
   };
@@ -472,12 +434,6 @@ export default function MultilingualDocumentPlatform() {
           } with amount ${row.total || row.amount || "TBD"} ${
             row.currency || "USD"
           }. ${row.description || row.services || row.items || ""}`;
-        } else if (selectedDocumentType === "nda") {
-          return `Create an NDA between ${
-            row.party1 || row.disclosing_party || "Company A"
-          } and ${row.party2 || row.receiving_party || "Company B"}. ${
-            row.purpose || row.description || ""
-          }`;
         }
         return `Create a ${selectedDocumentType} document with the following data: ${JSON.stringify(
           row
@@ -613,30 +569,6 @@ export default function MultilingualDocumentPlatform() {
           URL.revokeObjectURL(url);
 
           success("Invoice PDF downloaded successfully!");
-        } else {
-          throw new Error("Browser environment not available");
-        }
-      } else if (selectedDocumentType === "nda") {
-        // Use the NDA PDF generator with direct AI response
-        const { NDAPDFGenerator } = await import(
-          "../../../lib/nda-pdf-generator"
-        );
-
-        console.log("📄 Generating NDA PDF with data:", docToDownload);
-
-        // Use AI response directly - no stupid fallbacks
-        const pdfGenerator = new NDAPDFGenerator(docToDownload, "modern");
-        const pdfDoc = pdfGenerator.generate();
-
-        // Download the PDF
-        if (typeof window !== "undefined" && window.document) {
-          const fileName = `nda_${
-            docToDownload.disclosingParty?.name ||
-            docToDownload.parties?.disclosing_party ||
-            "NDA"
-          }_${Date.now()}.pdf`;
-          pdfDoc.save(fileName);
-          success("NDA PDF downloaded successfully!");
         } else {
           throw new Error("Browser environment not available");
         }
@@ -1580,57 +1512,6 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                           </div>
                         </div>
                       )}
-                    {selectedDocumentType === "nda" &&
-                      generatedDocument?.document && (
-                        <div className="space-y-6">
-                          {/* Show Generated Data Preview */}
-                          <div className="xinfinity-card p-6 bg-green-50 border border-green-200">
-                            <h3 className="text-lg font-semibold text-green-800 mb-4">
-                              ✅ Generated NDA Data
-                            </h3>
-                            <div className="bg-white rounded-lg p-4">
-                              <pre className="text-sm text-gray-700 whitespace-pre-wrap">
-                                {JSON.stringify(
-                                  generatedDocument.document,
-                                  null,
-                                  2
-                                )}
-                              </pre>
-                            </div>
-                            {generatedDocument.assumptions &&
-                              generatedDocument.assumptions.length > 0 && (
-                                <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                                  <h4 className="font-medium text-yellow-800 mb-2">
-                                    AI Assumptions Made:
-                                  </h4>
-                                  <ul className="text-sm text-yellow-700 space-y-1">
-                                    {generatedDocument.assumptions.map(
-                                      (assumption: string, index: number) => (
-                                        <li
-                                          key={index}
-                                          className="flex items-start"
-                                        >
-                                          <span className="mr-2">•</span>
-                                          <span>{assumption}</span>
-                                        </li>
-                                      )
-                                    )}
-                                  </ul>
-                                </div>
-                              )}
-                          </div>
-
-                          <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-xl">
-                            <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-                              NDA Form Coming Soon
-                            </h3>
-                            <p className="text-yellow-700">
-                              The NDA editing form is currently under
-                              development. You can see the generated data above.
-                            </p>
-                          </div>
-                        </div>
-                      )}
                   </Suspense>
                 ) : (
                   // Batch Documents Display
@@ -1718,16 +1599,6 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                                             "Unknown Client"
                                           } • ${doc.total || "No Total"} ${
                                             doc.currency || ""
-                                          }`
-                                        : selectedDocumentType === "nda"
-                                        ? `${
-                                            doc.disclosingParty?.name ||
-                                            doc.party1 ||
-                                            "Party A"
-                                          } ⇄ ${
-                                            doc.receivingParty?.name ||
-                                            doc.party2 ||
-                                            "Party B"
                                           }`
                                         : `${doc.title || "Untitled Document"}`}
                                     </p>
@@ -1887,46 +1758,6 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                     defaultLocale={selectedLocale}
                   />
                 </Suspense>
-              )}
-
-              {selectedDocumentType === "nda" && editData && (
-                <div className="space-y-6">
-                  <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-xl">
-                    <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-                      NDA Editing
-                    </h3>
-                    <p className="text-yellow-700 mb-4">
-                      NDA editing form is coming soon. For now, you can view and
-                      modify the raw data below.
-                    </p>
-                    <textarea
-                      value={JSON.stringify(editData, null, 2)}
-                      onChange={(e) => {
-                        try {
-                          const newData = JSON.parse(e.target.value);
-                          setEditData(newData);
-                        } catch (err) {
-                          // Invalid JSON, don't update
-                        }
-                      }}
-                      className="w-full h-64 p-3 border border-yellow-300 rounded-lg font-mono text-sm"
-                    />
-                    <div className="flex space-x-3 mt-4">
-                      <button
-                        onClick={() => handleSaveEdit(editData)}
-                        className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
-                      >
-                        Save Changes
-                      </button>
-                      <button
-                        onClick={handleCancelEdit}
-                        className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                </div>
               )}
             </div>
           </motion.div>
