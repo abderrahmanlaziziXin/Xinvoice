@@ -392,19 +392,19 @@ export class EnhancedInvoicePDFGenerator {
     const summaryWidth = 80
     const summaryX = pageWidth - this.theme.spacing.margin - summaryWidth
 
-    // Calculate totals
+    // Calculate totals - taxRate is stored as decimal (0.05 for 5%)
     const subtotal = invoice.items.reduce((sum, item) => sum + (item.quantity * item.rate), 0)
-    const taxAmount = subtotal * (invoice.taxRate / 100)
+    const taxAmount = subtotal * invoice.taxRate
     const total = subtotal + taxAmount
 
     // Add light background for summary section - NO DARK BACKGROUNDS!
     this.pdf.setFillColor(248, 250, 252) // Very light gray background (#f8fafc)
     this.pdf.roundedRect(summaryX - SPACING_SCALE.sm, this.currentY - SPACING_SCALE.sm, summaryWidth + SPACING_SCALE.md, 40, 3, 3, 'F')
 
-    // Summary lines
+    // Summary lines - convert decimal taxRate to percentage for display
     const summaryLines = [
       ['Subtotal:', formatCurrency(subtotal, invoice.currency, invoice.locale)],
-      [`Tax (${invoice.taxRate}%):`, formatCurrency(taxAmount, invoice.currency, invoice.locale)],
+      [`Tax (${(invoice.taxRate * 100).toFixed(1)}%):`, formatCurrency(taxAmount, invoice.currency, invoice.locale)],
       ['Total:', formatCurrency(total, invoice.currency, invoice.locale)]
     ]
 
