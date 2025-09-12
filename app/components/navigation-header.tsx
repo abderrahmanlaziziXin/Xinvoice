@@ -12,6 +12,7 @@ import {
   ChevronDownIcon,
   Bars3Icon,
   XMarkIcon,
+  EnvelopeIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { LogoWithText } from "./logo";
@@ -46,7 +47,20 @@ export function NavigationHeader() {
       icon: DocumentTextIcon,
       current: pathname?.startsWith("/demo/multilang"),
     },
+    {
+      name: "Support",
+      href: "/support",
+      icon: EnvelopeIcon,
+      current: pathname === "/support",
+    },
   ];
+
+  const handleContactSupport = () => {
+    window.open(
+      "mailto:support@xinfinitylabs.com?subject=Xinvoice Support Request",
+      "_blank"
+    );
+  };
 
   const handleDropdownToggle = (itemName: string) => {
     setOpenDropdown(openDropdown === itemName ? null : itemName);
@@ -147,7 +161,19 @@ export function NavigationHeader() {
           <div className="hidden lg:flex items-center space-x-4">
             {/* Language Selector */}
             <LanguageSelector variant="compact" />
-            
+
+            {/* Contact Support Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleContactSupport}
+              className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200"
+              title="Contact Support - support@xinfinitylabs.com"
+            >
+              <EnvelopeIcon className="w-4 h-4 mr-2" />
+              Support
+            </motion.button>
+
             {/* Settings Button */}
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -261,6 +287,18 @@ export function NavigationHeader() {
                   )}
                 </div>
               ))}
+
+              {/* Mobile Contact Support */}
+              <button
+                onClick={() => {
+                  handleContactSupport();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="flex items-center w-full px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200"
+              >
+                <EnvelopeIcon className="w-5 h-5 mr-3" />
+                Contact Support
+              </button>
 
               {/* Mobile Settings */}
               <button className="flex items-center w-full px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200">
