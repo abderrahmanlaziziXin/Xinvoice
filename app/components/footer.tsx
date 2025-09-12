@@ -11,7 +11,10 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   const handleContactSupport = () => {
-    window.open("mailto:support@xinfinitylabs.com?subject=Xinvoice Support Request", "_blank");
+    window.open(
+      "mailto:support@xinfinitylabs.com?subject=Xinvoice Support Request",
+      "_blank"
+    );
   };
 
   return (
@@ -25,8 +28,8 @@ export function Footer() {
               <h3 className="text-xl font-bold text-gray-900">Xinvoice</h3>
             </div>
             <p className="text-gray-600 text-sm leading-relaxed">
-              AI-powered document generation platform with advanced features, 
-              structured prompts, and multi-document support. We also provide 
+              AI-powered document generation platform with advanced features,
+              structured prompts, and multi-document support. We also provide
               custom solutions tailored to your business needs.
             </p>
             <div className="flex items-center space-x-1 text-sm text-gray-500">
@@ -40,20 +43,20 @@ export function Footer() {
           <div className="space-y-4">
             <h4 className="text-lg font-semibold text-gray-900">Quick Links</h4>
             <div className="space-y-2">
-              <a 
-                href="/demo/multilang-pdf" 
+              <a
+                href="/demo/multilang-pdf"
                 className="block text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm"
               >
                 Multilingual Demo
               </a>
-              <a 
-                href="/support" 
+              <a
+                href="/support"
                 className="block text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm"
               >
                 Support & Contact
               </a>
-              <a 
-                href="/" 
+              <a
+                href="/"
                 className="block text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm"
               >
                 Home
