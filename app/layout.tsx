@@ -61,6 +61,21 @@ export default function RootLayout({
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
+        {/* Google tag (gtag.js) */}
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=AW-17553744861"
+        ></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'AW-17553744861');
+            `,
+          }}
+        />
       </head>
       <body className="antialiased font-sans">
         <QueryProvider>
