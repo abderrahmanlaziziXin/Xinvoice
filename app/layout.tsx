@@ -2,6 +2,7 @@ import "./globals.css";
 import QueryProvider from "./components/query-provider";
 import { ToastProvider } from "./components/toast-provider";
 import { NavigationHeader } from "./components/navigation-header";
+import { Footer } from "./components/footer";
 import { DocumentProvider } from "./context/document-context";
 import { LocaleProvider } from "./lib/i18n/context";
 import { Analytics } from "@vercel/analytics/next";
@@ -67,6 +68,7 @@ export default function RootLayout({
             <LocaleProvider>
               <NavigationHeader />
               <main className="min-h-screen">{children}</main>
+              <Footer />
               <ToastProvider />
             </LocaleProvider>
           </DocumentProvider>
