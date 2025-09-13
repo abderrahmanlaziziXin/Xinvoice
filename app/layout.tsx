@@ -8,6 +8,7 @@ import { LocaleProvider } from "./lib/i18n/context";
 import { Analytics } from "@vercel/analytics/next";
 import { Metadata, Viewport } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Xinvoice - AI-Powered Document Generation Platform",
@@ -61,23 +62,22 @@ export default function RootLayout({
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
-        {/* Google tag (gtag.js) */}
-        <script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=AW-17553744861"
-        ></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'AW-17553744861');
-            `,
-          }}
-        />
       </head>
       <body className="antialiased font-sans">
+        {/* Google tag (gtag.js) - Optimized with Next.js Script */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=AW-17553744861"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'AW-17553744861');
+          `}
+        </Script>
+        
         <QueryProvider>
           <DocumentProvider>
             <LocaleProvider>
