@@ -52,7 +52,7 @@ COMPANY CONTEXT (use as defaults when relevant):
 - Company Phone: ${userContext.companyPhone || 'Not provided'}
 - Default Currency: ${userContext.defaultCurrency || 'USD'}
 - Default Locale: ${userContext.defaultLocale || 'en-US'}
-- Default Tax Rate: ${(userContext.defaultTaxRate || 0) * 100}%
+- Default Tax Rate: ${(userContext.defaultTaxRate || 0) * 100}% (return as decimal: ${userContext.defaultTaxRate || 0})
 - Default Terms: ${userContext.defaultTerms || 'Payment due within 30 days'}
 - Jurisdiction: ${userContext.jurisdiction || 'Not provided'}
 ` : ''
@@ -85,7 +85,7 @@ RESPONSE FORMAT (JSON only):
 5. Include all necessary business details
 6. Make reasonable assumptions for missing information
 7. ALWAYS use currency "${userContext?.defaultCurrency || 'USD'}" unless user specifies different currency
-8. ALWAYS use tax rate ${((userContext?.defaultTaxRate || 0) * 100).toFixed(1)}% unless user specifies different rate
+8. ALWAYS use tax rate ${((userContext?.defaultTaxRate || 0) * 100).toFixed(1)}% unless user specifies different rate (return taxRate as decimal: ${userContext?.defaultTaxRate || 0})
 9. Use locale "${userContext?.defaultLocale || 'en-US'}" for formatting and language
 
 ${getDocumentSpecificInstructions(documentType)}
@@ -124,6 +124,11 @@ function getDocumentSpecificInstructions(documentType: DocumentType): string {
 - For consulting: break down by phases, deliverables, research
 - For products: include specifications and features
 - Avoid generic descriptions - use industry-standard terminology
+
+TAX RATE FORMAT CRITICAL:
+- ALWAYS return taxRate as decimal (0.1 for 10%, 0.08 for 8%, 0.19 for 19%)
+- DO NOT return taxRate as percentage number (10, 8, 19)
+- Example: If tax is 10%, return "taxRate": 0.1, NOT "taxRate": 10
 
 DETAILED BREAKDOWN EXAMPLES:
 Instead of "Web development - $2500", use:
