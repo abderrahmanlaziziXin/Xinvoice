@@ -462,7 +462,9 @@ export class InvoicePDFGenerator {
     
     // Tax (if applicable)
     if (invoice.taxRate > 0) {
-      this.pdf.text(`${getTranslation(locale, 'invoice.pdf.tax')} (${(invoice.taxRate * 100).toFixed(1)}%):`, totalsX, currentY)
+      // Normalize tax rate - if >1, assume it's a percentage that needs conversion
+      const normalizedTaxRate = invoice.taxRate > 1 ? invoice.taxRate / 100 : invoice.taxRate
+      this.pdf.text(`${getTranslation(locale, 'invoice.pdf.tax')} (${(normalizedTaxRate * 100).toFixed(1)}%):`, totalsX, currentY)
       this.pdf.text(formatCurrency(invoice.taxAmount, invoice.currency || 'USD', invoice.locale || 'en-US'), totalsX + 50, currentY, { align: 'right' })
       currentY += 12
     }
