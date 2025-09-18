@@ -134,7 +134,7 @@ export function useGenerateMultilingualBatchDocuments() {
  * Helper function to download multilingual document as PDF
  */
 export async function downloadMultilingualDocumentAsPDF(
-  document: any,
+  docData: any,
   localization: { locale: string; direction: 'ltr' | 'rtl' },
   documentType: DocumentType,
   filename?: string
@@ -142,7 +142,7 @@ export async function downloadMultilingualDocumentAsPDF(
   try {
     // Log what we're working with
     console.log('=== PDF Generation Debug ===')
-    console.log('Document:', document)
+    console.log('Document:', docData)
     console.log('Localization:', localization)
     console.log('Document Type:', documentType)
     
@@ -152,9 +152,9 @@ export async function downloadMultilingualDocumentAsPDF(
     let pdfData: Uint8Array
 
     if (documentType === 'invoice') {
-      pdfData = generateMultilingualInvoicePDF(document, localization)
+      pdfData = await generateMultilingualInvoicePDF(docData, localization)
     } else if (documentType === 'nda') {
-      pdfData = generateMultilingualNDAPDF(document, localization)
+      pdfData = await generateMultilingualNDAPDF(docData, localization)
     } else {
       throw new Error(`Unsupported document type: ${documentType}`)
     }
@@ -169,13 +169,13 @@ export async function downloadMultilingualDocumentAsPDF(
     // Try different download methods based on environment
     try {
       // Method 1: Direct download (most reliable)
-      const a = document.createElement('a')
+      const a = window.document.createElement('a')
       a.href = dataUrl
       a.download = finalFilename
       a.style.display = 'none'
-      document.body.appendChild(a)
+      window.document.body.appendChild(a)
       a.click()
-      document.body.removeChild(a)
+      window.document.body.removeChild(a)
       console.log('PDF download initiated successfully')
     } catch (domError) {
       console.warn('DOM download failed, trying window.open:', domError)
@@ -192,7 +192,7 @@ export async function downloadMultilingualDocumentAsPDF(
         console.warn('Window.open failed, showing URL:', windowError)
         
         // Method 3: Show URL to user (last resort)
-        alert(`PDF generated! Please copy this URL to view: ${dataUrl}`)
+        window.alert(`PDF generated! Please copy this URL to view: ${dataUrl}`)
       }
     }
     

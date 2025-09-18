@@ -39,6 +39,8 @@ interface EnhancedPDFGenerationOptions {
   companyLogo?: string | null
   websiteUrl?: string
   showQRCode?: boolean
+  fontFamily?: string
+  textDirection?: 'ltr' | 'rtl'
 }
 
 /**
@@ -54,17 +56,40 @@ export class EnhancedInvoicePDFGenerator {
   
   constructor(options: EnhancedPDFGenerationOptions = {}) {
     this.pdf = new jsPDF()
+
+    const themeName = options.theme ?? 'primary'
+    const baseTheme = getTheme(themeName)
+
     this.options = {
       includeWatermark: false,
       customTemplate: 'modern',
-      theme: 'primary', // Use primary theme with your brand colors as default
+      theme: themeName, // Use primary theme with your brand colors as default
       accentColor: '',
       companyLogo: null,
       websiteUrl: 'https://xinvoice.com',
       showQRCode: false,
-      ...options
+      fontFamily: options.fontFamily ?? baseTheme.fonts.primary,
+      textDirection: options.textDirection ?? 'ltr',
+      ...options,
+    } as Required<EnhancedPDFGenerationOptions>
+
+    if (!this.options.fontFamily) {
+      this.options.fontFamily = baseTheme.fonts.primary
     }
-    this.theme = getTheme(this.options.theme)
+
+    if (!this.options.textDirection) {
+      this.options.textDirection = 'ltr'
+    }
+
+    this.theme = {
+      ...baseTheme,
+      fonts: {
+        ...baseTheme.fonts,
+        primary: this.options.fontFamily || baseTheme.fonts.primary,
+        secondary: this.options.fontFamily || baseTheme.fonts.secondary,
+        monospace: baseTheme.fonts.monospace,
+      }
+    }
     this.currentY = this.theme.spacing.margin
   }
 
@@ -77,6 +102,12 @@ export class EnhancedInvoicePDFGenerator {
       
       // Reset PDF for new invoice
       this.pdf = new jsPDF()
+
+      if (this.options.textDirection === 'rtl' && typeof (this.pdf as any).setR2L === 'function') {
+        (this.pdf as any).setR2L(true)
+      }
+
+      this.pdf.setFont(this.theme.fonts.primary, 'normal')
       this.pageCount = 1
       this.currentY = this.theme.spacing.margin
 
@@ -350,6 +381,8 @@ export class EnhancedInvoicePDFGenerator {
       formatCurrency(item.quantity * item.rate, invoice.currency, invoice.locale)
     ])
 
+    const isRTL = this.options.textDirection === 'rtl'
+
     autoTable(this.pdf, {
       startY: this.currentY,
       head: [['Description', 'Qty', 'Unit Price', 'Total']],
@@ -357,6 +390,7 @@ export class EnhancedInvoicePDFGenerator {
       theme: 'plain',
       styles: {
         font: this.theme.fonts.primary,
+        halign: isRTL ? 'right' : 'left',
         fontSize: FONT_SCALE.body,
         textColor: [30, 41, 59], // Dark gray text for good contrast
         cellPadding: SPACING_SCALE.sm,
@@ -373,7 +407,7 @@ export class EnhancedInvoicePDFGenerator {
         fillColor: [248, 250, 252] // Very light gray for alternating rows
       },
       columnStyles: {
-        0: { cellWidth: 'auto' },
+        0: { cellWidth: 'auto', halign: isRTL ? 'right' : 'left' },
         1: { cellWidth: 20, halign: 'center' },
         2: { cellWidth: 30, halign: 'right' },
         3: { cellWidth: 30, halign: 'right' }
@@ -667,3 +701,7 @@ export function downloadEnhancedInvoicePDF(
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
 }
+
+
+
+
