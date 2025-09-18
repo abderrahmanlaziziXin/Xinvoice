@@ -91,7 +91,9 @@ export default function InvoiceForm({
       to: { name: "", address: "", email: "", phone: "" },
       items: [{ description: "", quantity: 1, rate: 0, amount: 0 }],
       subtotal: 0,
-      taxRate: userContext?.defaultTaxRate ? (userContext.defaultTaxRate * 100) : 0,
+      taxRate: userContext?.defaultTaxRate
+        ? userContext.defaultTaxRate * 100
+        : 0,
       taxAmount: 0,
       total: 0,
       currency: (userContext?.defaultCurrency || defaultCurrency) as any,
@@ -137,9 +139,12 @@ export default function InvoiceForm({
           ? initialData.items
           : [{ description: "", quantity: 1, rate: 0, amount: 0 }],
         subtotal: initialData.subtotal ?? 0,
-      taxRate: initialData.taxRate !== undefined 
-        ? (initialData.taxRate * 100) // Convert decimal to percentage for display
-        : (userContext?.defaultTaxRate ? userContext.defaultTaxRate * 100 : 0),
+        taxRate:
+          initialData.taxRate !== undefined
+            ? initialData.taxRate * 100 // Convert decimal to percentage for display
+            : userContext?.defaultTaxRate
+            ? userContext.defaultTaxRate * 100
+            : 0,
         taxAmount: initialData.taxAmount ?? 0,
         total: initialData.total ?? 0,
         currency: (initialData.currency ||
@@ -164,26 +169,29 @@ export default function InvoiceForm({
   const watchedTaxRate = watch("taxRate");
 
   // Function to calculate totals
-  const calculateTotals = useCallback((items: InvoiceItem[], taxRate: number) => {
-    const subtotal = items.reduce((sum: number, item: InvoiceItem) => {
-      const amount = (item.quantity || 0) * (item.rate || 0);
-      return sum + amount;
-    }, 0);
+  const calculateTotals = useCallback(
+    (items: InvoiceItem[], taxRate: number) => {
+      const subtotal = items.reduce((sum: number, item: InvoiceItem) => {
+        const amount = (item.quantity || 0) * (item.rate || 0);
+        return sum + amount;
+      }, 0);
 
-    // Convert percentage to decimal for calculation (e.g., 8% becomes 0.08)
-    const taxAmount = subtotal * ((taxRate || 0) / 100);
-    const total = subtotal + taxAmount;
+      // Convert percentage to decimal for calculation (e.g., 8% becomes 0.08)
+      const taxAmount = subtotal * ((taxRate || 0) / 100);
+      const total = subtotal + taxAmount;
 
-    // Update item amounts
-    items.forEach((item: InvoiceItem, index: number) => {
-      const amount = (item.quantity || 0) * (item.rate || 0);
-      setValue(`items.${index}.amount`, amount);
-    });
+      // Update item amounts
+      items.forEach((item: InvoiceItem, index: number) => {
+        const amount = (item.quantity || 0) * (item.rate || 0);
+        setValue(`items.${index}.amount`, amount);
+      });
 
-    setValue("subtotal", subtotal);
-    setValue("taxAmount", taxAmount);
-    setValue("total", total);
-  }, [setValue]);
+      setValue("subtotal", subtotal);
+      setValue("taxAmount", taxAmount);
+      setValue("total", total);
+    },
+    [setValue]
+  );
 
   // Calculate totals whenever items or tax rate changes
   useEffect(() => {
@@ -198,9 +206,9 @@ export default function InvoiceForm({
     // Convert tax rate from percentage to decimal for storage/processing
     const processedData = {
       ...data,
-      taxRate: (data.taxRate || 0) / 100
+      taxRate: (data.taxRate || 0) / 100,
     };
-    
+
     const missing: string[] = [];
 
     if (!data.from.email) {
@@ -558,7 +566,7 @@ export default function InvoiceForm({
                               const currentTaxRate = getValues("taxRate");
                               calculateTotals(currentItems, currentTaxRate);
                             }, 0);
-                          }
+                          },
                         })}
                         type="number"
                         min="0"
@@ -581,7 +589,7 @@ export default function InvoiceForm({
                               const currentTaxRate = getValues("taxRate");
                               calculateTotals(currentItems, currentTaxRate);
                             }, 0);
-                          }
+                          },
                         })}
                         type="number"
                         min="0"
@@ -657,10 +665,16 @@ export default function InvoiceForm({
                       max="100"
                       step="0.1"
                       className="xinfinity-input text-right text-sm"
-                      placeholder={(
-                        userContext?.defaultTaxRate ? (userContext.defaultTaxRate * 100).toString() : "0"
-                      )}
-                      defaultValue={userContext?.defaultTaxRate ? (userContext.defaultTaxRate * 100) : 0}
+                      placeholder={
+                        userContext?.defaultTaxRate
+                          ? (userContext.defaultTaxRate * 100).toString()
+                          : "0"
+                      }
+                      defaultValue={
+                        userContext?.defaultTaxRate
+                          ? userContext.defaultTaxRate * 100
+                          : 0
+                      }
                     />
                   </div>
                 </div>
@@ -732,7 +746,7 @@ export default function InvoiceForm({
             variants={itemVariants}
             className="flex flex-col sm:flex-row gap-4 justify-end pt-8 border-t border-gray-200"
           >
-            <motion.button
+            {/* <motion.button
               type="button"
               onClick={() => {
                 const currentData = getValues() as Invoice;
@@ -744,7 +758,7 @@ export default function InvoiceForm({
               className="px-8 py-3 rounded-lg font-medium text-xinfinity-primary border-2 border-xinfinity-primary/20 hover:border-xinfinity-primary/40 bg-white hover:bg-white/70 transition-all duration-300 backdrop-blur-sm"
             >
               {t("invoice.actions.preview")}
-            </motion.button>
+            </motion.button> */}
 
             <motion.button
               type="button"
@@ -767,7 +781,7 @@ export default function InvoiceForm({
               {t("invoice.actions.downloadPDF")}
             </motion.button>
 
-            <motion.button
+            {/* <motion.button
               type="submit"
               disabled={isSubmitting}
               whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
@@ -775,7 +789,7 @@ export default function InvoiceForm({
               className="xinfinity-button disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "Saving..." : "Save Invoice"}
-            </motion.button>
+            </motion.button> */}
           </motion.div>
         </form>
       </motion.div>

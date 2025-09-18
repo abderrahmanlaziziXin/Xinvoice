@@ -119,7 +119,6 @@ const promptTips: Record<DocumentType, string[]> = {
   ],
 };
 
-
 export default function MultilingualDocumentPlatform() {
   const { t, locale: currentLocale } = useTranslations();
 
@@ -1121,8 +1120,12 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                         />
                         <div className="mt-4 rounded-xl border border-xinfinity-border/60 bg-white/70 p-4 text-sm text-gray-600 shadow-sm backdrop-blur">
                           <div className="flex items-center justify-between gap-4">
-                            <span className="font-medium text-gray-900">Prompt tips</span>
-                            <span className="text-xs text-gray-500">{selectedLocaleData?.label}</span>
+                            <span className="font-medium text-gray-900">
+                              Prompt tips
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {selectedLocaleData?.label}
+                            </span>
                           </div>
                           <ul className="mt-2 list-disc space-y-1 pl-5">
                             {promptTips[selectedDocumentType].map((tip) => (
@@ -1130,7 +1133,8 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                             ))}
                           </ul>
                           <p className="mt-3 text-xs text-gray-500">
-                            Mention desired tone, language, or compliance requirements for finer control.
+                            Mention desired tone, language, or compliance
+                            requirements for finer control.
                           </p>
                         </div>
                         <div className="absolute bottom-3 right-3 flex items-center space-x-2">

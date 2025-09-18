@@ -57,7 +57,7 @@ export function PDFButton({
   if (variant === "preview") {
     return (
       <>
-        <button
+        {/* <button
           onClick={() => setShowPreview(true)}
           className={`${baseClasses} bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500`}
         >
@@ -69,7 +69,7 @@ export function PDFButton({
           onClose={() => setShowPreview(false)}
           invoice={invoice}
           onDownload={() => setShowPreview(false)}
-        />
+        /> */}
       </>
     );
   }
@@ -77,12 +77,12 @@ export function PDFButton({
   // Both buttons
   return (
     <div className="flex gap-2">
-      <button
+      {/* <button
         onClick={() => setShowPreview(true)}
         className={`${baseClasses} bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500`}
       >
         Preview
-      </button>
+      </button> */}
 
       <button
         onClick={handleDownload}
