@@ -2,11 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Invoice } from "../../packages/core";
-import {
-  previewEnhancedInvoicePDF,
-  downloadEnhancedInvoicePDF,
-} from "../lib/pdf-generator-enhanced";
+import { generatePdfDataUri, downloadPdf } from "../lib/pdf-generator-unified";
 import { PDFThemeName } from "../lib/pdf-theme-system";
+import { getDirection } from "../lib/i18n";
+import type { Locale } from "../../packages/core/schemas";
 
 interface PDFPreviewModalProps {
   isOpen: boolean;
@@ -61,12 +60,18 @@ export function PDFPreviewModal({
         setPdfBlobUrl("");
       }
 
-      console.log("Calling previewEnhancedInvoicePDF...");
-      const dataUri = previewEnhancedInvoicePDF(invoice, {
-        customTemplate: pdfOptions.template,
-        includeWatermark: pdfOptions.includeWatermark,
+      console.log("Calling unified PDF preview...");
+      const invoiceLocale = (invoice.locale as Locale) || "en-US";
+      const textDirection = getDirection(invoiceLocale);
+
+      const dataUri = await generatePdfDataUri(invoice, {
+        documentType: 'invoice',
+        locale: invoiceLocale,
+        template: pdfOptions.template,
         theme: pdfOptions.theme,
+        includeWatermark: pdfOptions.includeWatermark,
         accentColor: pdfOptions.accentColor,
+        textDirection,
       });
 
       console.log("PDF generation completed");
@@ -108,16 +113,19 @@ export function PDFPreviewModal({
   }, [invoice, pdfOptions, pdfBlobUrl]);
 
   const handleDownloadWithOptions = () => {
-    downloadEnhancedInvoicePDF(
-      invoice,
-      `invoice-${invoice.invoiceNumber}.pdf`,
-      {
-        customTemplate: pdfOptions.template,
-        includeWatermark: pdfOptions.includeWatermark,
-        theme: pdfOptions.theme, // Use selected theme instead of hardcoded
-        accentColor: pdfOptions.accentColor,
-      }
-    );
+    const invoiceLocale = (invoice.locale as Locale) || "en-US";
+    const textDirection = getDirection(invoiceLocale);
+
+    downloadPdf(invoice, {
+      documentType: 'invoice',
+      locale: invoiceLocale,
+      template: pdfOptions.template,
+      theme: pdfOptions.theme,
+      includeWatermark: pdfOptions.includeWatermark,
+      accentColor: pdfOptions.accentColor,
+      textDirection,
+      filename: `invoice-${invoice.invoiceNumber}.pdf`,
+    });
     onDownload();
   };
 

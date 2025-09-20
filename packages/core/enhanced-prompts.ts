@@ -57,6 +57,14 @@ COMPANY CONTEXT (use as defaults when relevant):
 - Jurisdiction: ${userContext.jurisdiction || 'Not provided'}
 ` : ''
 
+  const languageGuidance = userContext?.outputLanguage
+    ? `- Ensure all client-facing text is written in ${userContext.outputLanguage} with a professional, localized tone.\n`
+    : ''
+
+  const culturalGuidance = userContext?.culturalContext
+    ? `- Reflect the following cultural expectations when relevant: ${userContext.culturalContext}.\n`
+    : ''
+
   return `You are an expert business document generator. Create professional, accurate documents based on user descriptions.
 
 **CRITICAL: Return the EXACT JSON structure specified below. No mapping or conversion will be done - your response must match the expected format perfectly.**
@@ -87,7 +95,7 @@ RESPONSE FORMAT (JSON only):
 7. ALWAYS use currency "${userContext?.defaultCurrency || 'USD'}" unless user specifies different currency
 8. ALWAYS use tax rate ${((userContext?.defaultTaxRate || 0) * 100).toFixed(1)}% unless user specifies different rate (return taxRate as decimal: ${userContext?.defaultTaxRate || 0})
 9. Use locale "${userContext?.defaultLocale || 'en-US'}" for formatting and language
-
+${languageGuidance}${culturalGuidance}
 ${getDocumentSpecificInstructions(documentType)}
 
 QUALITY STANDARDS:
@@ -132,10 +140,10 @@ TAX RATE FORMAT CRITICAL:
 
 DETAILED BREAKDOWN EXAMPLES:
 Instead of "Web development - $2500", use:
-• "Frontend Development - Custom React Components and UI Design - $1200"
-• "Backend API Development - Database Integration and Server Logic - $800"
-• "Quality Assurance - Cross-browser Testing and Optimization - $300"
-• "Deployment and Launch - Production Setup and Go-live Support - $200"`
+- "Frontend Development - Custom React Components and UI Design - $1200"
+- "Backend API Development - Database Integration and Server Logic - $800"
+- "Quality Assurance - Cross-browser Testing and Optimization - $300"
+- "Deployment and Launch - Production Setup and Go-live Support - $200"`
 
     case 'nda':
       return `NDA-SPECIFIC INSTRUCTIONS:

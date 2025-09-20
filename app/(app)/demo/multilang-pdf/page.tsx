@@ -106,6 +106,18 @@ const samplePrompts = {
       "TechCorp Inc. के लिए ₹3,50,000 का चालान बनाएं जिसमें शामिल है: React/TypeScript के साथ फ्रंटएंड डेवलपमेंट (₹2,00,000), Node.js के साथ बैकएंड API डेवलपमेंट (₹1,20,000), और डेटाबेस डिज़ाइन और इम्प्लीमेंटेशन (₹30,000)। 30 दिन में देय।",
   },
 };
+const promptTips: Record<DocumentType, string[]> = {
+  invoice: [
+    "List each service or product with quantities, rates, and the desired currency.",
+    "Mention invoice number, issue date, due date, and payment terms so totals are accurate.",
+    "Include company and client details plus any tax or compliance requirements that matter.",
+  ],
+  nda: [
+    "Identify the disclosing and receiving parties, including company names, titles, and locations.",
+    "Describe what is confidential, how it may be used, and any exclusions or carve-outs.",
+    "Call out governing law, jurisdiction, and how long the confidentiality obligations should last.",
+  ],
+};
 
 export default function MultilingualDocumentPlatform() {
   const { t, locale: currentLocale } = useTranslations();
@@ -1106,6 +1118,25 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                           className="w-full h-32 p-4 border border-xinfinity-border rounded-xl resize-none focus:ring-2 focus:ring-xinfinity-primary focus:border-transparent bg-white"
                           dir={isRTL ? "rtl" : "ltr"}
                         />
+                        <div className="mt-4 rounded-xl border border-xinfinity-border/60 bg-white/70 p-4 text-sm text-gray-600 shadow-sm backdrop-blur">
+                          <div className="flex items-center justify-between gap-4">
+                            <span className="font-medium text-gray-900">
+                              Prompt tips
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {selectedLocaleData?.label}
+                            </span>
+                          </div>
+                          <ul className="mt-2 list-disc space-y-1 pl-5">
+                            {promptTips[selectedDocumentType].map((tip) => (
+                              <li key={tip}>{tip}</li>
+                            ))}
+                          </ul>
+                          <p className="mt-3 text-xs text-gray-500">
+                            Mention desired tone, language, or compliance
+                            requirements for finer control.
+                          </p>
+                        </div>
                         <div className="absolute bottom-3 right-3 flex items-center space-x-2">
                           <button
                             onClick={loadSamplePrompt}
