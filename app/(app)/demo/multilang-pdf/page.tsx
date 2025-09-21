@@ -13,13 +13,17 @@ import { useGenerateEnhancedDocument } from "../../../hooks/use-generate-enhance
 import { useGenerateBatchDocuments } from "../../../hooks/use-generate-batch-documents";
 import { usePersistedSettings } from "../../../hooks/use-persisted-settings";
 import { useToast } from "../../../hooks/use-toast";
+import { useMetricsTracking } from "../../../hooks/use-metrics-tracking";
 import { LoadingSpinner } from "../../../components/loading";
 import { Logo } from "../../../components/logo";
 import { CompanySettings } from "../../../components/company-settings";
 import { FileUpload } from "../../../components/file-upload";
+import FeedbackModal from "../../../components/feedback-modal";
+import SmartSuggestions from "../../../components/smart-suggestions";
 import {
   DocumentType,
   Locale,
+  Currency,
   InvoiceSchema,
   Invoice,
 } from "../../../../packages/core";
@@ -167,6 +171,12 @@ export default function MultilingualDocumentPlatform() {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editData, setEditData] = useState<any>(null);
 
+  // Learning system state
+  const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
+  const [lastGeneratedDocumentId, setLastGeneratedDocumentId] = useState<string>('')
+  const [lastGenerationTime, setLastGenerationTime] = useState<number>(0)
+
   // Ensure component is mounted before allowing operations
   useEffect(() => {
     setIsMounted(true);
@@ -176,6 +186,13 @@ export default function MultilingualDocumentPlatform() {
   const generateSingle = useGenerateEnhancedDocument();
   const generateBatch = useGenerateBatchDocuments();
   const { success, error } = useToast();
+
+  // Initialize metrics tracking
+  const metricsTracking = useMetricsTracking({
+    sessionId,
+    documentType: selectedDocumentType,
+    locale: selectedLocale
+  });
 
   // Get selected locale data
   const selectedLocaleData = supportedLocales.find(
@@ -199,6 +216,16 @@ export default function MultilingualDocumentPlatform() {
       setGeneratedDocument(null);
       setShowForm(false);
       setIsGenerating(true);
+
+      // Start metrics tracking
+      const startTime = Date.now()
+      metricsTracking.startTracking({
+        promptLength: prompt.trim().length,
+        aiProvider: 'openai', // Default provider
+        modelVersion: 'gpt-4o',
+        enhancedPromptsUsed: true,
+        culturalContextEnabled: culturalContext
+      })
 
       try {
         console.log("🚀 Starting generation...", {
@@ -230,6 +257,11 @@ export default function MultilingualDocumentPlatform() {
           let document = result.document || result.content || {};
 
           console.log("✅ AI Response:", document);
+
+          // Generate unique document ID for tracking
+          const documentId = `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+          setLastGeneratedDocumentId(documentId)
+          setLastGenerationTime(Date.now() - startTime)
 
           // Ensure basic required fields exist with simple defaults
           if (!document.from) document.from = {};
@@ -287,14 +319,40 @@ export default function MultilingualDocumentPlatform() {
           });
           setGeneratedDocument(finalResult);
           setShowForm(true);
+          
+          // Complete metrics tracking for successful generation
+          metricsTracking.completeTracking({
+            success: true,
+            tokensUsed: 0, // Would be calculated from API response in production
+            userSatisfactionScore: undefined // Will be set later via feedback
+          })
+          
+          // Show feedback modal after a short delay to allow user to see the result
+          setTimeout(() => {
+            setShowFeedbackModal(true)
+          }, 2000)
+          
           success(
             `${currentDocType?.label} generated successfully in ${selectedLocaleData?.label}!`
           );
         } else {
+          // Complete metrics tracking for failed generation
+          metricsTracking.completeTracking({
+            success: false,
+            errorCode: 'generation_failed'
+          })
+          
           throw new Error(result.error || "Generation failed");
         }
       } catch (err) {
         console.error("❌ Generation failed:", err);
+        
+        // Complete metrics tracking for error case
+        metricsTracking.completeTracking({
+          success: false,
+          errorCode: err instanceof Error ? err.message : 'unknown_error'
+        })
+        
         error(
           `Failed to generate ${currentDocType?.label.toLowerCase()}: ${
             err instanceof Error ? err.message : "Unknown error"
@@ -1118,6 +1176,18 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
                           className="w-full h-32 p-4 border border-xinfinity-border rounded-xl resize-none focus:ring-2 focus:ring-xinfinity-primary focus:border-transparent bg-white"
                           dir={isRTL ? "rtl" : "ltr"}
                         />
+
+                        {/* Smart Suggestions */}
+                        <SmartSuggestions
+                          sessionId={sessionId}
+                          currentPrompt={prompt}
+                          selectedLocale={selectedLocale}
+                          selectedCurrency={(userContext?.defaultCurrency || 'USD') as Currency}
+                          documentType={selectedDocumentType}
+                          onPromptChange={setPrompt}
+                          className="mt-4"
+                        />
+
                         <div className="mt-4 rounded-xl border border-xinfinity-border/60 bg-white/70 p-4 text-sm text-gray-600 shadow-sm backdrop-blur">
                           <div className="flex items-center justify-between gap-4">
                             <span className="font-medium text-gray-900">
@@ -1778,6 +1848,22 @@ Full PDF generation for ${selectedDocumentType} will be available soon.
           </motion.div>
         </div>
       )}
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        documentId={lastGeneratedDocumentId}
+        documentType={selectedDocumentType}
+        locale={selectedLocale}
+        currency={(userContext?.defaultCurrency || 'USD') as Currency}
+        generationTime={lastGenerationTime}
+        sessionId={sessionId}
+        onFeedbackSubmitted={() => {
+          console.log('Feedback submitted successfully!')
+          // Could trigger additional actions like showing tips or recommendations
+        }}
+      />
     </div>
   );
 }
