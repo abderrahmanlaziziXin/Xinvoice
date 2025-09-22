@@ -1,0 +1,28 @@
+# Robots.txt for Xinvoice - AI-Powered Document Generation Platform
+# https://xinvoice.com
+
+User-agent: *
+Allow: /
+
+# Priority crawling for main pages
+Allow: /demo/multilang-pdf
+Allow: /analytics
+Allow: /support
+
+# Block sensitive API endpoints
+Disallow: /api/
+Disallow: /_next/
+Disallow: /admin/
+
+# Allow Google and Bing to crawl API documentation if we have it
+User-agent: Googlebot
+Allow: /api/docs
+
+User-agent: Bingbot
+Allow: /api/docs
+
+# Sitemap location
+Sitemap: https://xinvoice.com/sitemap.xml
+
+# Crawl delay for respectful crawling
+Crawl-delay: 1

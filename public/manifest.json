@@ -1,0 +1,81 @@
+{
+  "name": "Xinvoice",
+  "short_name": "Xinvoice",
+  "description": "AI-powered document generation platform for creating professional invoices, NDAs, and business documents",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#667eea",
+  "orientation": "portrait-primary",
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "en",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192x192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512x512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Xinvoice Desktop Interface"
+    },
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "375x812",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Xinvoice Mobile Interface"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Create Invoice",
+      "short_name": "Invoice",
+      "description": "Create a new invoice with AI",
+      "url": "/demo/multilang-pdf?type=invoice",
+      "icons": [
+        {
+          "src": "/icon-invoice.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Create NDA",
+      "short_name": "NDA",
+      "description": "Generate a new NDA document",
+      "url": "/demo/multilang-pdf?type=nda",
+      "icons": [
+        {
+          "src": "/icon-nda.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
