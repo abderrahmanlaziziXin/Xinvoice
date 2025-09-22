@@ -9,43 +9,33 @@ import { Analytics } from "@vercel/analytics/next";
 import { Metadata, Viewport } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Script from "next/script";
+import { 
+  OrganizationStructuredData,
+  SoftwareApplicationStructuredData,
+  WebSiteStructuredData,
+  FAQStructuredData
+} from "./components/seo/structured-data";
+import { DEFAULT_FAQ, generateMetadata, SEO_CONFIGS } from "./components/seo/seo-utils";
 
-export const metadata: Metadata = {
-  title: "Xinvoice - AI-Powered Document Generation Platform",
-  description:
-    "AI-powered document generation with advanced features, structured prompts, and multi-document support. Create professional invoices, NDAs, and more with intelligent automation.",
-  keywords:
-    "AI, document generation, invoice, NDA, automation, business documents, Xinvoice",
-  authors: [{ name: "Xinvoice Team" }],
-  creator: "Xinvoice",
-  publisher: "Xinvoice",
-  icons: {
-    icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/favicon.ico", sizes: "any" },
-    ],
-    apple: "/icon.svg",
-  },
-  openGraph: {
-    title: "Xinvoice - AI-Powered Document Generation Platform",
-    description:
-      "AI-powered document generation with advanced features, structured prompts, and multi-document support.",
-    type: "website",
-    locale: "en_US",
-    siteName: "Xinvoice",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Xinvoice - AI-Powered Document Generation Platform",
-    description:
-      "AI-powered document generation with advanced features, structured prompts, and multi-document support.",
-  },
-};
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://xinvoice.com';
+
+export const metadata: Metadata = generateMetadata({
+  ...SEO_CONFIGS.home,
+  canonical: baseUrl,
+  image: `${baseUrl}/api/og-image?title=${encodeURIComponent(SEO_CONFIGS.home.title)}&description=${encodeURIComponent(SEO_CONFIGS.home.description)}`,
+  alternateLocales: ['en-US', 'fr-FR', 'de-DE', 'es-ES', 'ar-SA', 'zh-CN', 'ja-JP']
+});
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#1e40af",
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#667eea" },
+    { media: "(prefers-color-scheme: dark)", color: "#1a1a1a" }
+  ],
+  colorScheme: "light dark",
 };
 
 export default function RootLayout({
@@ -56,14 +46,70 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <head>
+        {/* Preconnect for performance optimization */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
+        
+        {/* DNS prefetch for external resources */}
+        <link rel="dns-prefetch" href="//www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+        
+        {/* Preload critical resources */}
+        <link
+          rel="preload"
+          href="/icon.svg"
+          as="image"
+          type="image/svg+xml"
+        />
+        
+        {/* Search Console Verification (add your verification code) */}
+        <meta name="google-site-verification" content="your-google-site-verification-code" />
+        
+        {/* Additional meta tags for better SEO */}
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta httpEquiv="x-ua-compatible" content="ie=edge" />
+        
+        {/* Apple-specific meta tags */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Xinvoice" />
+        
+        {/* Microsoft-specific meta tags */}
+        <meta name="msapplication-TileColor" content="#667eea" />
+        <meta name="msapplication-config" content="/browserconfig.xml" />
+        
+        {/* Canonical URL */}
+        <link rel="canonical" href={baseUrl} />
+        
+        {/* Additional favicons */}
+        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="antialiased font-sans">
+        {/* Skip to main content for accessibility */}
+        <a 
+          href="#main-content" 
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-white text-black p-2 rounded z-50"
+        >
+          Skip to main content
+        </a>
+
+        {/* Structured Data */}
+        <OrganizationStructuredData />
+        <SoftwareApplicationStructuredData />
+        <WebSiteStructuredData />
+        <FAQStructuredData questions={DEFAULT_FAQ} />
+
         {/* Google tag (gtag.js) - Optimized with Next.js Script */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=AW-17553744861"
@@ -74,7 +120,28 @@ export default function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'AW-17553744861');
+            gtag('config', 'AW-17553744861', {
+              page_title: document.title,
+              page_location: window.location.href
+            });
+            
+            // Enhanced ecommerce tracking
+            gtag('config', 'AW-17553744861', {
+              send_page_view: false,
+              custom_map: {
+                'custom_parameter': 'document_type'
+              }
+            });
+          `}
+        </Script>
+        
+        {/* Google Search Console verification script */}
+        <Script
+          id="search-console-verification"
+          strategy="afterInteractive"
+        >
+          {`
+            // Add any additional Google Search Console verification if needed
           `}
         </Script>
         
@@ -82,7 +149,9 @@ export default function RootLayout({
           <DocumentProvider>
             <LocaleProvider>
               <NavigationHeader />
-              <main className="min-h-screen">{children}</main>
+              <main id="main-content" className="min-h-screen" role="main">
+                {children}
+              </main>
               <Footer />
               <ToastProvider />
             </LocaleProvider>
