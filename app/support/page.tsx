@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * Support & Help Center Page
+ * Comprehensive support resources for Xinvoice users
+ */
+
 import { motion } from "framer-motion";
 import {
   EnvelopeIcon,
@@ -11,9 +16,18 @@ import {
   GlobeAltIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
+import { BreadcrumbStructuredData, FAQStructuredData } from '../components/seo/structured-data';
+import { DEFAULT_FAQ } from '../components/seo/seo-utils';
+
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://xinvoice.com'
 
 export default function SupportPage() {
   const [copied, setCopied] = useState(false);
+
+  const breadcrumbs = [
+    { name: 'Home', url: baseUrl },
+    { name: 'Support', url: `${baseUrl}/support` }
+  ]
 
   const handleCopyEmail = async () => {
     try {
@@ -39,6 +53,10 @@ export default function SupportPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Structured Data */}
+      <BreadcrumbStructuredData items={breadcrumbs} />
+      <FAQStructuredData questions={DEFAULT_FAQ} />
+      
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Header */}
         <motion.div

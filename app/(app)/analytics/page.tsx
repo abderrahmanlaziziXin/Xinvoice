@@ -1,11 +1,11 @@
+"use client"
+
 /**
  * AI Learning Analytics Page
  * 
  * This page provides comprehensive insights into the AI learning system,
  * showing performance metrics, user feedback patterns, and improvement recommendations.
  */
-
-"use client"
 
 import React from 'react'
 import { motion } from 'framer-motion'
@@ -16,10 +16,21 @@ import {
   SparklesIcon
 } from '@heroicons/react/24/outline'
 import LearningInsightsDashboard from '../../components/learning-insights-dashboard'
+import { BreadcrumbStructuredData } from '../../components/seo/structured-data'
+
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://xinvoice.com'
 
 export default function AILearningAnalytics() {
+  const breadcrumbs = [
+    { name: 'Home', url: baseUrl },
+    { name: 'Analytics', url: `${baseUrl}/analytics` }
+  ]
+
   return (
     <div className="min-h-screen xinfinity-background relative overflow-hidden">
+      {/* Structured Data */}
+      <BreadcrumbStructuredData items={breadcrumbs} />
+      
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
