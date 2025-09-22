@@ -1,5 +1,5 @@
 # Robots.txt for Xinvoice - AI-Powered Document Generation Platform
-# https://xinvoice.com
+# https://www.xinfinitylabs.com
 
 User-agent: *
 Allow: /
@@ -22,7 +22,7 @@ User-agent: Bingbot
 Allow: /api/docs
 
 # Sitemap location
-Sitemap: https://xinvoice.com/sitemap.xml
+Sitemap: https://www.xinfinitylabs.com/sitemap.xml
 
 # Crawl delay for respectful crawling
 Crawl-delay: 1

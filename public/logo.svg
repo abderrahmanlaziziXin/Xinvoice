@@ -1,0 +1,22 @@
+<svg width="512" height="512" viewBox="0 0 261.8 261.8" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Xinfinity ribbon logo icon">
+  <defs>
+    <linearGradient id="gradMain" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1e3a8a"/>
+      <stop offset="100%" stop-color="#1e40af"/>
+    </linearGradient>
+    <linearGradient id="gradReverse" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <filter id="glowMain" filterUnits="userSpaceOnUse" x="-80" y="-80" width="420" height="322" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#1e40af"/>
+    </filter>
+    <filter id="glowReverse" filterUnits="userSpaceOnUse" x="-80" y="-80" width="420" height="322" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#3b82f6"/>
+    </filter>
+  </defs>
+  <g transform="translate(-8,22) scale(1.28)">
+    <path d="M80,75 Q115,20 130,75 T180,75" fill="none" stroke="url(#gradMain)" stroke-width="26" stroke-linecap="round"/>
+    <path d="M80,87 Q115,142 130,87 T180,87" fill="none" stroke="url(#gradReverse)" stroke-width="26" stroke-linecap="round"/>
+  </g>
+</svg>
