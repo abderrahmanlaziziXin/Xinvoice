@@ -244,9 +244,21 @@ export class EnhancedInvoicePDFGenerator {
     this.pdf.setFont(this.theme.fonts.primary, 'bold')
     this.pdf.setFontSize(FONT_SCALE.heading)
     
-    if (this.options.companyLogo) {
-      // TODO: Add logo support when file upload is implemented
-      this.pdf.text('LOGO', this.theme.spacing.margin, 15)
+    if (this.options.companyLogo && this.options.companyLogo.trim() !== '') {
+      try {
+        // Add company logo image
+        const logoSize = 12 // Height in units
+        const logoY = 8 // Position from top
+        this.pdf.addImage(this.options.companyLogo, 'JPEG', this.theme.spacing.margin, logoY, 0, logoSize)
+        
+        // Add company name next to logo
+        this.pdf.setFontSize(FONT_SCALE.body)
+        this.pdf.text(invoice.from.name || 'Your Company', this.theme.spacing.margin + 25, 15)
+      } catch (error) {
+        // Fallback to company name if logo fails to load
+        console.warn('Failed to add logo to PDF, using company name instead:', error)
+        this.pdf.text(invoice.from.name || 'Your Company', this.theme.spacing.margin, 15)
+      }
     } else {
       this.pdf.text(invoice.from.name || 'Your Company', this.theme.spacing.margin, 15)
     }

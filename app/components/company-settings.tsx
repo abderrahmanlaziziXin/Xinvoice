@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { useUserContext } from "../lib/user-context";
 import { UserContext, Currency, Locale } from "../../packages/core/schemas";
 import {
@@ -287,6 +288,60 @@ export function CompanySettings({ isOpen, onClose }: CompanySettingsProps) {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="https://www.company.com"
                 />
+              </div>
+
+              {/* Logo Upload Section */}
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Company Logo
+                </label>
+                <div className="space-y-3">
+                  {formData.logoUrl && (
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <Image
+                        src={formData.logoUrl}
+                        alt="Company logo preview"
+                        width={64}
+                        height={64}
+                        className="object-contain rounded"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, logoUrl: undefined })}
+                        className="text-red-600 hover:text-red-700 text-sm font-medium"
+                      >
+                        Remove Logo
+                      </button>
+                    </div>
+                  )}
+                  <label className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
+                    <svg className="w-6 h-6 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-sm text-gray-600">Upload Logo</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            const logoData = event.target?.result as string;
+                            setFormData({ ...formData, logoUrl: logoData });
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                  {!formData.logoUrl && (
+                    <p className="text-xs text-gray-500">
+                      Upload your company logo to personalize invoices and documents. Recommended size: 200x200px or smaller.
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="sm:col-span-2">
