@@ -23,7 +23,7 @@ interface SEOConfig {
 }
 
 export function generateMetadata(config: SEOConfig): Metadata {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://xinvoice.com'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.xinfinitylabs.com'
   const {
     title,
     description,

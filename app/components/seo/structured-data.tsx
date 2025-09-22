@@ -24,9 +24,9 @@ interface OrganizationProps {
 export function OrganizationStructuredData({
   name = "Xinvoice",
   description = "AI-powered document generation platform for creating professional invoices, NDAs, and business documents with intelligent automation.",
-  url = "https://xinvoice.com",
-  logo = "https://xinvoice.com/icon.svg",
-  email = "support@xinvoice.com",
+  url = "https://www.xinfinitylabs.com",
+  logo = "https://www.xinfinitylabs.com/logo.svg",
+  email = "support@xinfinitylabs.com",
   phone = "+1-555-XINVOICE"
 }: OrganizationProps) {
   const structuredData = {
@@ -81,7 +81,7 @@ interface SoftwareApplicationProps {
 export function SoftwareApplicationStructuredData({
   name = "Xinvoice",
   description = "AI-powered document generation platform that creates professional invoices, NDAs, and business documents with intelligent automation, multi-language support, and advanced batch processing.",
-  url = "https://xinvoice.com",
+  url = "https://www.xinfinitylabs.com",
   version = "1.0.0",
   price = "0",
   currency = "USD",
@@ -114,7 +114,7 @@ export function SoftwareApplicationStructuredData({
       "availability": "https://schema.org/InStock"
     },
     "featureList": features,
-    "screenshot": "https://xinvoice.com/screenshot.png",
+    "screenshot": "https://www.xinfinitylabs.com/screenshot.png",
     "aggregateRating": {
       "@type": "AggregateRating",
       "ratingValue": "4.8",
@@ -124,7 +124,8 @@ export function SoftwareApplicationStructuredData({
     },
     "publisher": {
       "@type": "Organization",
-      "name": "Xinvoice Team"
+      "name": "Xinfinity Labs",
+      "logo": "https://www.xinfinitylabs.com/logo.svg"
     }
   }
 
@@ -146,7 +147,7 @@ interface WebSiteProps {
 export function WebSiteStructuredData({
   name = "Xinvoice",
   description = "AI-powered document generation platform",
-  url = "https://xinvoice.com"
+  url = "https://www.xinfinitylabs.com"
 }: WebSiteProps) {
   const structuredData = {
     "@context": "https://schema.org",
@@ -190,8 +191,8 @@ interface ProductProps {
 export function ProductStructuredData({
   name = "Xinvoice Document Generator",
   description = "Professional AI-powered document generation tool for creating invoices, NDAs, and business documents with advanced automation and multi-language support.",
-  url = "https://xinvoice.com/demo/multilang-pdf",
-  image = "https://xinvoice.com/product-image.png",
+  url = "https://www.xinfinitylabs.com/demo/multilang-pdf",
+  image = "https://www.xinfinitylabs.com/product-image.png",
   brand = "Xinvoice",
   category = "Business Software",
   features = [
