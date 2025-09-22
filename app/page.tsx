@@ -1,9 +1,11 @@
-'use client'
+"use client";
 
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy } from "react";
 
 // Lazy load the heavy Hero component
-const Hero = lazy(() => import('./components/hero').then(module => ({ default: module.Hero })))
+const Hero = lazy(() =>
+  import("./components/hero").then((module) => ({ default: module.Hero }))
+);
 
 // Simple loading fallback
 function HeroSkeleton() {
@@ -14,15 +16,16 @@ function HeroSkeleton() {
         <p className="text-xl font-semibold">Loading Xinvoice...</p>
       </div>
     </div>
-  )
+  );
 }
 
 export default function Home() {
   return (
     <main>
+      {/*  */}
       <Suspense fallback={<HeroSkeleton />}>
         <Hero />
       </Suspense>
     </main>
-  )
+  );
 }
