@@ -17,12 +17,12 @@ import {
 } from "./components/seo/structured-data";
 import { DEFAULT_FAQ, generateMetadata, SEO_CONFIGS } from "./components/seo/seo-utils";
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://xinvoice.com';
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.xinfinitylabs.com';
 
 export const metadata: Metadata = generateMetadata({
   ...SEO_CONFIGS.home,
   canonical: baseUrl,
-  image: `${baseUrl}/api/og-image?title=${encodeURIComponent(SEO_CONFIGS.home.title)}&description=${encodeURIComponent(SEO_CONFIGS.home.description)}`,
+  image: `${baseUrl}/og-image.png`,
   alternateLocales: ['en-US', 'fr-FR', 'de-DE', 'es-ES', 'ar-SA', 'zh-CN', 'ja-JP']
 });
 
@@ -62,10 +62,15 @@ export default function RootLayout({
         {/* Preload critical resources */}
         <link
           rel="preload"
-          href="/icon.svg"
+          href="/logo.svg"
           as="image"
           type="image/svg+xml"
         />
+        
+        {/* Additional favicons and logo references */}
+        <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/logo.svg" />
+        <link rel="mask-icon" href="/logo.svg" color="#667eea" />
         
         {/* Search Console Verification (add your verification code) */}
         <meta name="google-site-verification" content="your-google-site-verification-code" />
@@ -94,6 +99,19 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
+        
+        {/* Open Graph and Twitter meta tags */}
+        <meta property="og:image" content={`${baseUrl}/og-image.png`} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:logo" content={`${baseUrl}/logo.svg`} />
+        <meta name="twitter:image" content={`${baseUrl}/og-image.png`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        
+        {/* Schema.org logo markup for Google */}
+        <meta itemProp="logo" content={`${baseUrl}/logo.svg`} />
+        <meta itemProp="image" content={`${baseUrl}/og-image.png`} />
       </head>
       <body className="antialiased font-sans">
         {/* Skip to main content for accessibility */}
