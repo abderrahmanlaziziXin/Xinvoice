@@ -48,6 +48,12 @@ export function NavigationHeader() {
       current: pathname?.startsWith("/demo/multilang"),
     },
     {
+      name: "Documents Juridiques",
+      href: "/legal-documents",
+      icon: ShieldCheckIcon,
+      current: pathname?.startsWith("/legal-documents"),
+    },
+    {
       name: "Support",
       href: "/support",
       icon: EnvelopeIcon,
