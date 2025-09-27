@@ -15,6 +15,20 @@ interface DocumentData {
   aiSuggestions: Record<string, string[]>;
 }
 
+interface MockResponseData {
+  type: string;
+  content: string;
+  fields: Record<string, any>;
+  aiSuggestions?: Record<string, string[]>;
+}
+
+interface MockAIResponse {
+  response: string;
+  suggestions: string[];
+  documentData?: MockResponseData;
+  nextPhase: 'selection' | 'questions' | 'generation' | 'finalization';
+}
+
 interface ChatRequest {
   message: string;
   conversationHistory: ChatMessage[];
@@ -43,7 +57,7 @@ export async function POST(request: NextRequest) {
       const mockResponse = generateMockAIResponse(message, phase, conversationHistory, currentDocumentData);
       aiResponse = mockResponse.response;
       suggestions = mockResponse.suggestions;
-      documentData = mockResponse.documentData;
+      documentData = mockResponse.documentData as DocumentData | undefined;
       nextPhase = mockResponse.nextPhase;
     } else {
       // Real AI integration
@@ -56,8 +70,9 @@ export async function POST(request: NextRequest) {
         `${systemPrompt}\n\nConversation précédente:\n${conversationContext}\n\nMessage utilisateur: ${message}`,
         'invoice', // Using invoice as document type
         {
-          locale: 'fr-FR',
-          currency: 'EUR'
+          defaultCurrency: 'EUR',
+          defaultLocale: 'fr-FR',
+          defaultTaxRate: 20
         }
       );
 
@@ -296,7 +311,16 @@ function generateMockAIResponse(message: string, phase: string, history: ChatMes
       }
 
     case 'questions':
-      const docType = currentDocumentData?.fields?.document_type;
+      if (!currentDocumentData) {
+        return {
+          response: "Il semble que nous devions recommencer. Quel type de document souhaitez-vous créer ?",
+          suggestions: ["Contrat de travail", "Bail d'habitation"],
+          documentData: undefined,
+          nextPhase: 'selection' as const
+        };
+      }
+      
+      const docType = currentDocumentData.fields?.document_type;
       
       if (docType === 'contrat_travail') {
         if (!currentDocumentData.fields.employeur_nom) {

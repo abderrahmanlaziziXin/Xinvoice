@@ -7,28 +7,31 @@ Le **Système de Documents Juridiques Français** est une solution conversationn
 ## ✨ Fonctionnalités principales
 
 ### 🔄 1. Système de sélection souple
+
 - **Choix de document intuitive** : L'utilisateur sélectionne parmi plusieurs types de documents juridiques
 - **Interface conversationnelle** : Questions adaptées en temps réel selon le type de document choisi
 - **Suggestions contextuelles** : Le système propose des informations utiles sans validation stricte
 
 ### 📝 2. Documents supportés
 
-| Document | Description | Temps estimé | Base légale |
-|----------|-------------|--------------|-------------|
-| **Contrat de travail CDI** | Contrat à durée indéterminée conforme au Code du travail | 10-15 min | Code du travail - Articles L1221-1 et suivants |
-| **Bail d'habitation** | Contrat de location pour logement vide ou meublé | 15-20 min | Loi du 6 juillet 1989 - Article 3 et suivants |
-| **Contrat de vente** | Contrat de vente de biens ou services | 10-15 min | Code civil - Articles 1582 et suivants |
-| **Procuration** | Mandat de représentation pour démarches administratives | 5-10 min | Code civil - Articles 1984 et suivants |
+| Document                   | Description                                              | Temps estimé | Base légale                                    |
+| -------------------------- | -------------------------------------------------------- | ------------ | ---------------------------------------------- |
+| **Contrat de travail CDI** | Contrat à durée indéterminée conforme au Code du travail | 10-15 min    | Code du travail - Articles L1221-1 et suivants |
+| **Bail d'habitation**      | Contrat de location pour logement vide ou meublé         | 15-20 min    | Loi du 6 juillet 1989 - Article 3 et suivants  |
+| **Contrat de vente**       | Contrat de vente de biens ou services                    | 10-15 min    | Code civil - Articles 1582 et suivants         |
+| **Procuration**            | Mandat de représentation pour démarches administratives  | 5-10 min     | Code civil - Articles 1984 et suivants         |
 
 ### 💬 3. Experience conversationnelle
 
 #### Interface adaptative
+
 - **Questions contextuelles** : Chaque question s'adapte aux réponses précédentes
 - **Champs optionnels** : Liberté de laisser vide les informations non pertinentes
 - **Validation intelligente** : Vérification en temps réel avec messages d'aide
 - **Progression visuelle** : Barre de progression pour suivre l'avancement
 
 #### Exemple de flux conversationnel
+
 ```
 🤖 "Quel type de document souhaitez-vous générer ?"
 👤 [Sélection : Contrat de travail]
@@ -51,7 +54,7 @@ Le **Système de Documents Juridiques Français** est une solution conversationn
 ```
 packages/core/
 ├── french-legal-documents.ts      # Templates et logique métier
-└── 
+└──
 
 app/
 ├── legal-documents/
@@ -68,12 +71,13 @@ app/
 ### 🔧 Composants clés
 
 #### 1. **FrenchLegalDocuments** (Core)
+
 ```typescript
 export interface LegalDocumentTemplate {
   id: string;
   name: string;
   description: string;
-  category: 'contrat' | 'bail' | 'vente' | 'procuration';
+  category: "contrat" | "bail" | "vente" | "procuration";
   legalBasis: string;
   estimatedTime: string;
   questions: LegalDocumentQuestion[];
@@ -85,11 +89,12 @@ export interface LegalDocumentTemplate {
 ```
 
 #### 2. **Question System**
+
 ```typescript
 export interface LegalDocumentQuestion {
   id: string;
   text: string;
-  type: 'text' | 'select' | 'date' | 'number' | 'textarea' | 'boolean';
+  type: "text" | "select" | "date" | "number" | "textarea" | "boolean";
   required: boolean;
   placeholder?: string;
   options?: { value: string; label: string }[];
@@ -100,6 +105,7 @@ export interface LegalDocumentQuestion {
 ```
 
 #### 3. **Document Generator**
+
 - **Validation dynamique** : Vérification en temps réel des réponses
 - **Génération de templates** : Remplacement intelligent des variables
 - **Gestion conditionnelle** : Sections qui apparaissent selon les réponses
@@ -110,6 +116,7 @@ export interface LegalDocumentQuestion {
 ### Contrat de travail CDI
 
 **Questions principales :**
+
 - Informations employeur (nom, SIRET, adresse)
 - Informations salarié (identité, adresse)
 - Détails du poste (titre, missions, lieu de travail)
@@ -117,6 +124,7 @@ export interface LegalDocumentQuestion {
 - Options (période d'essai, formation, clauses spéciales)
 
 **Document généré :**
+
 ```
 CONTRAT DE TRAVAIL À DURÉE INDÉTERMINÉE
 
@@ -143,6 +151,7 @@ L'Employeur engage le Salarié en qualité de Développeur Full-Stack.
 ### Bail d'habitation
 
 **Questions adaptatives :**
+
 - Type de location (vide/meublé) → Questions spécifiques
 - Durée automatique selon le type (3 ans vide, 1 an meublé)
 - Calcul automatique du dépôt de garantie selon les règles légales
@@ -150,6 +159,7 @@ L'Employeur engage le Salarié en qualité de Développeur Full-Stack.
 ### Procuration
 
 **Questions contextuelles :**
+
 - Type de procuration → Questions spécifiques au domaine
 - Informations complètes des parties (mandant/mandataire)
 - Durée et conditions adaptées au type de mandat
@@ -159,24 +169,28 @@ L'Employeur engage le Salarié en qualité de Développeur Full-Stack.
 ### Bases légales respectées
 
 #### Contrat de travail
+
 - **Code du travail** Articles L1221-1 et suivants
 - Mentions obligatoires automatiquement incluses
 - Respect des durées de période d'essai légales
 - Conformité aux obligations d'information
 
 #### Bail d'habitation
+
 - **Loi du 6 juillet 1989** sur les rapports locatifs
 - Durées légales respectées (3 ans vide, 1 an meublé)
 - Mentions obligatoires automatiques
 - Calcul correct des dépôts de garantie
 
 #### Contrat de vente
+
 - **Code civil** Articles 1582 et suivants
 - Éléments essentiels : consentement, objet, prix
 - Garanties légales automatiquement incluses
 - Clauses de protection du consommateur
 
 #### Procuration
+
 - **Code civil** Articles 1984 et suivants
 - **Code de procédure civile** pour les procurations judiciaires
 - Identité complète des parties requise
@@ -185,6 +199,7 @@ L'Employeur engage le Salarié en qualité de Développeur Full-Stack.
 ### Avertissements légaux
 
 Le système inclut automatiquement :
+
 - **Base légale** de référence pour chaque document
 - **Mentions obligatoires** selon la réglementation
 - **Avertissements** sur les spécificités juridiques
@@ -193,11 +208,13 @@ Le système inclut automatiquement :
 ## 🚀 Utilisation
 
 ### 1. Accès au système
+
 ```
 http://localhost:3000/legal-documents
 ```
 
 ### 2. Processus de génération
+
 1. **Sélection** du type de document
 2. **Questions conversationnelles** adaptées
 3. **Aperçu** du document généré
@@ -206,11 +223,13 @@ http://localhost:3000/legal-documents
 ### 3. API Endpoints
 
 #### Obtenir les templates disponibles
+
 ```http
 GET /api/legal-documents/templates
 ```
 
 #### Valider une réponse
+
 ```http
 POST /api/legal-documents/validate
 {
@@ -221,6 +240,7 @@ POST /api/legal-documents/validate
 ```
 
 #### Générer un document
+
 ```http
 POST /api/legal-documents/generate
 {
@@ -236,18 +256,21 @@ POST /api/legal-documents/generate
 ## ✅ Avantages du système
 
 ### Pour l'utilisateur
+
 - **Interface intuitive** : Conversation naturelle vs formulaire rigide
 - **Flexibilité** : Champs optionnels selon les besoins
 - **Gain de temps** : Génération automatique en quelques minutes
 - **Conformité assurée** : Respect automatique des obligations légales
 
-### Pour les développeurs  
+### Pour les développeurs
+
 - **Extensibilité** : Ajout facile de nouveaux types de documents
 - **Maintenance** : Structure modulaire et template-based
 - **Validation** : Système de validation robuste et configurable
 - **API complète** : Endpoints pour toutes les opérations
 
 ### Conformité juridique
+
 - **Bases légales** : Tous les documents respectent la législation française
 - **Mise à jour** : Facilité d'adaptation aux évolutions légales
 - **Avertissements** : Mentions légales automatiques
