@@ -21,8 +21,8 @@ export default function LegalDocumentChatPage() {
               Assistant IA Juridique
             </h1>
             <p className="text-xl md:text-2xl text-gray-700 mb-8 leading-relaxed">
-              Créez vos documents juridiques avec l&apos;aide d&apos;une intelligence
-              artificielle conversationnelle
+              Créez vos documents juridiques avec l&apos;aide d&apos;une
+              intelligence artificielle conversationnelle
             </p>
 
             {/* Features */}
@@ -132,8 +132,8 @@ export default function LegalDocumentChatPage() {
               français. Il est{" "}
               <strong className="text-yellow-400">fortement recommandé</strong>{" "}
               de faire vérifier tout document par un professionnel du droit
-              avant signature et utilisation. L&apos;IA peut omettre des éléments
-              spécifiques à votre situation.
+              avant signature et utilisation. L&apos;IA peut omettre des
+              éléments spécifiques à votre situation.
             </p>
           </div>
         </div>
