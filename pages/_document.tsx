@@ -6,7 +6,8 @@ export default function Document() {
       <Head>
         {/* Favicon et icônes pour l'apparence dans les résultats de recherche */}
         <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/logo-192.png" />
+        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+        <link rel="apple-touch-icon" href="/icon.svg" />
         <link rel="manifest" href="/manifest.json" />
 
         {/* Métadonnées additionnelles pour le SEO */}
@@ -28,7 +29,7 @@ export default function Document() {
               description:
                 "Plateforme de génération de documents juridiques français avec intelligence artificielle",
               url: "https://www.xinfinitylabs.com",
-              logo: "https://www.xinfinitylabs.com/logo.png",
+              logo: "https://www.xinfinitylabs.com/icon.svg",
               applicationCategory: "BusinessApplication",
               operatingSystem: "Web",
               offers: {
@@ -41,7 +42,7 @@ export default function Document() {
                 name: "Xinvoice",
                 logo: {
                   "@type": "ImageObject",
-                  url: "https://www.xinfinitylabs.com/logo.png",
+                  url: "https://www.xinfinitylabs.com/icon.svg",
                 },
               },
             }),

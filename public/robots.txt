@@ -5,6 +5,7 @@ User-agent: *
 Allow: /
 
 # Priority crawling for main pages
+Allow: /legal-documents
 Allow: /demo/multilang-pdf
 Allow: /analytics
 Allow: /support

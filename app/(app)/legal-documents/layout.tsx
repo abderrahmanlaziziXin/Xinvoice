@@ -29,16 +29,16 @@ export const metadata: Metadata = {
     siteName: "Xinvoice",
     images: [
       {
+        url: "/icon.svg",
+        width: 512,
+        height: 512,
+        alt: "Logo Xinvoice",
+      },
+      {
         url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "Xinvoice - Assistant IA Juridique",
-      },
-      {
-        url: "/logo.png",
-        width: 512,
-        height: 512,
-        alt: "Logo Xinvoice",
       },
     ],
     locale: "fr_FR",
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     title: "Assistant IA Juridique - Xinvoice",
     description:
       "Créez vos documents juridiques français avec l'aide d'une intelligence artificielle conversationnelle",
-    images: ["/og-image.png"],
+    images: ["/icon.svg"],
     creator: "@xinvoice",
   },
   robots: {
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
       { url: "/logo-192.png", sizes: "192x192", type: "image/png" },
     ],
     shortcut: "/favicon.ico",
-    apple: [{ url: "/logo-192.png", sizes: "192x192", type: "image/png" }],
+    apple: [{ url: "/icon.svg", type: "image/svg+xml" }],
   },
   manifest: "/manifest.json",
 };
