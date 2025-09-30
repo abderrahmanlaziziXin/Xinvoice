@@ -29,7 +29,7 @@ export default function Document() {
               description:
                 "Plateforme de génération de documents juridiques français avec intelligence artificielle",
               url: "https://www.xinfinitylabs.com",
-              logo: "https://www.xinfinitylabs.com/icon.svg",
+              logo: "https://www.xinfinitylabs.com/logo-google.png",
               applicationCategory: "BusinessApplication",
               operatingSystem: "Web",
               offers: {
@@ -42,7 +42,7 @@ export default function Document() {
                 name: "Xinvoice",
                 logo: {
                   "@type": "ImageObject",
-                  url: "https://www.xinfinitylabs.com/icon.svg",
+                  url: "https://www.xinfinitylabs.com/logo-google.png",
                 },
               },
             }),

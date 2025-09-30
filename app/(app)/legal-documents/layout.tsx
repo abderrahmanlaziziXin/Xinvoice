@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     siteName: "Xinvoice",
     images: [
       {
-        url: "/icon.svg",
+        url: "/logo-google.png",
         width: 512,
         height: 512,
         alt: "Logo Xinvoice",
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     title: "Assistant IA Juridique - Xinvoice",
     description:
       "Créez vos documents juridiques français avec l'aide d'une intelligence artificielle conversationnelle",
-    images: ["/icon.svg"],
+    images: ["/logo-google.png"],
     creator: "@xinvoice",
   },
   robots: {
