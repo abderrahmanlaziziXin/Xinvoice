@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
           defaultTaxRate: 20
         }
       );
-
+// 
       const parsedResult = parseAIResponse(aiResult, phase, currentDocumentData);
       aiResponse = parsedResult.response;
       suggestions = parsedResult.suggestions;
