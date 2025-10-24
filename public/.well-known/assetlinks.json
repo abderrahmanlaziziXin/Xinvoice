@@ -1,0 +1,28 @@
+{
+  "name": "Xinvoice - AI Document Platform",
+  "short_name": "Xinvoice",
+  "description": "AI-powered document generation platform for creating professional invoices, NDAs, and business documents with intelligent automation.",
+  "url": "https://www.xinfinitylabs.com",
+  "logo": "https://www.xinfinitylabs.com/logo.svg",
+  "icon": "https://www.xinfinitylabs.com/icon.svg",
+  "theme_color": "#667eea",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "lang": "en",
+  "dir": "ltr",
+  "orientation": "portrait-primary",
+  "categories": ["business", "productivity", "tools", "ai"],
+  "screenshots": [
+    {
+      "src": "https://www.xinfinitylabs.com/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "AI Invoice Generation Interface"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

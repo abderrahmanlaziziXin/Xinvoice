@@ -3,22 +3,22 @@
  * Generates JSON-LD structured data for better search engine understanding
  */
 
-import Script from 'next/script'
+import Script from "next/script";
 
 interface OrganizationProps {
-  name?: string
-  description?: string
-  url?: string
-  logo?: string
-  email?: string
-  phone?: string
+  name?: string;
+  description?: string;
+  url?: string;
+  logo?: string;
+  email?: string;
+  phone?: string;
   address?: {
-    streetAddress?: string
-    addressLocality?: string
-    addressRegion?: string
-    postalCode?: string
-    addressCountry?: string
-  }
+    streetAddress?: string;
+    addressLocality?: string;
+    addressRegion?: string;
+    postalCode?: string;
+    addressCountry?: string;
+  };
 }
 
 export function OrganizationStructuredData({
@@ -27,35 +27,52 @@ export function OrganizationStructuredData({
   url = "https://www.xinfinitylabs.com",
   logo = "https://www.xinfinitylabs.com/logo.svg",
   email = "support@xinfinitylabs.com",
-  phone = "+1-555-XINVOICE"
+  phone = "+1-555-XINVOICE",
 }: OrganizationProps) {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": name,
-    "description": description,
-    "url": url,
-    "logo": {
+    "@id": `${url}/#organization`,
+    name: name,
+    alternateName: "Xinvoice AI Platform",
+    description: description,
+    url: url,
+    logo: {
       "@type": "ImageObject",
-      "url": logo,
-      "width": "512",
-      "height": "512"
+      url: logo,
+      width: "512",
+      height: "512",
+      caption: "Xinvoice - AI Document Platform Logo",
     },
-    "contactPoint": {
+    image: {
+      "@type": "ImageObject",
+      url: `${url}/og-image.png`,
+      width: "1200",
+      height: "630",
+    },
+    contactPoint: {
       "@type": "ContactPoint",
-      "email": email,
-      "telephone": phone,
-      "contactType": "customer service"
+      email: email,
+      telephone: phone,
+      contactType: "customer service",
+      availableLanguage: ["English", "French", "Spanish", "German", "Italian"],
     },
-    "sameAs": [
+    sameAs: [
       "https://twitter.com/xinvoice",
       "https://linkedin.com/company/xinvoice",
-      "https://github.com/xinvoice"
+      "https://github.com/xinvoice",
     ],
-    "foundingDate": "2024",
-    "industry": "Software Development",
-    "numberOfEmployees": "1-10"
-  }
+    foundingDate: "2024",
+    industry: "Software Development",
+    numberOfEmployees: "1-10",
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.8",
+      ratingCount: "127",
+      bestRating: "5",
+      worstRating: "1",
+    },
+  };
 
   return (
     <Script
@@ -63,19 +80,19 @@ export function OrganizationStructuredData({
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
     />
-  )
+  );
 }
 
 interface SoftwareApplicationProps {
-  name?: string
-  description?: string
-  url?: string
-  version?: string
-  price?: string
-  currency?: string
-  operatingSystem?: string
-  applicationCategory?: string
-  features?: string[]
+  name?: string;
+  description?: string;
+  url?: string;
+  version?: string;
+  price?: string;
+  currency?: string;
+  operatingSystem?: string;
+  applicationCategory?: string;
+  features?: string[];
 }
 
 export function SoftwareApplicationStructuredData({
@@ -95,39 +112,39 @@ export function SoftwareApplicationStructuredData({
     "Multi-currency support (28+ currencies)",
     "Real-time document preview",
     "Intelligent file parsing",
-    "Customizable templates"
-  ]
+    "Customizable templates",
+  ],
 }: SoftwareApplicationProps) {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    "name": name,
-    "description": description,
-    "url": url,
-    "applicationCategory": applicationCategory,
-    "operatingSystem": operatingSystem,
-    "softwareVersion": version,
-    "offers": {
+    name: name,
+    description: description,
+    url: url,
+    applicationCategory: applicationCategory,
+    operatingSystem: operatingSystem,
+    softwareVersion: version,
+    offers: {
       "@type": "Offer",
-      "price": price,
-      "priceCurrency": currency,
-      "availability": "https://schema.org/InStock"
+      price: price,
+      priceCurrency: currency,
+      availability: "https://schema.org/InStock",
     },
-    "featureList": features,
-    "screenshot": "https://www.xinfinitylabs.com/screenshot.png",
-    "aggregateRating": {
+    featureList: features,
+    screenshot: "https://www.xinfinitylabs.com/screenshot.png",
+    aggregateRating: {
       "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "ratingCount": "127",
-      "bestRating": "5",
-      "worstRating": "1"
+      ratingValue: "4.8",
+      ratingCount: "127",
+      bestRating: "5",
+      worstRating: "1",
     },
-    "publisher": {
+    publisher: {
       "@type": "Organization",
-      "name": "Xinfinity Labs",
-      "logo": "https://www.xinfinitylabs.com/logo.svg"
-    }
-  }
+      name: "Xinfinity Labs",
+      logo: "https://www.xinfinitylabs.com/logo.svg",
+    },
+  };
 
   return (
     <Script
@@ -135,39 +152,51 @@ export function SoftwareApplicationStructuredData({
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
     />
-  )
+  );
 }
 
 interface WebSiteProps {
-  name?: string
-  description?: string
-  url?: string
+  name?: string;
+  description?: string;
+  url?: string;
 }
 
 export function WebSiteStructuredData({
   name = "Xinvoice",
   description = "AI-powered document generation platform",
-  url = "https://www.xinfinitylabs.com"
+  url = "https://www.xinfinitylabs.com",
 }: WebSiteProps) {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": name,
-    "description": description,
-    "url": url,
-    "potentialAction": {
+    "@id": `${url}/#website`,
+    name: name,
+    alternateName: "Xinvoice AI Document Platform",
+    description: description,
+    url: url,
+    inLanguage: ["en-US", "fr-FR", "es-ES", "de-DE", "it-IT"],
+    potentialAction: {
       "@type": "SearchAction",
-      "target": {
+      target: {
         "@type": "EntryPoint",
-        "urlTemplate": `${url}/search?q={search_term_string}`
+        urlTemplate: `${url}/search?q={search_term_string}`,
       },
-      "query-input": "required name=search_term_string"
+      "query-input": "required name=search_term_string",
     },
-    "author": {
+    publisher: {
       "@type": "Organization",
-      "name": "Xinvoice Team"
-    }
-  }
+      "@id": `${url}/#organization`,
+      name: "Xinvoice Team",
+      logo: {
+        "@type": "ImageObject",
+        url: `${url}/logo.svg`,
+      },
+    },
+    copyrightHolder: {
+      "@type": "Organization",
+      "@id": `${url}/#organization`,
+    },
+  };
 
   return (
     <Script
@@ -175,17 +204,17 @@ export function WebSiteStructuredData({
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
     />
-  )
+  );
 }
 
 interface ProductProps {
-  name?: string
-  description?: string
-  url?: string
-  image?: string
-  brand?: string
-  category?: string
-  features?: string[]
+  name?: string;
+  description?: string;
+  url?: string;
+  image?: string;
+  brand?: string;
+  category?: string;
+  features?: string[];
 }
 
 export function ProductStructuredData({
@@ -200,39 +229,39 @@ export function ProductStructuredData({
     "Multi-language Support",
     "Batch Processing",
     "PDF Export",
-    "Template Customization"
-  ]
+    "Template Customization",
+  ],
 }: ProductProps) {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Product",
-    "name": name,
-    "description": description,
-    "url": url,
-    "image": image,
-    "brand": {
+    name: name,
+    description: description,
+    url: url,
+    image: image,
+    brand: {
       "@type": "Brand",
-      "name": brand
+      name: brand,
     },
-    "category": category,
-    "additionalProperty": features.map(feature => ({
+    category: category,
+    additionalProperty: features.map((feature) => ({
       "@type": "PropertyValue",
-      "name": "Feature",
-      "value": feature
+      name: "Feature",
+      value: feature,
     })),
-    "offers": {
+    offers: {
       "@type": "Offer",
-      "availability": "https://schema.org/InStock",
-      "price": "0",
-      "priceCurrency": "USD",
-      "priceValidUntil": "2025-12-31"
+      availability: "https://schema.org/InStock",
+      price: "0",
+      priceCurrency: "USD",
+      priceValidUntil: "2025-12-31",
     },
-    "aggregateRating": {
+    aggregateRating: {
       "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "reviewCount": "127"
-    }
-  }
+      ratingValue: "4.8",
+      reviewCount: "127",
+    },
+  };
 
   return (
     <Script
@@ -240,27 +269,27 @@ export function ProductStructuredData({
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
     />
-  )
+  );
 }
 
 interface BreadcrumbProps {
   items: Array<{
-    name: string
-    url: string
-  }>
+    name: string;
+    url: string;
+  }>;
 }
 
 export function BreadcrumbStructuredData({ items }: BreadcrumbProps) {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    "itemListElement": items.map((item, index) => ({
+    itemListElement: items.map((item, index) => ({
       "@type": "ListItem",
-      "position": index + 1,
-      "name": item.name,
-      "item": item.url
-    }))
-  }
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
 
   return (
     <Script
@@ -268,29 +297,29 @@ export function BreadcrumbStructuredData({ items }: BreadcrumbProps) {
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
     />
-  )
+  );
 }
 
 interface FAQProps {
   questions: Array<{
-    question: string
-    answer: string
-  }>
+    question: string;
+    answer: string;
+  }>;
 }
 
 export function FAQStructuredData({ questions }: FAQProps) {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "mainEntity": questions.map(qa => ({
+    mainEntity: questions.map((qa) => ({
       "@type": "Question",
-      "name": qa.question,
-      "acceptedAnswer": {
+      name: qa.question,
+      acceptedAnswer: {
         "@type": "Answer",
-        "text": qa.answer
-      }
-    }))
-  }
+        text: qa.answer,
+      },
+    })),
+  };
 
   return (
     <Script
@@ -298,5 +327,5 @@ export function FAQStructuredData({ questions }: FAQProps) {
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
     />
-  )
+  );
 }
