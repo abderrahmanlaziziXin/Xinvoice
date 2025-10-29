@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { redirect } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
-import Link from "next/link"
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import {
   PlusIcon,
   MagnifyingGlassIcon,
@@ -14,37 +14,37 @@ import {
   EnvelopeIcon,
   PhoneIcon,
   MapPinIcon,
-} from "@heroicons/react/24/outline"
-import { useToast } from "../../hooks/use-toast"
+} from "@heroicons/react/24/outline";
+import { useToast } from "../../hooks/use-toast";
 
 interface Client {
-  id: string
-  name: string
-  email?: string
-  address?: string
-  phone?: string
-  taxNumber?: string
-  contactPerson?: string
-  createdAt: string
+  id: string;
+  name: string;
+  email?: string;
+  address?: string;
+  phone?: string;
+  taxNumber?: string;
+  contactPerson?: string;
+  createdAt: string;
   _count: {
-    invoices: number
-  }
+    invoices: number;
+  };
 }
 
 export default function ClientsPage() {
-  const { data: session, status } = useSession()
-  const [clients, setClients] = useState<Client[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [deleteId, setDeleteId] = useState<string | null>(null)
-  const { success, error } = useToast()
+  const { data: session, status } = useSession();
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const { success, error } = useToast();
 
   // All useEffect hooks must be called before any conditional logic
   useEffect(() => {
     if (session) {
-      fetchClients()
+      fetchClients();
     }
-  }, [session])
+  }, [session]);
 
   // Early returns after all hooks
   if (status === "loading") {
@@ -52,66 +52,66 @@ export default function ClientsPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
-    )
+    );
   }
 
   if (!session) {
-    redirect("/auth/signin")
+    redirect("/auth/signin");
   }
 
   const fetchClients = async () => {
     try {
-      const response = await fetch("/api/clients")
+      const response = await fetch("/api/clients");
       if (response.ok) {
-        const data = await response.json()
-        setClients(data.clients)
+        const data = await response.json();
+        setClients(data.clients);
       } else {
-        error("Failed to load clients")
+        error("Failed to load clients");
       }
     } catch (err) {
-      error("Error loading clients")
+      error("Error loading clients");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleDeleteClient = async (id: string) => {
     try {
       const response = await fetch(`/api/clients/${id}`, {
         method: "DELETE",
-      })
+      });
 
       if (response.ok) {
-        setClients(clients.filter(client => client.id !== id))
-        success("Client deleted successfully")
+        setClients(clients.filter((client) => client.id !== id));
+        success("Client deleted successfully");
       } else {
-        const data = await response.json()
-        error(data.error || "Failed to delete client")
+        const data = await response.json();
+        error(data.error || "Failed to delete client");
       }
     } catch (err) {
-      error("Error deleting client")
+      error("Error deleting client");
     } finally {
-      setDeleteId(null)
+      setDeleteId(null);
     }
-  }
+  };
 
-  const filteredClients = clients.filter(client =>
-    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredClients = clients.filter(
+    (client) =>
+      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -153,7 +153,9 @@ export default function ClientsPage() {
               {searchTerm ? "No clients found" : "No clients yet"}
             </h3>
             <p className="mt-1 text-sm text-gray-500">
-              {searchTerm ? "Try adjusting your search terms" : "Get started by adding your first client."}
+              {searchTerm
+                ? "Try adjusting your search terms"
+                : "Get started by adding your first client."}
             </p>
             {!searchTerm && (
               <div className="mt-6">
@@ -181,9 +183,13 @@ export default function ClientsPage() {
                   {/* Client Header */}
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900">{client.name}</h3>
+                      <h3 className="text-lg font-medium text-gray-900">
+                        {client.name}
+                      </h3>
                       {client.contactPerson && (
-                        <p className="text-sm text-gray-500">Contact: {client.contactPerson}</p>
+                        <p className="text-sm text-gray-500">
+                          Contact: {client.contactPerson}
+                        </p>
                       )}
                     </div>
                     <div className="flex space-x-2">
@@ -228,7 +234,9 @@ export default function ClientsPage() {
                   <div className="mt-4 pt-4 border-t border-gray-200">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-500">Invoices</span>
-                      <span className="font-medium">{client._count.invoices}</span>
+                      <span className="font-medium">
+                        {client._count.invoices}
+                      </span>
                     </div>
                   </div>
 
@@ -262,9 +270,12 @@ export default function ClientsPage() {
                 exit={{ opacity: 0, scale: 0.95 }}
                 className="bg-white rounded-lg p-6 max-w-md w-full mx-4"
               >
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Delete Client</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Delete Client
+                </h3>
                 <p className="text-sm text-gray-600 mb-6">
-                  Are you sure you want to delete this client? This action cannot be undone.
+                  Are you sure you want to delete this client? This action
+                  cannot be undone.
                 </p>
                 <div className="flex justify-end space-x-3">
                   <button
@@ -286,5 +297,5 @@ export default function ClientsPage() {
         </AnimatePresence>
       </div>
     </div>
-  )
+  );
 }

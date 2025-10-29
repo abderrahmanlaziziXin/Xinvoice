@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useSession } from "next-auth/react"
-import { redirect } from "next/navigation"
-import { motion } from "framer-motion"
-import Link from "next/link"
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import { motion } from "framer-motion";
+import Link from "next/link";
 import {
   PlusIcon,
   DocumentTextIcon,
@@ -12,21 +12,21 @@ import {
   EyeIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
-} from "@heroicons/react/24/outline"
+} from "@heroicons/react/24/outline";
 
 export default function Dashboard() {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession();
 
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
-    )
+    );
   }
 
   if (!session) {
-    redirect("/auth/signin")
+    redirect("/auth/signin");
   }
 
   // Mock data for now - will be replaced with real data from database
@@ -59,7 +59,7 @@ export default function Dashboard() {
       color: "text-red-600",
       bgColor: "bg-red-50",
     },
-  ]
+  ];
 
   const recentInvoices = [
     {
@@ -86,17 +86,22 @@ export default function Dashboard() {
       date: "2025-10-15",
       dueDate: "2025-10-29",
     },
-  ]
+  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "paid": return "bg-green-100 text-green-800"
-      case "sent": return "bg-blue-100 text-blue-800"
-      case "overdue": return "bg-red-100 text-red-800"
-      case "draft": return "bg-gray-100 text-gray-800"
-      default: return "bg-gray-100 text-gray-800"
+      case "paid":
+        return "bg-green-100 text-green-800";
+      case "sent":
+        return "bg-blue-100 text-blue-800";
+      case "overdue":
+        return "bg-red-100 text-red-800";
+      case "draft":
+        return "bg-gray-100 text-gray-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -135,8 +140,12 @@ export default function Dashboard() {
                   <stat.icon className={`w-6 h-6 ${stat.color}`} />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">{stat.label}</p>
-                  <p className="text-2xl font-semibold text-gray-900">{stat.value}</p>
+                  <p className="text-sm font-medium text-gray-500">
+                    {stat.label}
+                  </p>
+                  <p className="text-2xl font-semibold text-gray-900">
+                    {stat.value}
+                  </p>
                 </div>
               </div>
             </motion.div>
@@ -152,7 +161,9 @@ export default function Dashboard() {
         >
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-medium text-gray-900">Recent Invoices</h2>
+              <h2 className="text-lg font-medium text-gray-900">
+                Recent Invoices
+              </h2>
               <Link
                 href="/dashboard/invoices"
                 className="text-sm text-blue-600 hover:text-blue-500"
@@ -161,11 +172,13 @@ export default function Dashboard() {
               </Link>
             </div>
           </div>
-          
+
           {recentInvoices.length === 0 ? (
             <div className="px-6 py-12 text-center">
               <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No invoices yet</h3>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                No invoices yet
+              </h3>
               <p className="mt-1 text-sm text-gray-500">
                 Get started by creating your first invoice.
               </p>
@@ -217,7 +230,11 @@ export default function Dashboard() {
                         {invoice.amount}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(invoice.status)}`}>
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
+                            invoice.status
+                          )}`}
+                        >
                           {invoice.status}
                         </span>
                       </td>
@@ -256,8 +273,12 @@ export default function Dashboard() {
                 <EyeIcon className="w-6 h-6 text-purple-600" />
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">Manage Clients</h3>
-                <p className="text-sm text-gray-500">Add and organize your clients</p>
+                <h3 className="text-lg font-medium text-gray-900">
+                  Manage Clients
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Add and organize your clients
+                </p>
               </div>
             </div>
           </Link>
@@ -271,8 +292,12 @@ export default function Dashboard() {
                 <ClockIcon className="w-6 h-6 text-indigo-600" />
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900">Company Settings</h3>
-                <p className="text-sm text-gray-500">Update your business details</p>
+                <h3 className="text-lg font-medium text-gray-900">
+                  Company Settings
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Update your business details
+                </p>
               </div>
             </div>
           </Link>
@@ -287,12 +312,14 @@ export default function Dashboard() {
               </div>
               <div className="ml-4">
                 <h3 className="text-lg font-medium text-gray-900">Reports</h3>
-                <p className="text-sm text-gray-500">View your earnings and trends</p>
+                <p className="text-sm text-gray-500">
+                  View your earnings and trends
+                </p>
               </div>
             </div>
           </Link>
         </motion.div>
       </div>
     </div>
-  )
+  );
 }

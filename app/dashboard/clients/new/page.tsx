@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { redirect, useRouter } from "next/navigation"
-import { motion } from "framer-motion"
-import Link from "next/link"
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { redirect, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import Link from "next/link";
 import {
   UserIcon,
   EnvelopeIcon,
@@ -13,23 +13,23 @@ import {
   BuildingOfficeIcon,
   IdentificationIcon,
   ArrowLeftIcon,
-} from "@heroicons/react/24/outline"
-import { useToast } from "../../../hooks/use-toast"
+} from "@heroicons/react/24/outline";
+import { useToast } from "../../../hooks/use-toast";
 
 interface ClientFormData {
-  name: string
-  email: string
-  address: string
-  phone: string
-  taxNumber: string
-  contactPerson: string
+  name: string;
+  email: string;
+  address: string;
+  phone: string;
+  taxNumber: string;
+  contactPerson: string;
 }
 
 export default function NewClientPage() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
-  const { success, error } = useToast()
-  
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const { success, error } = useToast();
+
   const [formData, setFormData] = useState<ClientFormData>({
     name: "",
     email: "",
@@ -37,57 +37,59 @@ export default function NewClientPage() {
     phone: "",
     taxNumber: "",
     contactPerson: "",
-  })
-  
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errors, setErrors] = useState<Partial<ClientFormData>>({})
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Partial<ClientFormData>>({});
 
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
-    )
+    );
   }
 
   if (!session) {
-    redirect("/auth/signin")
+    redirect("/auth/signin");
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-    
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
     // Clear error when user starts typing
     if (errors[name as keyof ClientFormData]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }))
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
-  }
+  };
 
   const validateForm = () => {
-    const newErrors: Partial<ClientFormData> = {}
-    
+    const newErrors: Partial<ClientFormData> = {};
+
     if (!formData.name.trim()) {
-      newErrors.name = "Name is required"
+      newErrors.name = "Name is required";
     }
-    
+
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Invalid email format"
+      newErrors.email = "Invalid email format";
     }
-    
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!validateForm()) {
-      return
+      return;
     }
-    
-    setIsSubmitting(true)
-    
+
+    setIsSubmitting(true);
+
     try {
       const response = await fetch("/api/clients", {
         method: "POST",
@@ -95,26 +97,25 @@ export default function NewClientPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
-      })
-      
+      });
+
       if (response.ok) {
-        success("Client created successfully")
-        router.push("/dashboard/clients")
+        success("Client created successfully");
+        router.push("/dashboard/clients");
       } else {
-        const data = await response.json()
-        error(data.error || "Failed to create client")
+        const data = await response.json();
+        error(data.error || "Failed to create client");
       }
     } catch (err) {
-      error("Error creating client")
+      error("Error creating client");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center mb-4">
@@ -125,7 +126,9 @@ export default function NewClientPage() {
               <ArrowLeftIcon className="w-5 h-5" />
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Add New Client</h1>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Add New Client
+              </h1>
               <p className="text-gray-600 mt-2">
                 Enter your client's information to get started
               </p>
@@ -140,10 +143,12 @@ export default function NewClientPage() {
           className="bg-white shadow rounded-lg p-6"
         >
           <form onSubmit={handleSubmit} className="space-y-6">
-            
             {/* Name - Required */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Client Name *
               </label>
               <div className="relative">
@@ -158,7 +163,9 @@ export default function NewClientPage() {
                   value={formData.name}
                   onChange={handleChange}
                   className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.name ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-transparent'
+                    errors.name
+                      ? "border-red-300 focus:border-red-500"
+                      : "border-gray-300 focus:border-transparent"
                   }`}
                   placeholder="Enter client name"
                 />
@@ -170,7 +177,10 @@ export default function NewClientPage() {
 
             {/* Email - Optional */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Email Address
               </label>
               <div className="relative">
@@ -184,7 +194,9 @@ export default function NewClientPage() {
                   value={formData.email}
                   onChange={handleChange}
                   className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.email ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-transparent'
+                    errors.email
+                      ? "border-red-300 focus:border-red-500"
+                      : "border-gray-300 focus:border-transparent"
                   }`}
                   placeholder="client@example.com"
                 />
@@ -196,7 +208,10 @@ export default function NewClientPage() {
 
             {/* Contact Person - Optional */}
             <div>
-              <label htmlFor="contactPerson" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="contactPerson"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Contact Person
               </label>
               <div className="relative">
@@ -217,7 +232,10 @@ export default function NewClientPage() {
 
             {/* Phone - Optional */}
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Phone Number
               </label>
               <div className="relative">
@@ -238,7 +256,10 @@ export default function NewClientPage() {
 
             {/* Address - Optional */}
             <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="address"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Address
               </label>
               <div className="relative">
@@ -259,7 +280,10 @@ export default function NewClientPage() {
 
             {/* Tax Number - Optional */}
             <div>
-              <label htmlFor="taxNumber" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="taxNumber"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Tax Number / VAT ID
               </label>
               <div className="relative">
@@ -298,5 +322,5 @@ export default function NewClientPage() {
         </motion.div>
       </div>
     </div>
-  )
+  );
 }

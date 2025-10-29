@@ -17,12 +17,13 @@ import { LanguageSelector } from "./language-selector";
 
 export function Hero() {
   const { t } = useTranslations();
-  
+
   const features = [
     {
       icon: BoltIcon,
       title: "Create in Under 4 Minutes",
-      description: "Simple form with automatic calculations and professional PDFs",
+      description:
+        "Simple form with automatic calculations and professional PDFs",
       gradient: "from-xinfinity-primary to-xinfinity-secondary",
     },
     {
@@ -34,7 +35,8 @@ export function Hero() {
     {
       icon: ShieldCheckIcon,
       title: "Track Everything",
-      description: "See what's sent, viewed, paid, and overdue in one dashboard",
+      description:
+        "See what's sent, viewed, paid, and overdue in one dashboard",
       gradient: "from-xinfinity-accent to-xinfinity-primary-light",
     },
     {
@@ -150,7 +152,8 @@ export function Hero() {
             variants={itemVariants}
             className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed"
           >
-            The simple invoicing tool for freelancers and small businesses. Generate branded PDFs, send payment links, and get paid faster.
+            The simple invoicing tool for freelancers and small businesses.
+            Generate branded PDFs, send payment links, and get paid faster.
           </motion.p>
 
           {/* CTA Button - Single button */}
@@ -158,7 +161,10 @@ export function Hero() {
             variants={itemVariants}
             className="flex justify-center items-center mb-16"
           >
-            <Link href="/auth/signup" className="xinfinity-button group text-lg px-10 py-4">
+            <Link
+              href="/auth/signup"
+              className="xinfinity-button group text-lg px-10 py-4"
+            >
               <DocumentTextIcon className="w-6 h-6 mr-3" />
               Create Your First Invoice
               <ArrowRightIcon className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform duration-200" />
@@ -237,7 +243,6 @@ export function Hero() {
               </motion.div>
             ))}
           </motion.div>
-
         </motion.div>
       </div>
     </div>

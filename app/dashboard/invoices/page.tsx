@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { redirect } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
-import Link from "next/link"
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import {
   PlusIcon,
   MagnifyingGlassIcon,
@@ -15,63 +15,63 @@ import {
   CurrencyDollarIcon,
   CalendarIcon,
   UserIcon,
-} from "@heroicons/react/24/outline"
-import { useToast } from "../../hooks/use-toast"
+} from "@heroicons/react/24/outline";
+import { useToast } from "../../hooks/use-toast";
 
 interface Invoice {
-  id: string
-  invoiceNumber: string
-  status: string
-  date: string
-  dueDate: string
-  total: number
-  currency: string
+  id: string;
+  invoiceNumber: string;
+  status: string;
+  date: string;
+  dueDate: string;
+  total: number;
+  currency: string;
   client?: {
-    id: string
-    name: string
-    email?: string
-  }
-  items: any[]
+    id: string;
+    name: string;
+    email?: string;
+  };
+  items: any[];
   _count: {
-    paymentEvents: number
-    emailEvents: number
-  }
-  createdAt: string
+    paymentEvents: number;
+    emailEvents: number;
+  };
+  createdAt: string;
 }
 
 const statusColors = {
   DRAFT: "bg-gray-100 text-gray-800",
-  SENT: "bg-blue-100 text-blue-800", 
+  SENT: "bg-blue-100 text-blue-800",
   VIEWED: "bg-yellow-100 text-yellow-800",
   PAID: "bg-green-100 text-green-800",
   OVERDUE: "bg-red-100 text-red-800",
-  CANCELLED: "bg-gray-100 text-gray-800"
-}
+  CANCELLED: "bg-gray-100 text-gray-800",
+};
 
 const statusLabels = {
   DRAFT: "Draft",
   SENT: "Sent",
-  VIEWED: "Viewed", 
+  VIEWED: "Viewed",
   PAID: "Paid",
   OVERDUE: "Overdue",
-  CANCELLED: "Cancelled"
-}
+  CANCELLED: "Cancelled",
+};
 
 export default function InvoicesPage() {
-  const { data: session, status } = useSession()
-  const [invoices, setInvoices] = useState<Invoice[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [deleteId, setDeleteId] = useState<string | null>(null)
-  const { success, error } = useToast()
+  const { data: session, status } = useSession();
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const { success, error } = useToast();
 
   // All useEffect hooks must be called before any conditional logic
   useEffect(() => {
     if (session) {
-      fetchInvoices()
+      fetchInvoices();
     }
-  }, [session, statusFilter])
+  }, [session, statusFilter]);
 
   // Early returns after all hooks
   if (status === "loading") {
@@ -79,82 +79,82 @@ export default function InvoicesPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
-    )
+    );
   }
 
   if (!session) {
-    redirect("/auth/signin")
+    redirect("/auth/signin");
   }
 
   const fetchInvoices = async () => {
     try {
-      const params = new URLSearchParams()
+      const params = new URLSearchParams();
       if (statusFilter !== "all") {
-        params.append("status", statusFilter)
+        params.append("status", statusFilter);
       }
-      
-      const response = await fetch(`/api/invoices?${params}`)
+
+      const response = await fetch(`/api/invoices?${params}`);
       if (response.ok) {
-        const data = await response.json()
-        setInvoices(data.invoices)
+        const data = await response.json();
+        setInvoices(data.invoices);
       } else {
-        error("Failed to load invoices")
+        error("Failed to load invoices");
       }
     } catch (err) {
-      error("Error loading invoices")
+      error("Error loading invoices");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleDeleteInvoice = async (id: string) => {
     try {
       const response = await fetch(`/api/invoices/${id}`, {
         method: "DELETE",
-      })
+      });
 
       if (response.ok) {
-        setInvoices(invoices.filter(invoice => invoice.id !== id))
-        success("Invoice deleted successfully")
+        setInvoices(invoices.filter((invoice) => invoice.id !== id));
+        success("Invoice deleted successfully");
       } else {
-        const data = await response.json()
-        error(data.error || "Failed to delete invoice")
+        const data = await response.json();
+        error(data.error || "Failed to delete invoice");
       }
     } catch (err) {
-      error("Error deleting invoice")
+      error("Error deleting invoice");
     } finally {
-      setDeleteId(null)
+      setDeleteId(null);
     }
-  }
+  };
 
   const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency || 'USD'
-    }).format(amount)
-  }
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currency || "USD",
+    }).format(amount);
+  };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString()
-  }
+    return new Date(dateString).toLocaleDateString();
+  };
 
-  const filteredInvoices = invoices.filter(invoice =>
-    invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    invoice.client?.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredInvoices = invoices.filter(
+    (invoice) =>
+      invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      invoice.client?.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -212,13 +212,14 @@ export default function InvoicesPage() {
           <div className="text-center py-12">
             <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">
-              {searchTerm || statusFilter !== "all" ? "No invoices found" : "No invoices yet"}
+              {searchTerm || statusFilter !== "all"
+                ? "No invoices found"
+                : "No invoices yet"}
             </h3>
             <p className="mt-1 text-sm text-gray-500">
-              {searchTerm || statusFilter !== "all" 
-                ? "Try adjusting your search or filters" 
-                : "Get started by creating your first invoice."
-              }
+              {searchTerm || statusFilter !== "all"
+                ? "Try adjusting your search or filters"
+                : "Get started by creating your first invoice."}
             </p>
             {!searchTerm && statusFilter === "all" && (
               <div className="mt-6">
@@ -297,8 +298,18 @@ export default function InvoicesPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[invoice.status as keyof typeof statusColors]}`}>
-                          {statusLabels[invoice.status as keyof typeof statusLabels]}
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            statusColors[
+                              invoice.status as keyof typeof statusColors
+                            ]
+                          }`}
+                        >
+                          {
+                            statusLabels[
+                              invoice.status as keyof typeof statusLabels
+                            ]
+                          }
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -358,9 +369,12 @@ export default function InvoicesPage() {
                 exit={{ opacity: 0, scale: 0.95 }}
                 className="bg-white rounded-lg p-6 max-w-md w-full mx-4"
               >
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Delete Invoice</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Delete Invoice
+                </h3>
                 <p className="text-sm text-gray-600 mb-6">
-                  Are you sure you want to delete this invoice? This action cannot be undone.
+                  Are you sure you want to delete this invoice? This action
+                  cannot be undone.
                 </p>
                 <div className="flex justify-end space-x-3">
                   <button
@@ -382,5 +396,5 @@ export default function InvoicesPage() {
         </AnimatePresence>
       </div>
     </div>
-  )
+  );
 }
