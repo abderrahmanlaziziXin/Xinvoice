@@ -73,39 +73,7 @@ export default function InvoiceDetailPage() {
 
   const invoiceId = params?.id as string;
 
-  // All useEffect hooks must be called before any conditional logic
-  useEffect(() => {
-    if (invoiceId && session) {
-      fetchInvoice();
-      fetchClients();
-    }
-  }, [invoiceId, session]);
-
-  useEffect(() => {
-    if (invoice && isEditing) {
-      calculateTotals();
-    }
-  }, [
-    invoice?.items,
-    invoice?.taxRate,
-    invoice?.discountAmount,
-    invoice?.shippingAmount,
-    isEditing,
-  ]);
-
-  // Early returns after all hooks
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (!session) {
-    redirect("/auth/signin");
-  }
-
+  // Function definitions must come before useEffect hooks that use them
   const fetchInvoice = async () => {
     try {
       const response = await fetch(`/api/invoices/${invoiceId}`);
@@ -284,12 +252,19 @@ export default function InvoiceDetailPage() {
         const data = await response.json();
         setInvoice(data.invoice);
         setIsEditing(false);
+        setErrors({}); // Clear any errors
         success("Invoice updated successfully");
+
+        // Force a small delay to ensure state updates are complete
+        setTimeout(() => {
+          window.dispatchEvent(new Event("invoiceUpdated"));
+        }, 100);
       } else {
         const data = await response.json();
         error(data.error || "Failed to update invoice");
       }
     } catch (err) {
+      console.error("Error updating invoice:", err);
       error("Error updating invoice");
     } finally {
       setIsSubmitting(false);
@@ -298,6 +273,10 @@ export default function InvoiceDetailPage() {
 
   const handleStatusChange = async (newStatus: string) => {
     if (!invoice) return;
+
+    // Optimistic update
+    const previousInvoice = invoice;
+    setInvoice((prev) => (prev ? { ...prev, status: newStatus } : null));
 
     try {
       const response = await fetch(`/api/invoices/${invoiceId}`, {
@@ -312,10 +291,28 @@ export default function InvoiceDetailPage() {
         const data = await response.json();
         setInvoice(data.invoice);
         success(`Invoice marked as ${newStatus.toLowerCase()}`);
+
+        // Trigger refresh for any listening components (including dashboard)
+        window.dispatchEvent(new Event("invoiceUpdated"));
+        window.dispatchEvent(
+          new CustomEvent("invoiceStatusChanged", {
+            detail: {
+              type: "statusChanged",
+              invoice: data.invoice,
+              previousStatus: previousInvoice.status,
+              newStatus: newStatus,
+            },
+          })
+        );
       } else {
+        // Revert optimistic update on error
+        setInvoice(previousInvoice);
         error("Failed to update invoice status");
       }
     } catch (err) {
+      // Revert optimistic update on error
+      setInvoice(previousInvoice);
+      console.error("Error updating invoice status:", err);
       error("Error updating invoice status");
     }
   };
@@ -334,6 +331,7 @@ export default function InvoiceDetailPage() {
 
       if (response.ok) {
         success("Invoice deleted successfully");
+        window.dispatchEvent(new CustomEvent("dashboardFocus"));
         router.push("/dashboard/invoices");
       } else {
         error("Failed to delete invoice");
@@ -375,6 +373,39 @@ export default function InvoiceDetailPage() {
     }
   };
 
+  // useEffect hooks after all function definitions
+  useEffect(() => {
+    if (invoiceId && session) {
+      fetchInvoice();
+      fetchClients();
+    }
+  }, [invoiceId, session]);
+
+  useEffect(() => {
+    if (invoice && isEditing) {
+      calculateTotals();
+    }
+  }, [
+    invoice?.items,
+    invoice?.taxRate,
+    invoice?.discountAmount,
+    invoice?.shippingAmount,
+    isEditing,
+  ]);
+
+  // Early returns after all hooks
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    redirect("/auth/signin");
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -393,12 +424,15 @@ export default function InvoiceDetailPage() {
           <p className="text-gray-600 mt-2">
             The invoice you're looking for doesn't exist.
           </p>
-          <Link
-            href="/dashboard/invoices"
+          <button
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("dashboardFocus"));
+              router.push("/dashboard/invoices");
+            }}
             className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
           >
             Back to Invoices
-          </Link>
+          </button>
         </div>
       </div>
     );
@@ -411,12 +445,15 @@ export default function InvoiceDetailPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center">
-              <Link
-                href="/dashboard/invoices"
+              <button
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent("dashboardFocus"));
+                  router.push("/dashboard/invoices");
+                }}
                 className="mr-4 p-2 text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <ArrowLeftIcon className="w-5 h-5" />
-              </Link>
+              </button>
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
                   Invoice {invoice.invoiceNumber}
@@ -438,6 +475,14 @@ export default function InvoiceDetailPage() {
 
               {!isEditing && (
                 <>
+                  <Link
+                    href="/dashboard/invoices/new"
+                    className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    <PlusIcon className="w-4 h-4 mr-2" />
+                    New Invoice
+                  </Link>
+
                   <button
                     onClick={() => setIsEditing(true)}
                     className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
@@ -14,6 +14,7 @@ import {
   UserIcon,
 } from "@heroicons/react/24/outline";
 import { useToast } from "../../../hooks/use-toast";
+import { useNavigationRefresh } from "../../../hooks/use-navigation-refresh";
 
 interface InvoiceItem {
   description: string;
@@ -56,6 +57,7 @@ export default function NewInvoicePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { success, error } = useToast();
+  const { navigateWithRefresh } = useNavigationRefresh();
 
   const [clients, setClients] = useState<Client[]>([]);
   const [loadingClients, setLoadingClients] = useState(true);
@@ -92,37 +94,8 @@ export default function NewInvoicePage() {
     status: "DRAFT",
   });
 
-  // All useEffect hooks must be called before any conditional logic
-  useEffect(() => {
-    if (session) {
-      fetchClients();
-      generateInvoiceNumber();
-    }
-  }, [session]);
-
-  useEffect(() => {
-    calculateTotals();
-  }, [
-    formData.items,
-    formData.taxRate,
-    formData.discountAmount,
-    formData.shippingAmount,
-  ]);
-
-  // Early returns after all hooks
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (!session) {
-    redirect("/auth/signin");
-  }
-
-  const fetchClients = async () => {
+  // Function definitions must come before useEffect hooks that use them
+  const fetchClients = useCallback(async () => {
     try {
       const response = await fetch("/api/clients");
       if (response.ok) {
@@ -134,9 +107,9 @@ export default function NewInvoicePage() {
     } finally {
       setLoadingClients(false);
     }
-  };
+  }, [error]);
 
-  const generateInvoiceNumber = async () => {
+  const generateInvoiceNumber = useCallback(async () => {
     try {
       const response = await fetch("/api/invoices");
       if (response.ok) {
@@ -154,9 +127,9 @@ export default function NewInvoicePage() {
         invoiceNumber: "INV-001",
       }));
     }
-  };
+  }, []);
 
-  const calculateTotals = () => {
+  const calculateTotals = useCallback(() => {
     const subtotal = formData.items.reduce((sum, item) => {
       const itemAmount = item.quantity * item.rate;
       return sum + itemAmount;
@@ -166,17 +139,34 @@ export default function NewInvoicePage() {
     const total =
       subtotal + taxAmount - formData.discountAmount + formData.shippingAmount;
 
-    setFormData((prev) => ({
-      ...prev,
-      subtotal: Math.round(subtotal * 100) / 100,
-      taxAmount: Math.round(taxAmount * 100) / 100,
-      total: Math.round(total * 100) / 100,
-      items: prev.items.map((item) => ({
-        ...item,
-        amount: Math.round(item.quantity * item.rate * 100) / 100,
-      })),
-    }));
-  };
+    const newSubtotal = Math.round(subtotal * 100) / 100;
+    const newTaxAmount = Math.round(taxAmount * 100) / 100;
+    const newTotal = Math.round(total * 100) / 100;
+
+    // Only update if values actually changed to prevent infinite loop
+    setFormData((prev) => {
+      if (
+        prev.subtotal === newSubtotal &&
+        prev.taxAmount === newTaxAmount &&
+        prev.total === newTotal
+      ) {
+        return prev; // No change needed
+      }
+
+      return {
+        ...prev,
+        subtotal: newSubtotal,
+        taxAmount: newTaxAmount,
+        total: newTotal,
+        // Don't update items array here to prevent infinite loop
+      };
+    });
+  }, [
+    formData.items,
+    formData.taxRate,
+    formData.discountAmount,
+    formData.shippingAmount,
+  ]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -193,10 +183,18 @@ export default function NewInvoicePage() {
     value: string | number
   ) => {
     const newItems = [...formData.items];
-    newItems[index] = {
+    const updatedItem = {
       ...newItems[index],
       [field]: field === "description" ? value : Number(value),
     };
+
+    // Calculate amount when quantity or rate changes
+    if (field === "quantity" || field === "rate") {
+      updatedItem.amount =
+        Math.round(updatedItem.quantity * updatedItem.rate * 100) / 100;
+    }
+
+    newItems[index] = updatedItem;
     setFormData((prev) => ({ ...prev, items: newItems }));
   };
 
@@ -285,14 +283,35 @@ export default function NewInvoicePage() {
       if (response.ok) {
         const data = await response.json();
         success("Invoice created successfully");
-        router.push(`/dashboard/invoices/${data.invoice.id}`);
+
+        // Clear form state to prevent navigation issues
+        setErrors({});
+        setIsSubmitting(false);
+
+        // Trigger refresh for any listening components (including dashboard)
+        window.dispatchEvent(new Event("invoiceCreated"));
+
+        // Also trigger a general invoice update event for broader listeners
+        window.dispatchEvent(
+          new CustomEvent("invoiceUpdated", {
+            detail: {
+              type: "created",
+              invoice: data.invoice,
+            },
+          })
+        );
+
+        // Navigate to the new invoice with refresh
+        navigateWithRefresh(`/dashboard/invoices/${data.invoice.id}`);
+        return; // Early return to prevent setting isSubmitting again
       } else {
         const data = await response.json();
         error(data.error || "Failed to create invoice");
+        setIsSubmitting(false);
       }
     } catch (err) {
+      console.error("Error creating invoice:", err);
       error("Error creating invoice");
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -303,6 +322,53 @@ export default function NewInvoicePage() {
       currency: formData.currency,
     }).format(amount);
   };
+
+  // useEffect hooks after all function definitions
+  useEffect(() => {
+    if (session) {
+      fetchClients();
+      generateInvoiceNumber();
+    }
+  }, [session, fetchClients, generateInvoiceNumber]);
+
+  // Debug logging for isSubmitting state
+  useEffect(() => {
+    console.log("isSubmitting state changed:", isSubmitting);
+  }, [isSubmitting]);
+
+  // Only prevent browser refresh/close during submission, not client-side navigation
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isSubmitting) {
+        // This only affects browser refresh/close, not Next.js routing
+        e.preventDefault();
+        e.returnValue = "Invoice is being saved...";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isSubmitting]);
+
+  useEffect(() => {
+    calculateTotals();
+  }, [calculateTotals]);
+
+  // Early returns after all hooks
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    redirect("/auth/signin");
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

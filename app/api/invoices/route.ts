@@ -100,34 +100,33 @@ export async function POST(request: NextRequest) {
     console.log("Received invoice data:", body)
     const validatedData = InvoiceSchema.parse(body)
 
-    // Generate unique invoice number if not provided
-    if (!validatedData.invoiceNumber) {
-      const lastInvoice = await prisma.invoice.findFirst({
+    // Generate unique invoice number - always generate on server to avoid conflicts
+    const generateUniqueInvoiceNumber = async (): Promise<string> => {
+      const existingInvoices = await prisma.invoice.findMany({
         where: { userId: session.user.id },
-        orderBy: { createdAt: "desc" }
+        select: { invoiceNumber: true },
+        orderBy: { invoiceNumber: "desc" }
       })
       
-      const nextNumber = lastInvoice 
-        ? parseInt(lastInvoice.invoiceNumber.split("-")[1] || "0") + 1 
-        : 1
+      let nextNumber = 1
       
-      validatedData.invoiceNumber = `INV-${nextNumber.toString().padStart(3, "0")}`
-    }
-
-    // Check for duplicate invoice number
-    const existing = await prisma.invoice.findFirst({
-      where: {
-        userId: session.user.id,
-        invoiceNumber: validatedData.invoiceNumber
+      if (existingInvoices.length > 0) {
+        // Find the highest existing number
+        const numbers = existingInvoices
+          .map(inv => {
+            const match = inv.invoiceNumber.match(/INV-(\d+)/)
+            return match ? parseInt(match[1]) : 0
+          })
+          .filter(num => !isNaN(num))
+        
+        nextNumber = Math.max(...numbers, 0) + 1
       }
-    })
-
-    if (existing) {
-      return NextResponse.json(
-        { error: "Invoice number already exists" },
-        { status: 400 }
-      )
+      
+      return `INV-${nextNumber.toString().padStart(3, "0")}`
     }
+
+    // Always generate a unique invoice number on the server side
+    validatedData.invoiceNumber = await generateUniqueInvoiceNumber()
 
     // Create invoice with items
     const invoice = await prisma.invoice.create({

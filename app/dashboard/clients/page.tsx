@@ -46,6 +46,21 @@ export default function ClientsPage() {
     }
   }, [session]);
 
+  // Listen for client updates from other components
+  useEffect(() => {
+    const handleClientUpdate = () => {
+      fetchClients();
+    };
+
+    window.addEventListener("clientCreated", handleClientUpdate);
+    window.addEventListener("clientUpdated", handleClientUpdate);
+
+    return () => {
+      window.removeEventListener("clientCreated", handleClientUpdate);
+      window.removeEventListener("clientUpdated", handleClientUpdate);
+    };
+  }, []);
+
   // Early returns after all hooks
   if (status === "loading") {
     return (

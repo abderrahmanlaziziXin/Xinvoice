@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useEffect } from "react";
 import {
   PlusIcon,
   DocumentTextIcon,
@@ -13,95 +14,83 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
+import {
+  useDashboardData,
+  formatCurrency,
+  formatDate,
+  getStatusColor,
+} from "../hooks/use-dashboard-data";
+import {
+  DashboardSkeleton,
+  DashboardError,
+} from "../components/dashboard-skeleton";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
+  const { data: dashboardData, isLoading, error, refetch } = useDashboardData();
+
+  // Trigger data refresh when component mounts (user navigates back to dashboard)
+  useEffect(() => {
+    // Dispatch dashboard focus event to trigger data reset
+    window.dispatchEvent(new CustomEvent("dashboardFocus"));
+  }, []);
 
   if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (!session) {
     redirect("/auth/signin");
   }
 
-  // Mock data for now - will be replaced with real data from database
-  const stats = [
+  if (isLoading) {
+    return <DashboardSkeleton />;
+  }
+
+  if (error) {
+    return <DashboardError error={error} onRetry={refetch} />;
+  }
+
+  if (!dashboardData) {
+    return <DashboardError error="No data available" onRetry={refetch} />;
+  }
+
+  const { stats, recentInvoices, metadata } = dashboardData;
+
+  // Map stats to display format with icons and colors
+  const statsDisplay = [
     {
-      label: "Total Invoices",
-      value: "12",
+      label: stats.totalInvoices.label,
+      value: stats.totalInvoices.count.toString(),
       icon: DocumentTextIcon,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
     },
     {
-      label: "Outstanding",
-      value: "$2,450",
+      label: stats.outstanding.label,
+      value: formatCurrency(stats.outstanding.amount, metadata.currency),
+      subValue: `${stats.outstanding.count} invoices`,
       icon: CurrencyDollarIcon,
       color: "text-yellow-600",
       bgColor: "bg-yellow-50",
     },
     {
-      label: "Paid This Month",
-      value: "$8,320",
+      label: stats.paidThisMonth.label,
+      value: formatCurrency(stats.paidThisMonth.amount, metadata.currency),
+      subValue: `${stats.paidThisMonth.count} payments`,
       icon: CheckCircleIcon,
       color: "text-green-600",
       bgColor: "bg-green-50",
     },
     {
-      label: "Overdue",
-      value: "2",
+      label: stats.overdue.label,
+      value: stats.overdue.count.toString(),
+      subValue: formatCurrency(stats.overdue.amount, metadata.currency),
       icon: ExclamationTriangleIcon,
       color: "text-red-600",
       bgColor: "bg-red-50",
     },
   ];
-
-  const recentInvoices = [
-    {
-      id: "INV-001",
-      client: "Acme Corp",
-      amount: "$1,200",
-      status: "paid",
-      date: "2025-10-25",
-      dueDate: "2025-11-08",
-    },
-    {
-      id: "INV-002",
-      client: "Tech Solutions LLC",
-      amount: "$850",
-      status: "sent",
-      date: "2025-10-28",
-      dueDate: "2025-11-11",
-    },
-    {
-      id: "INV-003",
-      client: "Design Studio",
-      amount: "$400",
-      status: "overdue",
-      date: "2025-10-15",
-      dueDate: "2025-10-29",
-    },
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "paid":
-        return "bg-green-100 text-green-800";
-      case "sent":
-        return "bg-blue-100 text-blue-800";
-      case "overdue":
-        return "bg-red-100 text-red-800";
-      case "draft":
-        return "bg-gray-100 text-gray-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -127,25 +116,30 @@ export default function Dashboard() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
+          {statsDisplay.map((stat, index) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white rounded-lg shadow p-6"
+              className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow"
             >
               <div className="flex items-center">
                 <div className={`p-3 rounded-lg ${stat.bgColor}`}>
                   <stat.icon className={`w-6 h-6 ${stat.color}`} />
                 </div>
-                <div className="ml-4">
+                <div className="ml-4 flex-1">
                   <p className="text-sm font-medium text-gray-500">
                     {stat.label}
                   </p>
                   <p className="text-2xl font-semibold text-gray-900">
                     {stat.value}
                   </p>
+                  {stat.subValue && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      {stat.subValue}
+                    </p>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -219,15 +213,25 @@ export default function Dashboard() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {recentInvoices.map((invoice) => (
-                    <tr key={invoice.id} className="hover:bg-gray-50">
+                    <tr
+                      key={invoice.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {invoice.id}
+                        {invoice.invoiceNumber}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {invoice.client}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {invoice.client}
+                        </div>
+                        {invoice.clientEmail && (
+                          <div className="text-xs text-gray-500">
+                            {invoice.clientEmail}
+                          </div>
+                        )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {invoice.amount}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {formatCurrency(invoice.amount, metadata.currency)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
@@ -239,12 +243,15 @@ export default function Dashboard() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(invoice.dueDate).toLocaleDateString()}
+                        <div>{formatDate(invoice.dueDate)}</div>
+                        <div className="text-xs text-gray-400">
+                          Created {formatDate(invoice.createdAt)}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <Link
                           href={`/dashboard/invoices/${invoice.id}`}
-                          className="text-blue-600 hover:text-blue-900"
+                          className="text-blue-600 hover:text-blue-900 font-medium"
                         >
                           View
                         </Link>

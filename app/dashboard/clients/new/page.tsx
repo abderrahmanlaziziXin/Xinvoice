@@ -15,6 +15,7 @@ import {
   ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
 import { useToast } from "../../../hooks/use-toast";
+import { useNavigationRefresh } from "../../../hooks/use-navigation-refresh";
 
 interface ClientFormData {
   name: string;
@@ -29,6 +30,7 @@ export default function NewClientPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { success, error } = useToast();
+  const { navigateWithRefresh } = useNavigationRefresh();
 
   const [formData, setFormData] = useState<ClientFormData>({
     name: "",
@@ -101,14 +103,21 @@ export default function NewClientPage() {
 
       if (response.ok) {
         success("Client created successfully");
-        router.push("/dashboard/clients");
+
+        // Trigger refresh for any listening components
+        window.dispatchEvent(new Event("clientCreated"));
+
+        // Navigate with refresh
+        navigateWithRefresh("/dashboard/clients");
+        return;
       } else {
         const data = await response.json();
         error(data.error || "Failed to create client");
+        setIsSubmitting(false);
       }
     } catch (err) {
+      console.error("Error creating client:", err);
       error("Error creating client");
-    } finally {
       setIsSubmitting(false);
     }
   };

@@ -16,6 +16,7 @@ import {
   EnvelopeIcon,
   UserCircleIcon,
   ArrowRightOnRectangleIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { LogoWithText } from "./logo";
@@ -83,6 +84,12 @@ export function NavigationHeader() {
       href: "/dashboard/clients",
       icon: UserCircleIcon,
       current: pathname?.startsWith("/dashboard/clients"),
+    },
+    {
+      name: "Reports",
+      href: "/dashboard/reports",
+      icon: ChartBarIcon,
+      current: pathname?.startsWith("/dashboard/reports"),
     },
     {
       name: "Settings",

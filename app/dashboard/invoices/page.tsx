@@ -73,6 +73,21 @@ export default function InvoicesPage() {
     }
   }, [session, statusFilter]);
 
+  // Listen for invoice updates from other components
+  useEffect(() => {
+    const handleInvoiceUpdate = () => {
+      fetchInvoices();
+    };
+
+    window.addEventListener("invoiceCreated", handleInvoiceUpdate);
+    window.addEventListener("invoiceUpdated", handleInvoiceUpdate);
+
+    return () => {
+      window.removeEventListener("invoiceCreated", handleInvoiceUpdate);
+      window.removeEventListener("invoiceUpdated", handleInvoiceUpdate);
+    };
+  }, []);
+
   // Early returns after all hooks
   if (status === "loading") {
     return (
