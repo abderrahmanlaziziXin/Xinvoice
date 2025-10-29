@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   HomeIcon,
@@ -13,6 +14,8 @@ import {
   Bars3Icon,
   XMarkIcon,
   EnvelopeIcon,
+  UserCircleIcon,
+  ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { LogoWithText } from "./logo";
@@ -30,28 +33,29 @@ interface NavigationItem {
 export function NavigationHeader() {
   const router = useRouter();
   const pathname = usePathname();
+  const { data: session } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const { t } = useTranslations();
 
-  const navigation: NavigationItem[] = [
+  const publicNavigation: NavigationItem[] = [
     {
-      name: t("nav.home"),
+      name: "Home",
       href: "/",
       icon: HomeIcon,
       current: pathname === "/",
     },
     {
-      name: t("nav.multilingualDemo"),
-      href: "/demo/multilang-pdf",
+      name: "Features",
+      href: "/features",
       icon: DocumentTextIcon,
-      current: pathname?.startsWith("/demo/multilang"),
+      current: pathname?.startsWith("/features"),
     },
     {
-      name: "Documents Juridiques",
-      href: "/legal-documents",
+      name: "Pricing",
+      href: "/pricing",
       icon: ShieldCheckIcon,
-      current: pathname?.startsWith("/legal-documents"),
+      current: pathname?.startsWith("/pricing"),
     },
     {
       name: "Support",
@@ -60,6 +64,35 @@ export function NavigationHeader() {
       current: pathname === "/support",
     },
   ];
+
+  const dashboardNavigation: NavigationItem[] = [
+    {
+      name: "Dashboard",
+      href: "/dashboard",
+      icon: HomeIcon,
+      current: pathname === "/dashboard",
+    },
+    {
+      name: "Invoices",
+      href: "/dashboard/invoices",
+      icon: DocumentTextIcon,
+      current: pathname?.startsWith("/dashboard/invoices"),
+    },
+    {
+      name: "Clients",
+      href: "/dashboard/clients",
+      icon: UserCircleIcon,
+      current: pathname?.startsWith("/dashboard/clients"),
+    },
+    {
+      name: "Settings",
+      href: "/dashboard/settings",
+      icon: CogIcon,
+      current: pathname?.startsWith("/dashboard/settings"),
+    },
+  ];
+
+  const navigation = session ? dashboardNavigation : publicNavigation;
 
   const handleContactSupport = () => {
     window.open(
@@ -163,32 +196,89 @@ export function NavigationHeader() {
             ))}
           </nav>
 
-          {/* Language Selector and Settings */}
+          {/* Auth and Actions */}
           <div className="hidden lg:flex items-center space-x-4">
             {/* Language Selector */}
             <LanguageSelector variant="compact" />
 
-            {/* Contact Support Button */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleContactSupport}
-              className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200"
-              title="Contact Support - support@xinfinitylabs.com"
-            >
-              <EnvelopeIcon className="w-4 h-4 mr-2" />
-              Support
-            </motion.button>
+            {session ? (
+              /* Authenticated User Menu */
+              <div className="relative">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleDropdownToggle("user")}
+                  className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200"
+                >
+                  <UserCircleIcon className="w-5 h-5 mr-2" />
+                  {session.user?.name || "User"}
+                  <ChevronDownIcon className="w-4 h-4 ml-1" />
+                </motion.button>
 
-            {/* Settings Button */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-2 rounded-lg text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200"
-              aria-label="Settings"
-            >
-              <CogIcon className="w-5 h-5" />
-            </motion.button>
+                <AnimatePresence>
+                  {openDropdown === "user" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute top-full right-0 mt-2 w-48 xinfinity-card rounded-lg shadow-glass overflow-hidden"
+                    >
+                      <Link
+                        href="/dashboard/settings"
+                        className="flex items-center px-4 py-3 text-sm text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200"
+                        onClick={() => setOpenDropdown(null)}
+                      >
+                        <CogIcon className="w-4 h-4 mr-3" />
+                        Settings
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setOpenDropdown(null);
+                          signOut();
+                        }}
+                        className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:text-red-600 hover:bg-white/50 transition-all duration-200"
+                      >
+                        <ArrowRightOnRectangleIcon className="w-4 h-4 mr-3" />
+                        Sign Out
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              /* Public Navigation Actions */
+              <>
+                {/* Contact Support Button */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleContactSupport}
+                  className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200"
+                  title="Contact Support - support@xinfinitylabs.com"
+                >
+                  <EnvelopeIcon className="w-4 h-4 mr-2" />
+                  Support
+                </motion.button>
+
+                {/* Sign In Button */}
+                <Link
+                  href="/auth/signin"
+                  className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200"
+                >
+                  <UserCircleIcon className="w-4 h-4 mr-2" />
+                  Sign In
+                </Link>
+
+                {/* Sign Up Button */}
+                <Link
+                  href="/auth/signup"
+                  className="xinfinity-button text-sm px-4 py-2"
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}

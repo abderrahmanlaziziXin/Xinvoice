@@ -1,0 +1,228 @@
+// Xinvoice Database Schema
+// Revenue-ready invoice management system
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User accounts and authentication
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  
+  // Company settings
+  companyName    String?
+  companyAddress String?
+  companyPhone   String?
+  logoUrl        String?
+  website        String?
+  taxNumber      String?
+  
+  // Default settings
+  defaultCurrency String @default("USD")
+  defaultLocale   String @default("en-US")
+  defaultTaxRate  Float  @default(0.08)
+  defaultTerms    String?
+  
+  // Subscription
+  plan           String   @default("free") // free, pro, business
+  planExpiresAt  DateTime?
+  invoiceCount   Int      @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  clients  Client[]
+  invoices Invoice[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Client management
+model Client {
+  id           String  @id @default(cuid())
+  userId       String
+  name         String
+  email        String?
+  address      String?
+  phone        String?
+  taxNumber    String?
+  contactPerson String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoices Invoice[]
+
+  @@index([userId])
+}
+
+// Invoice management
+model Invoice {
+  id            String        @id @default(cuid())
+  userId        String
+  clientId      String?
+  invoiceNumber String        @unique
+  status        InvoiceStatus @default(DRAFT)
+  
+  // Invoice details
+  date           DateTime
+  dueDate        DateTime
+  currency       String        @default("USD")
+  locale         String        @default("en-US")
+  
+  // Amounts
+  subtotal       Float
+  taxRate        Float         @default(0)
+  taxAmount      Float
+  discountAmount Float         @default(0)
+  shippingAmount Float         @default(0)
+  total          Float
+  
+  // Content
+  notes               String?
+  terms               String?
+  paymentInstructions String?
+  
+  // Tracking
+  viewToken    String?   @unique
+  viewedAt     DateTime?
+  sentAt       DateTime?
+  paidAt       DateTime?
+  reminderSent DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client         Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  items          InvoiceItem[]
+  paymentEvents  PaymentEvent[]
+  emailEvents    EmailEvent[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model InvoiceItem {
+  id          String @id @default(cuid())
+  invoiceId   String
+  description String
+  quantity    Float
+  rate        Float
+  amount      Float
+  taxRate     Float  @default(0)
+  category    String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+// Payment tracking
+model PaymentEvent {
+  id               String        @id @default(cuid())
+  invoiceId        String
+  stripePaymentId  String?       @unique
+  amount           Float
+  currency         String
+  status           PaymentStatus
+  paymentMethod    String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+// Email tracking
+model EmailEvent {
+  id        String    @id @default(cuid())
+  invoiceId String
+  type      EmailType
+  recipient String
+  subject   String?
+  sentAt    DateTime  @default(now())
+  viewedAt  DateTime?
+  clickedAt DateTime?
+  
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+// Enums
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  VIEWED
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum EmailType {
+  INVOICE_SENT
+  PAYMENT_REMINDER
+  PAYMENT_RECEIVED
+  PAYMENT_FAILED
+}

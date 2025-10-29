@@ -41,3 +41,5 @@ next-env.d.ts
 
 # Test files (temporary)
 test-*.js
+
+/generated/prisma

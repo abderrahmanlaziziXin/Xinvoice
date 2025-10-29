@@ -20,27 +20,27 @@ export function Hero() {
   
   const features = [
     {
-      icon: SparklesIcon,
-      title: t("hero.features.aiGeneration.title"),
-      description: t("hero.features.aiGeneration.description"),
+      icon: BoltIcon,
+      title: "Create in Under 4 Minutes",
+      description: "Simple form with automatic calculations and professional PDFs",
       gradient: "from-xinfinity-primary to-xinfinity-secondary",
     },
     {
-      icon: CloudArrowUpIcon,
-      title: t("hero.features.fileUpload.title"),
-      description: t("hero.features.fileUpload.description"),
+      icon: SparklesIcon,
+      title: "Get Paid Faster",
+      description: "Add Stripe payment links for instant online payments",
       gradient: "from-xinfinity-secondary to-xinfinity-accent",
     },
     {
-      icon: BoltIcon,
-      title: t("hero.features.instantProcessing.title"),
-      description: t("hero.features.instantProcessing.description"),
+      icon: ShieldCheckIcon,
+      title: "Track Everything",
+      description: "See what's sent, viewed, paid, and overdue in one dashboard",
       gradient: "from-xinfinity-accent to-xinfinity-primary-light",
     },
     {
-      icon: ChatBubbleLeftRightIcon,
-      title: t("hero.features.naturalLanguage.title"),
-      description: t("hero.features.naturalLanguage.description"),
+      icon: DocumentTextIcon,
+      title: "Professional Branding",
+      description: "Upload your logo and customize invoice templates",
       gradient: "from-xinfinity-primary-light to-xinfinity-secondary-light",
     },
   ];
@@ -141,7 +141,7 @@ export function Hero() {
             className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight"
           >
             <span className="block bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent">
-              {t("hero.title")}
+              Create & Send Professional Invoices
             </span>
           </motion.h1>
 
@@ -150,7 +150,7 @@ export function Hero() {
             variants={itemVariants}
             className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed"
           >
-            {t("hero.subtitle")}
+            The simple invoicing tool for freelancers and small businesses. Generate branded PDFs, send payment links, and get paid faster.
           </motion.p>
 
           {/* CTA Button - Single button */}
@@ -158,9 +158,9 @@ export function Hero() {
             variants={itemVariants}
             className="flex justify-center items-center mb-16"
           >
-            <Link href="/demo/multilang-pdf" className="xinfinity-button group text-lg px-10 py-4">
-              <SparklesIcon className="w-6 h-6 mr-3" />
-              {t("hero.tryButton")}
+            <Link href="/auth/signup" className="xinfinity-button group text-lg px-10 py-4">
+              <DocumentTextIcon className="w-6 h-6 mr-3" />
+              Create Your First Invoice
               <ArrowRightIcon className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform duration-200" />
             </Link>
           </motion.div>
@@ -202,18 +202,18 @@ export function Hero() {
           >
             {[
               {
-                label: t("hero.stats.documents"),
-                value: "10,000+",
+                label: "Invoices Created",
+                value: "5,000+",
                 gradient: "from-xinfinity-primary to-xinfinity-secondary",
               },
               {
-                label: t("hero.stats.timeSaved"),
-                value: "500+",
+                label: "Faster Payment",
+                value: "40%",
                 gradient: "from-xinfinity-secondary to-xinfinity-accent",
               },
               {
-                label: t("hero.stats.satisfaction"),
-                value: "99.5%",
+                label: "Average Creation Time",
+                value: "3.2 min",
                 gradient: "from-xinfinity-accent to-xinfinity-primary-light",
               },
             ].map((stat, index) => (
