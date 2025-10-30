@@ -5,6 +5,6 @@ module.exports = {
     "react/no-unescaped-entities": "off",
     "react-hooks/exhaustive-deps": "warn",
     "react-hooks/rules-of-hooks": "error",
-    "@next/next/no-img-element": "off"
-  }
-}
+    "@next/next/no-img-element": "off",
+  },
+};
