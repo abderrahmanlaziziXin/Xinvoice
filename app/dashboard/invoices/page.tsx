@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -66,42 +66,7 @@ export default function InvoicesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { success, error } = useToast();
 
-  // All useEffect hooks must be called before any conditional logic
-  useEffect(() => {
-    if (session) {
-      fetchInvoices();
-    }
-  }, [session, statusFilter]);
-
-  // Listen for invoice updates from other components
-  useEffect(() => {
-    const handleInvoiceUpdate = () => {
-      fetchInvoices();
-    };
-
-    window.addEventListener("invoiceCreated", handleInvoiceUpdate);
-    window.addEventListener("invoiceUpdated", handleInvoiceUpdate);
-
-    return () => {
-      window.removeEventListener("invoiceCreated", handleInvoiceUpdate);
-      window.removeEventListener("invoiceUpdated", handleInvoiceUpdate);
-    };
-  }, []);
-
-  // Early returns after all hooks
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (!session) {
-    redirect("/auth/signin");
-  }
-
-  const fetchInvoices = async () => {
+  const fetchInvoices = useCallback(async () => {
     try {
       const params = new URLSearchParams();
       if (statusFilter !== "all") {
@@ -120,7 +85,42 @@ export default function InvoicesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter, error]);
+
+  // All useEffect hooks must be called before any conditional logic
+  useEffect(() => {
+    if (session) {
+      fetchInvoices();
+    }
+  }, [session, fetchInvoices]);
+
+  // Listen for invoice updates from other components
+  useEffect(() => {
+    const handleInvoiceUpdate = () => {
+      fetchInvoices();
+    };
+
+    window.addEventListener("invoiceCreated", handleInvoiceUpdate);
+    window.addEventListener("invoiceUpdated", handleInvoiceUpdate);
+
+    return () => {
+      window.removeEventListener("invoiceCreated", handleInvoiceUpdate);
+      window.removeEventListener("invoiceUpdated", handleInvoiceUpdate);
+    };
+  }, [fetchInvoices]);
+
+  // Early returns after all hooks
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    redirect("/auth/signin");
+  }
 
   const handleDeleteInvoice = async (id: string) => {
     try {

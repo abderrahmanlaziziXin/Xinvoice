@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -39,12 +39,28 @@ export default function ClientsPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { success, error } = useToast();
 
+  const fetchClients = useCallback(async () => {
+    try {
+      const response = await fetch("/api/clients");
+      if (response.ok) {
+        const data = await response.json();
+        setClients(data.clients);
+      } else {
+        error("Failed to load clients");
+      }
+    } catch (err) {
+      error("Error loading clients");
+    } finally {
+      setLoading(false);
+    }
+  }, [error]);
+
   // All useEffect hooks must be called before any conditional logic
   useEffect(() => {
     if (session) {
       fetchClients();
     }
-  }, [session]);
+  }, [session, fetchClients]);
 
   // Listen for client updates from other components
   useEffect(() => {
@@ -59,7 +75,7 @@ export default function ClientsPage() {
       window.removeEventListener("clientCreated", handleClientUpdate);
       window.removeEventListener("clientUpdated", handleClientUpdate);
     };
-  }, []);
+  }, [fetchClients]);
 
   // Early returns after all hooks
   if (status === "loading") {
@@ -73,22 +89,6 @@ export default function ClientsPage() {
   if (!session) {
     redirect("/auth/signin");
   }
-
-  const fetchClients = async () => {
-    try {
-      const response = await fetch("/api/clients");
-      if (response.ok) {
-        const data = await response.json();
-        setClients(data.clients);
-      } else {
-        error("Failed to load clients");
-      }
-    } catch (err) {
-      error("Error loading clients");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleDeleteClient = async (id: string) => {
     try {

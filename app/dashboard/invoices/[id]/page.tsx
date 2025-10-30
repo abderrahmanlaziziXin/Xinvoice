@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { redirect, useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
@@ -74,7 +74,7 @@ export default function InvoiceDetailPage() {
   const invoiceId = params?.id as string;
 
   // Function definitions must come before useEffect hooks that use them
-  const fetchInvoice = async () => {
+  const fetchInvoice = useCallback(async () => {
     try {
       const response = await fetch(`/api/invoices/${invoiceId}`);
       if (response.ok) {
@@ -90,7 +90,7 @@ export default function InvoiceDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [invoiceId, error, router]);
 
   const fetchClients = async () => {
     try {
@@ -104,7 +104,7 @@ export default function InvoiceDetailPage() {
     }
   };
 
-  const calculateTotals = () => {
+  const calculateTotals = useCallback(() => {
     if (!invoice) return;
 
     const subtotal = invoice.items.reduce((sum, item) => {
@@ -130,7 +130,7 @@ export default function InvoiceDetailPage() {
           }
         : null
     );
-  };
+  }, [invoice]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -379,7 +379,7 @@ export default function InvoiceDetailPage() {
       fetchInvoice();
       fetchClients();
     }
-  }, [invoiceId, session]);
+  }, [invoiceId, session, fetchInvoice]);
 
   useEffect(() => {
     if (invoice && isEditing) {
@@ -391,6 +391,8 @@ export default function InvoiceDetailPage() {
     invoice?.discountAmount,
     invoice?.shippingAmount,
     isEditing,
+    calculateTotals,
+    invoice,
   ]);
 
   // Early returns after all hooks
@@ -422,7 +424,7 @@ export default function InvoiceDetailPage() {
             Invoice not found
           </h2>
           <p className="text-gray-600 mt-2">
-            The invoice you're looking for doesn't exist.
+            The invoice you&apos;re looking for doesn&apos;t exist.
           </p>
           <button
             onClick={() => {

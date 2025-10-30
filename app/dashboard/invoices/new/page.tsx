@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
@@ -51,7 +51,7 @@ interface InvoiceFormData {
   status: string;
 }
 
-export default function NewInvoicePage() {
+function NewInvoicePage() {
   // Fixed React Hooks Rules violations - hooks now called before conditionals
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -819,5 +819,21 @@ export default function NewInvoicePage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+  );
+}
+
+export default function NewInvoicePageWrapper() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <NewInvoicePage />
+    </Suspense>
   );
 }

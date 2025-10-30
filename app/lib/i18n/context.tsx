@@ -72,7 +72,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     ) {
       setCurrentLocale(userContext.defaultLocale);
     }
-  }, [userContext?.defaultLocale]); // Remove currentLocale from deps to prevent loop
+  }, [userContext?.defaultLocale, currentLocale]); // Add currentLocale back but it's controlled
 
   // Initialize with browser language on first load (client-side only)
   useEffect(() => {
@@ -83,7 +83,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
         updateContext({ defaultLocale: browserLocale });
       }
     }
-  }, [userContext?.defaultLocale, updateContext]); // Remove currentLocale from deps to prevent loop
+  }, [userContext?.defaultLocale, updateContext, currentLocale]); // Add currentLocale back but it's controlled
 
   const setLocale = (locale: Locale) => {
     setCurrentLocale(locale);

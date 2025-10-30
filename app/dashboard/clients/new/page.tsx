@@ -139,7 +139,7 @@ export default function NewClientPage() {
                 Add New Client
               </h1>
               <p className="text-gray-600 mt-2">
-                Enter your client's information to get started
+                Enter your client&apos;s information to get started
               </p>
             </div>
           </div>
