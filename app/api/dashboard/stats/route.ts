@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Format recent invoices
-    const formattedRecentInvoices = recentInvoices.map(invoice => ({
+    const formattedRecentInvoices = recentInvoices.map((invoice: any) => ({
       id: invoice.id,
       invoiceNumber: invoice.invoiceNumber,
       client: invoice.client?.name || "Unknown Client",
