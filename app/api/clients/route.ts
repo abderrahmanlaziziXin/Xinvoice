@@ -23,6 +23,38 @@ export async function GET(request: NextRequest) {
     //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     // }
 
+    const isDemoMode = !session?.user?.id
+
+    // If in demo mode, return mock data
+    if (isDemoMode) {
+      return NextResponse.json({
+        clients: [
+          {
+            id: "demo-client-1",
+            name: "Acme Corporation",
+            email: "contact@acme.com",
+            phone: "+1 (555) 123-4567",
+            address: "123 Business St, New York, NY 10001",
+            taxNumber: "TAX123456",
+            contactPerson: "John Smith",
+            createdAt: new Date().toISOString(),
+            _count: { invoices: 5 }
+          },
+          {
+            id: "demo-client-2", 
+            name: "Tech Solutions Inc",
+            email: "info@techsolutions.com",
+            phone: "+1 (555) 987-6543",
+            address: "456 Innovation Ave, San Francisco, CA 94102",
+            taxNumber: "TAX789012",
+            contactPerson: "Sarah Johnson",
+            createdAt: new Date().toISOString(),
+            _count: { invoices: 3 }
+          }
+        ]
+      })
+    }
+
     const clients = await prisma.client.findMany({
       where: {
         userId: session?.user?.id || "demo-user-id"

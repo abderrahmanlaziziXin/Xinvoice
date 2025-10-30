@@ -12,6 +12,25 @@ export async function GET(req: NextRequest) {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     // }
 
+    const isDemoMode = !session?.user?.email
+
+    // If in demo mode, return mock settings
+    if (isDemoMode) {
+      return NextResponse.json({
+        companyName: 'Demo Company Inc',
+        email: 'demo@example.com',
+        companyPhone: '+1 (555) 123-4567',
+        companyAddress: '123 Demo Street, Demo City, DC 12345',
+        website: 'https://democompany.com',
+        taxNumber: 'TAX123456789',
+        currency: 'USD',
+        locale: 'en-US',
+        timezone: 'America/New_York',
+        invoicePrefix: 'INV',
+        demoMode: true
+      })
+    }
+
     // Get user settings
     const user = await prisma.user.findUnique({
       where: { email: session?.user?.email || "demo@example.com" },

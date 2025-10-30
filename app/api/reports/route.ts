@@ -12,9 +12,37 @@ export async function GET(req: NextRequest) {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     // }
 
+    const isDemoMode = !session?.user?.email
     const { searchParams } = new URL(req.url)
     const from = searchParams.get('from') || new Date(new Date().getFullYear(), 0, 1).toISOString()
     const to = searchParams.get('to') || new Date().toISOString()
+
+    // If in demo mode, return mock reports
+    if (isDemoMode) {
+      return NextResponse.json({
+        totalRevenue: 12500.00,
+        totalInvoices: 12,
+        averageInvoiceValue: 1041.67,
+        monthlyRevenue: [
+          { month: 'Jan', revenue: 2500 },
+          { month: 'Feb', revenue: 1800 },
+          { month: 'Mar', revenue: 3200 },
+          { month: 'Apr', revenue: 2100 },
+          { month: 'May', revenue: 2900 }
+        ],
+        statusBreakdown: [
+          { status: 'PAID', count: 8, amount: 8750.00 },
+          { status: 'SENT', count: 3, amount: 2450.00 },
+          { status: 'OVERDUE', count: 1, amount: 850.00 }
+        ],
+        topClients: [
+          { name: 'Acme Corporation', totalAmount: 7500.00, invoiceCount: 5 },
+          { name: 'Tech Solutions Inc', totalAmount: 3200.00, invoiceCount: 3 },
+          { name: 'Global Services LLC', totalAmount: 1800.00, invoiceCount: 4 }
+        ],
+        demoMode: true
+      })
+    }
 
     // Get user
     const user = await prisma.user.findUnique({

@@ -14,11 +14,49 @@ export async function GET(request: NextRequest) {
     // }
 
     const userId = session?.user?.id || "demo-user-id"
+    const isDemoMode = !session?.user?.id
 
     // Get current date for month calculations
     const now = new Date()
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+
+    // If in demo mode, return mock data
+    if (isDemoMode) {
+      return NextResponse.json({
+        stats: {
+          totalInvoices: { label: "Total Invoices", count: 12 },
+          paidThisMonth: { label: "Paid This Month", amount: 8750.00, count: 8 },
+          outstandingInvoices: { label: "Outstanding", amount: 2450.00, count: 3 },
+          overdueInvoices: { label: "Overdue", amount: 850.00, count: 1 }
+        },
+        recentInvoices: [
+          {
+            id: "demo-1",
+            invoiceNumber: "INV-001",
+            client: { name: "Demo Client 1" },
+            total: 1500.00,
+            status: "PAID",
+            date: new Date(Date.now() - 86400000).toISOString(),
+            dueDate: new Date(Date.now() + 86400000 * 7).toISOString()
+          },
+          {
+            id: "demo-2", 
+            invoiceNumber: "INV-002",
+            client: { name: "Demo Client 2" },
+            total: 950.00,
+            status: "SENT",
+            date: new Date(Date.now() - 86400000 * 2).toISOString(),
+            dueDate: new Date(Date.now() + 86400000 * 5).toISOString()
+          }
+        ],
+        metadata: { 
+          lastUpdated: now.toISOString(),
+          currency: "USD",
+          demoMode: true
+        }
+      })
+    }
 
     // Run all queries in parallel for better performance
     const [

@@ -42,9 +42,44 @@ export async function GET(request: NextRequest) {
     //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     // }
 
+    const isDemoMode = !session?.user?.id
     const { searchParams } = new URL(request.url)
     const status = searchParams.get("status")
     const clientId = searchParams.get("clientId")
+
+    // If in demo mode, return mock data
+    if (isDemoMode) {
+      const mockInvoices = [
+        {
+          id: "demo-invoice-1",
+          invoiceNumber: "INV-001",
+          client: { id: "demo-client-1", name: "Acme Corporation" },
+          total: 1500.00,
+          status: "PAID",
+          date: new Date(Date.now() - 86400000).toISOString(),
+          dueDate: new Date(Date.now() + 86400000 * 7).toISOString(),
+          subtotal: 1350.00,
+          taxAmount: 150.00,
+          currency: "USD",
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: "demo-invoice-2",
+          invoiceNumber: "INV-002", 
+          client: { id: "demo-client-2", name: "Tech Solutions Inc" },
+          total: 950.00,
+          status: "SENT",
+          date: new Date(Date.now() - 86400000 * 2).toISOString(),
+          dueDate: new Date(Date.now() + 86400000 * 5).toISOString(),
+          subtotal: 850.00,
+          taxAmount: 100.00,
+          currency: "USD",
+          createdAt: new Date().toISOString()
+        }
+      ]
+      
+      return NextResponse.json({ invoices: mockInvoices })
+    }
 
     const whereClause: any = {
       userId: session?.user?.id || "demo-user-id"
