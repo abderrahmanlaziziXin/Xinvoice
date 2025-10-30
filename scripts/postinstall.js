@@ -17,5 +17,6 @@ try {
   console.log("✅ Prisma client generated successfully!");
 } catch (error) {
   console.error("❌ Prisma generation failed:", error.message);
+  // Exit with code 1 to fail the build if Prisma generation fails
   process.exit(1);
 }
