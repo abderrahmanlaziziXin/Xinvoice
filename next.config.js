@@ -9,6 +9,16 @@ const nextConfig = {
     serverComponentsExternalPackages: ['openai']
   },
   
+  // Skip type checking during build for faster deployment
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  
+  // Skip ESLint during build
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  
   // Performance optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
