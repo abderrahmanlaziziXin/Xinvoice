@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
             const match = inv.invoiceNumber.match(/INV-(\d+)/)
             return match ? parseInt(match[1]) : 0
           })
-          .filter(num => !isNaN(num))
+          .filter((num: number) => !isNaN(num))
         
         nextNumber = Math.max(...numbers, 0) + 1
       }
