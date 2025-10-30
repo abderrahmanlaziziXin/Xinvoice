@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
       if (existingInvoices.length > 0) {
         // Find the highest existing number
         const numbers = existingInvoices
-          .map(inv => {
+          .map((inv: { invoiceNumber: string }) => {
             const match = inv.invoiceNumber.match(/INV-(\d+)/)
             return match ? parseInt(match[1]) : 0
           })
