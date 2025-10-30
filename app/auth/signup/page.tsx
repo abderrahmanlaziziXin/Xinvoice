@@ -102,7 +102,7 @@ export default function SignUp() {
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
-    
+
     // Temporarily disabled for AI agent testing
     // Auto-redirect to dashboard after short delay
     setTimeout(() => {

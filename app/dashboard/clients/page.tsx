@@ -59,7 +59,7 @@ export default function ClientsPage() {
   useEffect(() => {
     // Temporarily disabled session check for AI agent testing
     // if (session) {
-      fetchClients();
+    fetchClients();
     // }
   }, [session, fetchClients]);
 
