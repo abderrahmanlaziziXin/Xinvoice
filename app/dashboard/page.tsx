@@ -58,35 +58,46 @@ export default function Dashboard() {
 
   const { stats, recentInvoices, metadata } = dashboardData;
 
+  // Fallback stats in case of missing data
+  const safeStats = stats || {
+    totalInvoices: { label: "Total Invoices", count: 0 },
+    outstanding: { label: "Outstanding", amount: 0, count: 0 },
+    paidThisMonth: { label: "Paid This Month", amount: 0, count: 0 },
+    overdue: { label: "Overdue", amount: 0, count: 0 }
+  };
+
+  const safeMetadata = metadata || { currency: "USD" };
+  const safeRecentInvoices = recentInvoices || [];
+
   // Map stats to display format with icons and colors
   const statsDisplay = [
     {
-      label: stats.totalInvoices.label,
-      value: stats.totalInvoices.count.toString(),
+      label: safeStats.totalInvoices.label,
+      value: safeStats.totalInvoices.count.toString(),
       icon: DocumentTextIcon,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
     },
     {
-      label: stats.outstanding.label,
-      value: formatCurrency(stats.outstanding.amount, metadata.currency),
-      subValue: `${stats.outstanding.count} invoices`,
+      label: safeStats.outstanding.label,
+      value: formatCurrency(safeStats.outstanding.amount, safeMetadata.currency),
+      subValue: `${safeStats.outstanding.count} invoices`,
       icon: CurrencyDollarIcon,
       color: "text-yellow-600",
       bgColor: "bg-yellow-50",
     },
     {
-      label: stats.paidThisMonth.label,
-      value: formatCurrency(stats.paidThisMonth.amount, metadata.currency),
-      subValue: `${stats.paidThisMonth.count} payments`,
+      label: safeStats.paidThisMonth.label,
+      value: formatCurrency(safeStats.paidThisMonth.amount, safeMetadata.currency),
+      subValue: `${safeStats.paidThisMonth.count} payments`,
       icon: CheckCircleIcon,
       color: "text-green-600",
       bgColor: "bg-green-50",
     },
     {
-      label: stats.overdue.label,
-      value: stats.overdue.count.toString(),
-      subValue: formatCurrency(stats.overdue.amount, metadata.currency),
+      label: safeStats.overdue.label,
+      value: safeStats.overdue.count.toString(),
+      subValue: formatCurrency(safeStats.overdue.amount, safeMetadata.currency),
       icon: ExclamationTriangleIcon,
       color: "text-red-600",
       bgColor: "bg-red-50",
@@ -194,7 +205,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {recentInvoices.length === 0 ? (
+          {safeRecentInvoices.length === 0 ? (
             <div className="px-6 py-12 text-center">
               <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">
@@ -239,7 +250,7 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {recentInvoices.map((invoice) => (
+                  {safeRecentInvoices.map((invoice) => (
                     <tr
                       key={invoice.id}
                       className="hover:bg-gray-50 transition-colors"
