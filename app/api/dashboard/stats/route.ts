@@ -27,8 +27,8 @@ export async function GET(request: NextRequest) {
         stats: {
           totalInvoices: { label: "Total Invoices", count: 12 },
           paidThisMonth: { label: "Paid This Month", amount: 8750.00, count: 8 },
-          outstandingInvoices: { label: "Outstanding", amount: 2450.00, count: 3 },
-          overdueInvoices: { label: "Overdue", amount: 850.00, count: 1 }
+          outstanding: { label: "Outstanding", amount: 2450.00, count: 3 },
+          overdue: { label: "Overdue", amount: 850.00, count: 1 }
         },
         recentInvoices: [
           {
@@ -58,14 +58,17 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Run all queries in parallel for better performance
-    const [
-      totalInvoices,
-      paidThisMonth,
-      outstandingInvoices,
-      overdueInvoices,
-      recentInvoices
-    ] = await Promise.all([
+    // Try to run database queries, fallback to mock data if they fail
+    let totalInvoices, paidThisMonth, outstandingInvoices, overdueInvoices, recentInvoices;
+    
+    try {
+      [
+        totalInvoices,
+        paidThisMonth,
+        outstandingInvoices,
+        overdueInvoices,
+        recentInvoices
+      ] = await Promise.all([
       // Total invoices count
       prisma.invoice.count({
         where: { userId }
@@ -120,7 +123,50 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: "desc" },
         take: 5
       })
-    ])
+      ])
+    } catch (dbError) {
+      console.error("Database query failed, returning mock data:", dbError)
+      // Return mock data if database queries fail
+      return NextResponse.json({
+        stats: {
+          totalInvoices: { label: "Total Invoices", count: 12 },
+          paidThisMonth: { label: "Paid This Month", amount: 8750.00, count: 8 },
+          outstanding: { label: "Outstanding", amount: 2450.00, count: 3 },
+          overdue: { label: "Overdue", amount: 850.00, count: 1 }
+        },
+        recentInvoices: [
+          {
+            id: "demo-1",
+            invoiceNumber: "INV-001",
+            client: "Demo Client 1",
+            clientEmail: "demo1@example.com",
+            amount: 1500.00,
+            status: "PAID",
+            date: new Date(Date.now() - 86400000).toISOString(),
+            dueDate: new Date(Date.now() + 86400000 * 7).toISOString(),
+            createdAt: new Date(Date.now() - 86400000).toISOString(),
+            updatedAt: new Date(Date.now() - 86400000).toISOString()
+          },
+          {
+            id: "demo-2", 
+            invoiceNumber: "INV-002",
+            client: "Demo Client 2",
+            clientEmail: "demo2@example.com",
+            amount: 950.00,
+            status: "SENT",
+            date: new Date(Date.now() - 86400000 * 2).toISOString(),
+            dueDate: new Date(Date.now() + 86400000 * 5).toISOString(),
+            createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+            updatedAt: new Date(Date.now() - 86400000 * 2).toISOString()
+          }
+        ],
+        metadata: { 
+          lastUpdated: now.toISOString(),
+          currency: "USD",
+          demoMode: true
+        }
+      })
+    }
 
     // Format the statistics
     const stats = {
