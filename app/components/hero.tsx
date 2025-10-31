@@ -156,10 +156,10 @@ export function Hero() {
             Generate branded PDFs, send payment links, and get paid faster.
           </motion.p>
 
-          {/* CTA Button - Single button */}
+          {/* CTA Buttons */}
           <motion.div
             variants={itemVariants}
-            className="flex justify-center items-center mb-16"
+            className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-16"
           >
             <Link
               href="/auth/signup"
@@ -167,6 +167,14 @@ export function Hero() {
             >
               <DocumentTextIcon className="w-6 h-6 mr-3" />
               Create Your First Invoice
+              <ArrowRightIcon className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform duration-200" />
+            </Link>
+            <Link
+              href="/dashboard"
+              className="bg-white border-2 border-gray-200 text-gray-700 hover:border-blue-300 hover:text-blue-600 font-semibold rounded-xl px-10 py-4 transition-all duration-200 group text-lg"
+            >
+              <ChatBubbleLeftRightIcon className="w-6 h-6 mr-3" />
+              Go to Dashboard
               <ArrowRightIcon className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform duration-200" />
             </Link>
           </motion.div>
