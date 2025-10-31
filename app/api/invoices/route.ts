@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "../../../lib/auth"
-import { prisma } from "../../../lib/prisma"
 import { z } from "zod"
 
 const InvoiceItemSchema = z.object({
@@ -32,169 +29,116 @@ const InvoiceSchema = z.object({
   status: z.enum(["DRAFT", "SENT", "VIEWED", "PAID", "OVERDUE", "CANCELLED"]).default("DRAFT").optional()
 })
 
-// GET /api/invoices - List all invoices for the authenticated user
+// GET /api/invoices - Return demo invoices
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    // Temporarily disabled authentication check for AI agent testing
-    // if (!session?.user?.id) {
-    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    // }
-
-    const isDemoMode = !session?.user?.id
     const { searchParams } = new URL(request.url)
     const status = searchParams.get("status")
     const clientId = searchParams.get("clientId")
 
-    // If in demo mode, return mock data
-    if (isDemoMode) {
-      const mockInvoices = [
-        {
-          id: "demo-invoice-1",
-          invoiceNumber: "INV-001",
-          client: { id: "demo-client-1", name: "Acme Corporation" },
-          total: 1500.00,
-          status: "PAID",
-          date: new Date(Date.now() - 86400000).toISOString(),
-          dueDate: new Date(Date.now() + 86400000 * 7).toISOString(),
-          subtotal: 1350.00,
-          taxAmount: 150.00,
-          currency: "USD",
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: "demo-invoice-2",
-          invoiceNumber: "INV-002", 
-          client: { id: "demo-client-2", name: "Tech Solutions Inc" },
-          total: 950.00,
-          status: "SENT",
-          date: new Date(Date.now() - 86400000 * 2).toISOString(),
-          dueDate: new Date(Date.now() + 86400000 * 5).toISOString(),
-          subtotal: 850.00,
-          taxAmount: 100.00,
-          currency: "USD",
-          createdAt: new Date().toISOString()
-        }
-      ]
-      
-      return NextResponse.json({ invoices: mockInvoices })
-    }
-
-    const whereClause: any = {
-      userId: session?.user?.id || "demo-user-id"
-    }
-
-    if (status && status !== "all") {
-      whereClause.status = status.toUpperCase()
-    }
-
-    if (clientId) {
-      whereClause.clientId = clientId
-    }
-
-    const invoices = await prisma.invoice.findMany({
-      where: whereClause,
-      orderBy: {
-        createdAt: "desc"
+    // Always return demo data
+    let mockInvoices = [
+      {
+        id: "demo-invoice-1",
+        invoiceNumber: "INV-001",
+        client: { id: "demo-client-1", name: "Acme Corporation" },
+        total: 1500.00,
+        status: "PAID",
+        date: new Date(Date.now() - 86400000).toISOString(),
+        dueDate: new Date(Date.now() + 86400000 * 7).toISOString(),
+        subtotal: 1350.00,
+        taxAmount: 150.00,
+        taxRate: 0.1,
+        currency: "USD",
+        locale: "en-US",
+        createdAt: new Date().toISOString(),
+        items: [
+          {
+            id: "item-1",
+            description: "Web Development Services",
+            quantity: 20,
+            rate: 75.00,
+            amount: 1500.00,
+            taxRate: 0.1
+          }
+        ]
       },
-      include: {
-        client: {
-          select: {
-            id: true,
-            name: true,
-            email: true
+      {
+        id: "demo-invoice-2",
+        invoiceNumber: "INV-002", 
+        client: { id: "demo-client-2", name: "Global Tech Solutions" },
+        total: 950.00,
+        status: "SENT",
+        date: new Date(Date.now() - 86400000 * 2).toISOString(),
+        dueDate: new Date(Date.now() + 86400000 * 5).toISOString(),
+        subtotal: 850.00,
+        taxAmount: 100.00,
+        taxRate: 0.12,
+        currency: "USD",
+        locale: "en-US",
+        createdAt: new Date().toISOString(),
+        items: [
+          {
+            id: "item-2",
+            description: "Consulting Services",
+            quantity: 10,
+            rate: 95.00,
+            amount: 950.00,
+            taxRate: 0.12
           }
-        },
-        items: true,
-        _count: {
-          select: {
-            paymentEvents: true,
-            emailEvents: true
-          }
-        }
+        ]
       }
-    })
+    ]
 
-    return NextResponse.json({ invoices })
+    // Filter by status if provided
+    if (status && status !== "all") {
+      mockInvoices = mockInvoices.filter(invoice => 
+        invoice.status.toLowerCase() === status.toLowerCase()
+      )
+    }
+
+    // Filter by client if provided
+    if (clientId) {
+      mockInvoices = mockInvoices.filter(invoice => invoice.client.id === clientId)
+    }
+    
+    return NextResponse.json({ invoices: mockInvoices })
   } catch (error) {
     console.error("Error fetching invoices:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
 
-// POST /api/invoices - Create a new invoice
+// POST /api/invoices - Create a new invoice (demo mode)  
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    // Temporarily disabled authentication check for AI agent testing
-    // if (!session?.user?.id) {
-    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    // }
-
     const body = await request.json()
     console.log("Received invoice data:", body)
     const validatedData = InvoiceSchema.parse(body)
 
-    // Generate unique invoice number - always generate on server to avoid conflicts
-    const generateUniqueInvoiceNumber = async (): Promise<string> => {
-      const existingInvoices = await prisma.invoice.findMany({
-        where: { userId: session?.user?.id || "demo-user-id" },
-        select: { invoiceNumber: true },
-        orderBy: { invoiceNumber: "desc" }
-      })
-      
-      let nextNumber = 1
-      
-      if (existingInvoices.length > 0) {
-        // Find the highest existing number
-        const numbers = existingInvoices
-          .map((inv: { invoiceNumber: string }) => {
-            const match = inv.invoiceNumber.match(/INV-(\d+)/)
-            return match ? parseInt(match[1]) : 0
-          })
-          .filter((num: number) => !isNaN(num))
-        
-        nextNumber = Math.max(...numbers, 0) + 1
-      }
-      
-      return `INV-${nextNumber.toString().padStart(3, "0")}`
+    // Generate unique invoice number for demo
+    const generateUniqueInvoiceNumber = (): string => {
+      const timestamp = Date.now()
+      const randomNum = Math.floor(Math.random() * 1000)
+      return `INV-${timestamp}-${randomNum}`
     }
 
-    // Always generate a unique invoice number on the server side
-    validatedData.invoiceNumber = await generateUniqueInvoiceNumber()
+    // Always generate a unique invoice number
+    validatedData.invoiceNumber = generateUniqueInvoiceNumber()
 
-    // Create invoice with items
-    const invoice = await prisma.invoice.create({
-      data: {
-        ...validatedData,
-        userId: session?.user?.id || "demo-user-id",
-        date: new Date(validatedData.date),
-        dueDate: new Date(validatedData.dueDate),
-        items: {
-          create: validatedData.items
-        }
-      },
-      include: {
-        client: true,
-        items: true
+    // For demo mode, return a mock created invoice
+    const newInvoice = {
+      id: `demo-invoice-${Date.now()}`,
+      ...validatedData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      client: {
+        id: validatedData.clientId,
+        name: validatedData.clientId === "demo-client-1" ? "Acme Corporation" : "Global Tech Solutions"
       }
-    })
-
-    // Update user invoice count
-    if (session?.user?.id) {
-      await prisma.user.update({
-        where: { id: session.user.id },
-        data: {
-          invoiceCount: {
-            increment: 1
-          }
-        }
-      })
     }
 
-    return NextResponse.json({ invoice }, { status: 201 })
+    return NextResponse.json({ invoice: newInvoice }, { status: 201 })
   } catch (error) {
     console.error("Error creating invoice:", error)
     

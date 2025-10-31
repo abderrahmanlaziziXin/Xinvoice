@@ -1,132 +1,106 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "../../../../lib/auth"
-import { prisma } from "../../../../lib/prisma"
-import { z } from "zod"
+﻿import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 const InvoiceItemSchema = z.object({
-  description: z.string().min(1, "Description is required"),
-  quantity: z.number().min(0.01, "Quantity must be positive"),
-  rate: z.number().min(0.01, "Rate must be positive"),
+  description: z.string().min(1, 'Description is required'),
+  quantity: z.number().min(0.01, 'Quantity must be positive'),
+  rate: z.number().min(0.01, 'Rate must be positive'),
   amount: z.number(),
   taxRate: z.number().min(0).max(1).default(0).optional(),
 })
 
 const InvoiceUpdateSchema = z.object({
-  clientId: z.string().min(1, "Client selection is required"),
-  invoiceNumber: z.string().min(1, "Invoice number is required"),
-  date: z.string().min(1, "Date is required"),
-  dueDate: z.string().min(1, "Due date is required"),
-  items: z.array(InvoiceItemSchema).min(1, "At least one item is required"),
+  clientId: z.string().min(1, 'Client selection is required'),
+  invoiceNumber: z.string().min(1, 'Invoice number is required'),
+  date: z.string().min(1, 'Date is required'),
+  dueDate: z.string().min(1, 'Due date is required'),
+  items: z.array(InvoiceItemSchema).min(1, 'At least one item is required'),
   subtotal: z.number(),
   taxRate: z.number().min(0).max(1),
   taxAmount: z.number(),
   total: z.number(),
-  currency: z.string().default("USD"),
-  locale: z.string().default("en-US"),
+  currency: z.string().default('USD'),
+  locale: z.string().default('en-US'),
   terms: z.string().optional(),
   notes: z.string().optional(),
   paymentInstructions: z.string().optional(),
   discountAmount: z.number().default(0).optional(),
   shippingAmount: z.number().default(0).optional(),
-  status: z.enum(["DRAFT", "SENT", "VIEWED", "PAID", "OVERDUE", "CANCELLED"]).default("DRAFT").optional()
+  status: z.enum(['DRAFT', 'SENT', 'VIEWED', 'PAID', 'OVERDUE', 'CANCELLED']).default('DRAFT').optional()
 })
 
-// GET /api/invoices/[id] - Get single invoice
+// GET /api/invoices/[id] - Get single invoice (demo mode)
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const invoice = await prisma.invoice.findFirst({
-      where: {
-        id: params.id,
-        userId: session.user.id
+    // Always return demo invoice data
+    const demoInvoice = {
+      id: params.id,
+      invoiceNumber: 'INV-001',
+      client: { 
+        id: 'demo-client-1', 
+        name: 'Acme Corporation',
+        email: 'contact@acme.com',
+        phone: '+1 (555) 123-4567',
+        address: '123 Business St, New York, NY 10001'
       },
-      include: {
-        client: true,
-        items: true,
-        paymentEvents: true,
-        emailEvents: true
-      }
-    })
-
-    if (!invoice) {
-      return NextResponse.json({ error: "Invoice not found" }, { status: 404 })
+      total: 1500.00,
+      status: 'PAID',
+      date: new Date(Date.now() - 86400000).toISOString(),
+      dueDate: new Date(Date.now() + 86400000 * 7).toISOString(),
+      subtotal: 1350.00,
+      taxAmount: 150.00,
+      taxRate: 0.1,
+      currency: 'USD',
+      locale: 'en-US',
+      createdAt: new Date().toISOString(),
+      items: [
+        {
+          id: 'item-1',
+          description: 'Web Development Services',
+          quantity: 20,
+          rate: 75.00,
+          amount: 1500.00,
+          taxRate: 0.1
+        }
+      ],
+      paymentEvents: [],
+      emailEvents: []
     }
 
-    return NextResponse.json({ invoice })
+    return NextResponse.json({ invoice: demoInvoice })
   } catch (error) {
-    console.error("Error fetching invoice:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error('Error fetching invoice:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-// PUT /api/invoices/[id] - Update invoice
+// PUT /api/invoices/[id] - Update invoice (demo mode)
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const body = await request.json()
     const validatedData = InvoiceUpdateSchema.parse(body)
 
-    // Check if invoice exists and belongs to user
-    const existingInvoice = await prisma.invoice.findFirst({
-      where: {
-        id: params.id,
-        userId: session.user.id
+    // For demo mode, return updated invoice with submitted data
+    const updatedInvoice = {
+      id: params.id,
+      ...validatedData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      client: {
+        id: validatedData.clientId,
+        name: validatedData.clientId === 'demo-client-1' ? 'Acme Corporation' : 'Global Tech Solutions'
       }
-    })
-
-    if (!existingInvoice) {
-      return NextResponse.json({ error: "Invoice not found" }, { status: 404 })
     }
 
-    // Check if invoice can be edited (only drafts can be fully edited)
-    if (existingInvoice.status !== "DRAFT" && existingInvoice.status !== "SENT") {
-      return NextResponse.json(
-        { error: "Cannot edit invoice in current status" },
-        { status: 400 }
-      )
-    }
-
-    // Delete existing items and create new ones
-    await prisma.invoiceItem.deleteMany({
-      where: { invoiceId: params.id }
-    })
-
-    const invoice = await prisma.invoice.update({
-      where: { id: params.id },
-      data: {
-        ...validatedData,
-        date: new Date(validatedData.date),
-        dueDate: new Date(validatedData.dueDate),
-        items: {
-          create: validatedData.items
-        }
-      },
-      include: {
-        client: true,
-        items: true
-      }
-    })
-
-    return NextResponse.json({ invoice })
+    return NextResponse.json({ invoice: updatedInvoice })
   } catch (error) {
-    console.error("Error updating invoice:", error)
+    console.error('Error updating invoice:', error)
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -135,59 +109,20 @@ export async function PUT(
       )
     }
 
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-// DELETE /api/invoices/[id] - Delete invoice
+// DELETE /api/invoices/[id] - Delete invoice (demo mode)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    // Check if invoice exists and belongs to user
-    const existingInvoice = await prisma.invoice.findFirst({
-      where: {
-        id: params.id,
-        userId: session.user.id
-      }
-    })
-
-    if (!existingInvoice) {
-      return NextResponse.json({ error: "Invoice not found" }, { status: 404 })
-    }
-
-    // Only allow deletion of draft invoices
-    if (existingInvoice.status !== "DRAFT") {
-      return NextResponse.json(
-        { error: "Cannot delete invoice that has been sent" },
-        { status: 400 }
-      )
-    }
-
-    await prisma.invoice.delete({
-      where: { id: params.id }
-    })
-
-    // Update user invoice count
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: {
-        invoiceCount: {
-          decrement: 1
-        }
-      }
-    })
-
-    return NextResponse.json({ message: "Invoice deleted successfully" })
+    // For demo mode, always return success
+    return NextResponse.json({ message: 'Invoice deleted successfully' })
   } catch (error) {
-    console.error("Error deleting invoice:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error('Error deleting invoice:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

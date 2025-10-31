@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, Suspense } from "react";
-import { useSession } from "next-auth/react";
-import { redirect, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -53,7 +52,7 @@ interface InvoiceFormData {
 
 function NewInvoicePage() {
   // Fixed React Hooks Rules violations - hooks now called before conditionals
-  const { data: session, status } = useSession();
+  // Demo mode - no authentication required
   const router = useRouter();
   const searchParams = useSearchParams();
   const { success, error } = useToast();
@@ -325,11 +324,10 @@ function NewInvoicePage() {
 
   // useEffect hooks after all function definitions
   useEffect(() => {
-    if (session) {
-      fetchClients();
-      generateInvoiceNumber();
-    }
-  }, [session, fetchClients, generateInvoiceNumber]);
+    // Always fetch in demo mode
+    fetchClients();
+    generateInvoiceNumber();
+  }, [fetchClients, generateInvoiceNumber]);
 
   // Debug logging for isSubmitting state
   useEffect(() => {

@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+// Removed authentication - demo mode
 import { motion } from "framer-motion";
 import {
   BuildingOfficeIcon,
@@ -37,7 +36,7 @@ interface CompanySettings {
 }
 
 export default function SettingsPage() {
-  const { data: session, status } = useSession();
+  // Demo mode - no authentication required
   const { success, error } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);

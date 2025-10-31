@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
-import { redirect, useRouter, useParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -59,7 +58,7 @@ interface Invoice {
 }
 
 export default function InvoiceDetailPage() {
-  const { data: session, status } = useSession();
+  // Demo mode - no authentication required
   const router = useRouter();
   const params = useParams();
   const { success, error } = useToast();
@@ -375,11 +374,11 @@ export default function InvoiceDetailPage() {
 
   // useEffect hooks after all function definitions
   useEffect(() => {
-    if (invoiceId && session) {
+    if (invoiceId) {
       fetchInvoice();
       fetchClients();
     }
-  }, [invoiceId, session, fetchInvoice]);
+  }, [invoiceId, fetchInvoice]);
 
   useEffect(() => {
     if (invoice && isEditing) {

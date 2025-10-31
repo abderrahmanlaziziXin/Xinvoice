@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
+// Removed authentication - demo mode
 import { motion, AnimatePresence } from "framer-motion";
 import {
   HomeIcon,
@@ -34,7 +34,7 @@ interface NavigationItem {
 export function NavigationHeader() {
   const router = useRouter();
   const pathname = usePathname();
-  const { data: session } = useSession();
+  // Demo mode - no authentication
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const { t } = useTranslations();
@@ -99,7 +99,7 @@ export function NavigationHeader() {
     },
   ];
 
-  const navigation = session ? dashboardNavigation : publicNavigation;
+  const navigation = dashboardNavigation; // Always show dashboard nav in demo mode
 
   const handleContactSupport = () => {
     window.open(
@@ -208,7 +208,8 @@ export function NavigationHeader() {
             {/* Language Selector */}
             <LanguageSelector variant="compact" />
 
-            {session ? (
+            {/* Always show user menu in demo mode */}
+            {true ? (
               /* Authenticated User Menu */
               <div className="relative">
                 <motion.button
@@ -218,7 +219,7 @@ export function NavigationHeader() {
                   className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200"
                 >
                   <UserCircleIcon className="w-5 h-5 mr-2" />
-                  {session.user?.name || "User"}
+                  Demo User
                   <ChevronDownIcon className="w-4 h-4 ml-1" />
                 </motion.button>
 
@@ -242,7 +243,7 @@ export function NavigationHeader() {
                       <button
                         onClick={() => {
                           setOpenDropdown(null);
-                          signOut();
+                          // No sign out in demo mode
                         }}
                         className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:text-red-600 hover:bg-white/50 transition-all duration-200"
                       >

@@ -1,7 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+// Removed useSession - no authentication required
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useEffect } from "react";
@@ -26,7 +25,7 @@ import {
 } from "../components/dashboard-skeleton";
 
 export default function Dashboard() {
-  const { data: session, status } = useSession();
+  // No authentication required - demo mode
   const { data: dashboardData, isLoading, error, refetch } = useDashboardData();
 
   // Trigger data refresh when component mounts (user navigates back to dashboard)
@@ -34,10 +33,6 @@ export default function Dashboard() {
     // Dispatch dashboard focus event to trigger data reset
     window.dispatchEvent(new CustomEvent("dashboardFocus"));
   }, []);
-
-  if (status === "loading") {
-    return <DashboardSkeleton />;
-  }
 
   // Temporarily disabled authentication check for AI agent testing
   // if (!session) {
@@ -63,7 +58,7 @@ export default function Dashboard() {
     totalInvoices: { label: "Total Invoices", count: 0 },
     outstanding: { label: "Outstanding", amount: 0, count: 0 },
     paidThisMonth: { label: "Paid This Month", amount: 0, count: 0 },
-    overdue: { label: "Overdue", amount: 0, count: 0 }
+    overdue: { label: "Overdue", amount: 0, count: 0 },
   };
 
   const safeMetadata = metadata || { currency: "USD" };
@@ -80,7 +75,10 @@ export default function Dashboard() {
     },
     {
       label: safeStats.outstanding.label,
-      value: formatCurrency(safeStats.outstanding.amount, safeMetadata.currency),
+      value: formatCurrency(
+        safeStats.outstanding.amount,
+        safeMetadata.currency
+      ),
       subValue: `${safeStats.outstanding.count} invoices`,
       icon: CurrencyDollarIcon,
       color: "text-yellow-600",
@@ -88,7 +86,10 @@ export default function Dashboard() {
     },
     {
       label: safeStats.paidThisMonth.label,
-      value: formatCurrency(safeStats.paidThisMonth.amount, safeMetadata.currency),
+      value: formatCurrency(
+        safeStats.paidThisMonth.amount,
+        safeMetadata.currency
+      ),
       subValue: `${safeStats.paidThisMonth.count} payments`,
       icon: CheckCircleIcon,
       color: "text-green-600",
@@ -137,7 +138,7 @@ export default function Dashboard() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              Welcome back, {session?.user?.name || "Demo User"}! 👋
+              Welcome back, Demo User! 👋
             </h1>
             <p className="text-gray-600 mt-2">
               Here&apos;s what&apos;s happening with your invoices today.

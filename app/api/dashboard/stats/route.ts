@@ -1,20 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "../../../../lib/auth"
 import { prisma } from "../../../../lib/prisma"
 
 // GET /api/dashboard/stats - Get dashboard overview statistics
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    // Temporarily disabled authentication check for AI agent testing
-    // if (!session?.user?.id) {
-    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    // }
-
-    const userId = session?.user?.id || "demo-user-id"
-    const isDemoMode = !session?.user?.id
+    // No authentication - return demo data
+    const userId = "demo-user-id"
+    const isDemoMode = true
 
     // Get current date for month calculations
     const now = new Date()
@@ -34,20 +26,26 @@ export async function GET(request: NextRequest) {
           {
             id: "demo-1",
             invoiceNumber: "INV-001",
-            client: { name: "Demo Client 1" },
-            total: 1500.00,
+            client: "Demo Client 1",
+            clientEmail: "client1@demo.com",
+            amount: 1500.00,
             status: "PAID",
             date: new Date(Date.now() - 86400000).toISOString(),
-            dueDate: new Date(Date.now() + 86400000 * 7).toISOString()
+            dueDate: new Date(Date.now() + 86400000 * 7).toISOString(),
+            createdAt: new Date(Date.now() - 86400000).toISOString(),
+            updatedAt: new Date(Date.now() - 86400000).toISOString()
           },
           {
             id: "demo-2", 
             invoiceNumber: "INV-002",
-            client: { name: "Demo Client 2" },
-            total: 950.00,
+            client: "Demo Client 2",
+            clientEmail: "client2@demo.com",
+            amount: 950.00,
             status: "SENT",
             date: new Date(Date.now() - 86400000 * 2).toISOString(),
-            dueDate: new Date(Date.now() + 86400000 * 5).toISOString()
+            dueDate: new Date(Date.now() + 86400000 * 5).toISOString(),
+            createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+            updatedAt: new Date(Date.now() - 86400000 * 2).toISOString()
           }
         ],
         metadata: { 

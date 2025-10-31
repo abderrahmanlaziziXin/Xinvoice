@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+// Removed authentication - demo mode
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
@@ -58,7 +57,7 @@ const statusLabels = {
 };
 
 export default function InvoicesPage() {
-  const { data: session, status } = useSession();
+  // Demo mode - no authentication required
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -89,10 +88,9 @@ export default function InvoicesPage() {
 
   // All useEffect hooks must be called before any conditional logic
   useEffect(() => {
-    if (session) {
-      fetchInvoices();
-    }
-  }, [session, fetchInvoices]);
+    // Always fetch invoices in demo mode
+    fetchInvoices();
+  }, [fetchInvoices]);
 
   // Listen for invoice updates from other components
   useEffect(() => {

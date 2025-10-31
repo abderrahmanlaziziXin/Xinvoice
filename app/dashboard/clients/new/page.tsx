@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -27,7 +26,7 @@ interface ClientFormData {
 }
 
 export default function NewClientPage() {
-  const { data: session, status } = useSession();
+  // Demo mode - no authentication required
   const router = useRouter();
   const { success, error } = useToast();
   const { navigateWithRefresh } = useNavigationRefresh();

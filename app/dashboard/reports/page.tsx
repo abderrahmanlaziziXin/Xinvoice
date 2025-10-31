@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+// Removed authentication - demo mode
 import { motion } from "framer-motion";
 import {
   ChartBarIcon,
@@ -40,7 +39,7 @@ interface ReportData {
 }
 
 export default function ReportsPage() {
-  const { data: session, status } = useSession();
+  // Demo mode - no authentication required
   const { success, error } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
@@ -73,18 +72,7 @@ export default function ReportsPage() {
     fetchReportData();
   }, [fetchReportData]);
 
-  if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
-      </div>
-    );
-  }
-
-  // Temporarily disabled authentication check for AI agent testing
-  // if (!session) {
-  //   redirect("/auth/signin");
-  // }
+  // Demo mode - no authentication required
 
   const exportReport = async (format: "csv" | "pdf") => {
     try {
@@ -211,14 +199,16 @@ export default function ReportsPage() {
                 <div className="flex space-x-2">
                   <button
                     onClick={() => exportReport("csv")}
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
+                    disabled={!reportData || isLoading}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
                     Export CSV
                   </button>
                   <button
                     onClick={() => exportReport("pdf")}
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
+                    disabled={!reportData || isLoading}
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
                     Export PDF
@@ -227,6 +217,24 @@ export default function ReportsPage() {
               </div>
             </div>
           </div>
+
+          {!reportData && !isLoading && (
+            <div className="text-center py-12">
+              <ChartBarIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No Data Available
+              </h3>
+              <p className="text-gray-500">
+                Unable to load reports data. Please try again.
+              </p>
+              <button
+                onClick={fetchReportData}
+                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Retry
+              </button>
+            </div>
+          )}
 
           {reportData && (
             <>
@@ -248,7 +256,9 @@ export default function ReportsPage() {
                           Total Revenue
                         </dt>
                         <dd className="text-2xl font-bold text-gray-900">
-                          {formatCurrency(reportData.overallStats.totalRevenue)}
+                          {formatCurrency(
+                            Number(reportData.overallStats.totalRevenue) || 0
+                          )}
                         </dd>
                       </dl>
                     </div>
@@ -266,7 +276,7 @@ export default function ReportsPage() {
                           Total Invoices
                         </dt>
                         <dd className="text-2xl font-bold text-gray-900">
-                          {reportData.overallStats.totalInvoices}
+                          {String(reportData.overallStats.totalInvoices || 0)}
                         </dd>
                       </dl>
                     </div>
@@ -285,7 +295,7 @@ export default function ReportsPage() {
                         </dt>
                         <dd className="text-2xl font-bold text-gray-900">
                           {formatCurrency(
-                            reportData.overallStats.averageInvoice
+                            Number(reportData.overallStats.averageInvoice) || 0
                           )}
                         </dd>
                       </dl>
@@ -327,16 +337,16 @@ export default function ReportsPage() {
                     <div key={status.status} className="text-center">
                       <div
                         className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                          status.status
+                          String(status.status || "unknown")
                         )} mb-2`}
                       >
-                        {status.status}
+                        {String(status.status || "Unknown").toUpperCase()}
                       </div>
                       <div className="text-2xl font-bold text-gray-900">
-                        {status.count}
+                        {String(status.count || 0)}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {formatCurrency(status.amount)}
+                        {formatCurrency(Number(status.amount) || 0)}
                       </div>
                     </div>
                   ))}
@@ -360,7 +370,7 @@ export default function ReportsPage() {
                       className="flex items-center space-x-4"
                     >
                       <div className="w-20 text-sm font-medium text-gray-700">
-                        {month.month}
+                        {String(month.month || "N/A")}
                       </div>
                       <div className="flex-1">
                         <div className="bg-gray-200 rounded-full h-4 relative overflow-hidden">
@@ -383,10 +393,10 @@ export default function ReportsPage() {
                       </div>
                       <div className="w-32 text-right">
                         <div className="text-sm font-semibold text-gray-900">
-                          {formatCurrency(month.revenue)}
+                          {formatCurrency(Number(month.revenue) || 0)}
                         </div>
                         <div className="text-xs text-gray-500">
-                          {month.invoices} invoices
+                          {String(month.invoices || 0)} invoices
                         </div>
                       </div>
                     </div>
@@ -428,21 +438,21 @@ export default function ReportsPage() {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
                               <div className="text-sm font-medium text-gray-900">
-                                {client.name}
+                                {String(client.name || "Unknown")}
                               </div>
                               <div className="text-sm text-gray-500">
-                                {client.email}
+                                {String(client.email || "No email")}
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">
-                              {client.invoiceCount}
+                              {String(client.invoiceCount || 0)}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-semibold text-gray-900">
-                              {formatCurrency(client.totalAmount)}
+                              {formatCurrency(Number(client.totalAmount) || 0)}
                             </div>
                           </td>
                         </tr>

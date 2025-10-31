@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+// Removed authentication - demo mode
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
@@ -32,7 +31,7 @@ interface Client {
 }
 
 export default function ClientsPage() {
-  const { data: session, status } = useSession();
+  // Demo mode - no authentication required
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -61,7 +60,7 @@ export default function ClientsPage() {
     // if (session) {
     fetchClients();
     // }
-  }, [session, fetchClients]);
+  }, [fetchClients]);
 
   // Listen for client updates from other components
   useEffect(() => {

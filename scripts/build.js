@@ -12,8 +12,8 @@ if (!process.env.DATABASE_URL) {
 }
 
 try {
-  console.log("📦 Generating Prisma client...");
-  execSync("prisma generate", { stdio: "inherit" });
+  console.log("📦 Skipping Prisma generation (demo mode - no database)");
+  // execSync("prisma generate", { stdio: "inherit" });
 
   console.log("🏗️  Building Next.js application...");
   execSync("next build", { stdio: "inherit" });
