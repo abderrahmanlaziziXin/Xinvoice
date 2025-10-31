@@ -78,7 +78,7 @@ export default function ClientsPage() {
   }, [fetchClients]);
 
   // Early returns after all hooks
-  if (status === "loading") {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -86,10 +86,7 @@ export default function ClientsPage() {
     );
   }
 
-  // Temporarily disabled authentication check for AI agent testing
-  // if (!session) {
-  //   redirect("/auth/signin");
-  // }
+  // Demo mode - no authentication required
 
   const handleDeleteClient = async (id: string) => {
     try {

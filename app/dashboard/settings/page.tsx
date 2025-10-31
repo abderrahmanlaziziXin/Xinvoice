@@ -75,7 +75,7 @@ export default function SettingsPage() {
     fetchSettings();
   }, [fetchSettings]);
 
-  if (status === "loading") {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
@@ -83,10 +83,7 @@ export default function SettingsPage() {
     );
   }
 
-  // Temporarily disabled authentication check for AI agent testing
-  // if (!session) {
-  //   redirect("/auth/signin");
-  // }
+  // Demo mode - no authentication required
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
