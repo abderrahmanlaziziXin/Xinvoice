@@ -40,10 +40,16 @@ export default function ClientsPage() {
 
   const fetchClients = useCallback(async () => {
     try {
-      const response = await fetch("/api/clients");
+      const response = await fetch(`/api/clients?_t=${Date.now()}`, {
+        cache: "no-store",
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setClients(data.clients);
+        console.log("Clients refreshed:", data.clients.length);
       } else {
         error("Failed to load clients");
       }
@@ -65,15 +71,42 @@ export default function ClientsPage() {
   // Listen for client updates from other components
   useEffect(() => {
     const handleClientUpdate = () => {
+      console.log("Client update event received, refreshing...");
+      setLoading(true);
       fetchClients();
     };
 
+    // Listen for multiple event types
     window.addEventListener("clientCreated", handleClientUpdate);
     window.addEventListener("clientUpdated", handleClientUpdate);
+    window.addEventListener("refreshClients", handleClientUpdate);
+    window.addEventListener("refreshDashboard", handleClientUpdate);
 
     return () => {
       window.removeEventListener("clientCreated", handleClientUpdate);
       window.removeEventListener("clientUpdated", handleClientUpdate);
+      window.removeEventListener("refreshClients", handleClientUpdate);
+      window.removeEventListener("refreshDashboard", handleClientUpdate);
+    };
+  }, [fetchClients]);
+
+  // Also listen for page focus to refresh data
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log("Page focused, refreshing clients...");
+      fetchClients();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        handleFocus();
+      }
+    });
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
     };
   }, [fetchClients]);
 

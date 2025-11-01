@@ -75,10 +75,19 @@ export default function InvoiceDetailPage() {
   // Function definitions must come before useEffect hooks that use them
   const fetchInvoice = useCallback(async () => {
     try {
-      const response = await fetch(`/api/invoices/${invoiceId}`);
+      const response = await fetch(
+        `/api/invoices/${invoiceId}?_t=${Date.now()}`,
+        {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache",
+          },
+        }
+      );
       if (response.ok) {
         const data = await response.json();
         setInvoice(data.invoice);
+        console.log("Invoice detail refreshed:", data.invoice.id);
       } else {
         error("Invoice not found");
         router.push("/dashboard/invoices");
@@ -425,16 +434,30 @@ export default function InvoiceDetailPage() {
   // Listen for invoice updates from edit page
   useEffect(() => {
     const handleInvoiceUpdate = () => {
+      console.log("Invoice detail page received update event");
       if (invoiceId) {
+        setIsLoading(true);
         fetchInvoice();
       }
     };
 
     window.addEventListener("invoiceUpdated", handleInvoiceUpdate);
+    window.addEventListener("refreshInvoices", handleInvoiceUpdate);
 
     return () => {
       window.removeEventListener("invoiceUpdated", handleInvoiceUpdate);
+      window.removeEventListener("refreshInvoices", handleInvoiceUpdate);
     };
+  }, [invoiceId, fetchInvoice]);
+
+  // Listen for URL parameter changes to trigger refresh
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const updated = urlParams.get("updated");
+    if (updated && invoiceId) {
+      console.log("URL parameter detected, refreshing invoice...");
+      fetchInvoice();
+    }
   }, [invoiceId, fetchInvoice]);
 
   // Early returns after all hooks

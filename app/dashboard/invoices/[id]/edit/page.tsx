@@ -222,18 +222,23 @@ export default function EditInvoicePage() {
         const result = await response.json();
         success("Invoice updated successfully!");
 
-        // Dispatch custom event to trigger refresh in detail page and lists
+        // Dispatch multiple events to ensure all components refresh
         window.dispatchEvent(
           new CustomEvent("invoiceUpdated", {
-            detail: { invoiceId: invoiceId },
+            detail: {
+              invoiceId: invoiceId,
+              invoice: result.invoice,
+              timestamp: Date.now(),
+            },
           })
         );
 
-        // Refresh the router cache and navigate
-        router.refresh();
-        setTimeout(() => {
-          router.push(`/dashboard/invoices/${invoiceId}`);
-        }, 100);
+        // Also dispatch general refresh events
+        window.dispatchEvent(new Event("refreshInvoices"));
+        window.dispatchEvent(new Event("refreshDashboard"));
+
+        // Force a hard navigation with cache busting
+        window.location.href = `/dashboard/invoices/${invoiceId}?updated=${Date.now()}`;
       } else {
         const data = await response.json();
         error(data.error || "Failed to update invoice");

@@ -98,18 +98,23 @@ export default function EditClientPage() {
         const result = await response.json();
         success("Client updated successfully!");
 
-        // Dispatch custom event to trigger refresh in the list page
+        // Dispatch multiple events to ensure all components refresh
         window.dispatchEvent(
           new CustomEvent("clientUpdated", {
-            detail: { clientId: clientId },
+            detail: {
+              clientId: clientId,
+              client: result.client,
+              timestamp: Date.now(),
+            },
           })
         );
 
-        // Refresh the router cache and navigate
-        router.refresh();
-        setTimeout(() => {
-          router.push(`/dashboard/clients`);
-        }, 100);
+        // Also dispatch general refresh events
+        window.dispatchEvent(new Event("refreshClients"));
+        window.dispatchEvent(new Event("refreshDashboard"));
+
+        // Force a hard navigation with cache busting
+        window.location.href = `/dashboard/clients?updated=${Date.now()}`;
       } else {
         const data = await response.json();
         error(data.error || "Failed to update client");

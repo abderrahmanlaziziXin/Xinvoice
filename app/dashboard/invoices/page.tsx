@@ -71,11 +71,19 @@ export default function InvoicesPage() {
       if (statusFilter !== "all") {
         params.append("status", statusFilter);
       }
+      // Add cache busting parameter
+      params.append("_t", Date.now().toString());
 
-      const response = await fetch(`/api/invoices?${params}`);
+      const response = await fetch(`/api/invoices?${params}`, {
+        cache: "no-store",
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setInvoices(data.invoices);
+        console.log("Invoices refreshed:", data.invoices.length);
       } else {
         error("Failed to load invoices");
       }
@@ -95,15 +103,42 @@ export default function InvoicesPage() {
   // Listen for invoice updates from other components
   useEffect(() => {
     const handleInvoiceUpdate = () => {
+      console.log("Invoice update event received, refreshing...");
+      setLoading(true);
       fetchInvoices();
     };
 
+    // Listen for multiple event types
     window.addEventListener("invoiceCreated", handleInvoiceUpdate);
     window.addEventListener("invoiceUpdated", handleInvoiceUpdate);
+    window.addEventListener("refreshInvoices", handleInvoiceUpdate);
+    window.addEventListener("refreshDashboard", handleInvoiceUpdate);
 
     return () => {
       window.removeEventListener("invoiceCreated", handleInvoiceUpdate);
       window.removeEventListener("invoiceUpdated", handleInvoiceUpdate);
+      window.removeEventListener("refreshInvoices", handleInvoiceUpdate);
+      window.removeEventListener("refreshDashboard", handleInvoiceUpdate);
+    };
+  }, [fetchInvoices]);
+
+  // Also listen for page focus to refresh data
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log("Page focused, refreshing invoices...");
+      fetchInvoices();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        handleFocus();
+      }
+    });
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
     };
   }, [fetchInvoices]);
 
