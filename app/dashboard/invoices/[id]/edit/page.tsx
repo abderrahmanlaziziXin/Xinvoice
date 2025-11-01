@@ -221,6 +221,14 @@ export default function EditInvoicePage() {
       if (response.ok) {
         const result = await response.json();
         success("Invoice updated successfully!");
+
+        // Dispatch custom event to trigger refresh in detail page and lists
+        window.dispatchEvent(
+          new CustomEvent("invoiceUpdated", {
+            detail: { invoiceId: invoiceId },
+          })
+        );
+
         // Refresh the router cache and navigate
         router.refresh();
         setTimeout(() => {

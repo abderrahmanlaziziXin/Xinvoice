@@ -422,6 +422,21 @@ export default function InvoiceDetailPage() {
     invoice,
   ]);
 
+  // Listen for invoice updates from edit page
+  useEffect(() => {
+    const handleInvoiceUpdate = () => {
+      if (invoiceId) {
+        fetchInvoice();
+      }
+    };
+
+    window.addEventListener("invoiceUpdated", handleInvoiceUpdate);
+
+    return () => {
+      window.removeEventListener("invoiceUpdated", handleInvoiceUpdate);
+    };
+  }, [invoiceId, fetchInvoice]);
+
   // Early returns after all hooks
   if (isLoading) {
     return (

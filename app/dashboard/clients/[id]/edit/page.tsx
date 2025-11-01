@@ -97,6 +97,14 @@ export default function EditClientPage() {
       if (response.ok) {
         const result = await response.json();
         success("Client updated successfully!");
+
+        // Dispatch custom event to trigger refresh in the list page
+        window.dispatchEvent(
+          new CustomEvent("clientUpdated", {
+            detail: { clientId: clientId },
+          })
+        );
+
         // Refresh the router cache and navigate
         router.refresh();
         setTimeout(() => {
