@@ -1,10 +1,14 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
+import { resolveUserId } from '@/lib/request-user';
 
 // GET /api/dashboard/stats - Get dashboard overview statistics
 export async function GET(request: NextRequest) {
   try {
-    const userId = "demo-user-1";
+    const userId = resolveUserId();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
+import { resolveUserId } from '@/lib/request-user';
 
 const InvoiceItemSchema = z.object({
   description: z.string().min(1, "Description is required"),
@@ -37,11 +38,13 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status")
     const clientId = searchParams.get("clientId")
     
-    // For demo purposes, use a demo user ID - in production, get from auth session
-    const demoUserId = "demo-user-1"
+    const userId = resolveUserId();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     // Build where clause based on filters
-    const where: any = { userId: demoUserId }
+  const where: any = { userId }
     
     if (status && status !== "all") {
       where.status = status.toUpperCase()
@@ -80,74 +83,8 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({ invoices })
     } catch (dbError) {
-      console.error("Database error, falling back to demo data:", dbError)
-      // Fallback to demo data if database fails
-      let mockInvoices = [
-      {
-        id: "demo-invoice-1",
-        invoiceNumber: "INV-001",
-        client: { id: "demo-client-1", name: "Acme Corporation" },
-        total: 1500.00,
-        status: "PAID",
-        date: new Date(Date.now() - 86400000).toISOString(),
-        dueDate: new Date(Date.now() + 86400000 * 7).toISOString(),
-        subtotal: 1350.00,
-        taxAmount: 150.00,
-        taxRate: 0.1,
-        currency: "USD",
-        locale: "en-US",
-        createdAt: new Date().toISOString(),
-        items: [
-          {
-            id: "item-1",
-            description: "Web Development Services",
-            quantity: 20,
-            rate: 75.00,
-            amount: 1500.00,
-            taxRate: 0.1
-          }
-        ]
-      },
-      {
-        id: "demo-invoice-2",
-        invoiceNumber: "INV-002", 
-        client: { id: "demo-client-2", name: "Global Tech Solutions" },
-        total: 950.00,
-        status: "SENT",
-        date: new Date(Date.now() - 86400000 * 2).toISOString(),
-        dueDate: new Date(Date.now() + 86400000 * 5).toISOString(),
-        subtotal: 850.00,
-        taxAmount: 100.00,
-        taxRate: 0.12,
-        currency: "USD",
-        locale: "en-US",
-        createdAt: new Date().toISOString(),
-        items: [
-          {
-            id: "item-2",
-            description: "Consulting Services",
-            quantity: 10,
-            rate: 95.00,
-            amount: 950.00,
-            taxRate: 0.12
-          }
-        ]
-      }
-    ]
-
-    // Filter by status if provided
-    if (status && status !== "all") {
-      mockInvoices = mockInvoices.filter(invoice => 
-        invoice.status.toLowerCase() === status.toLowerCase()
-      )
-    }
-
-    // Filter by client if provided
-    if (clientId) {
-      mockInvoices = mockInvoices.filter(invoice => invoice.client.id === clientId)
-    }
-    
-      return NextResponse.json({ invoices: mockInvoices })
+      console.error("Database error fetching invoices:", dbError)
+      return NextResponse.json({ error: 'Failed to fetch invoices' }, { status: 500 })
     }
   } catch (error) {
     console.error("Error fetching invoices:", error)
@@ -162,13 +99,15 @@ export async function POST(request: NextRequest) {
     console.log("Received invoice data:", body)
     const validatedData = InvoiceSchema.parse(body)
 
-    // For demo purposes, use a demo user ID
-    const demoUserId = "demo-user-1"
+    const userId = resolveUserId();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     // Generate unique invoice number
     const generateInvoiceNumber = async (): Promise<string> => {
       const lastInvoice = await prisma.invoice.findFirst({
-        where: { userId: demoUserId },
+  where: { userId },
         orderBy: { createdAt: 'desc' },
         select: { invoiceNumber: true }
       })
@@ -190,7 +129,7 @@ export async function POST(request: NextRequest) {
       // Create invoice with items in a transaction
       const newInvoice = await prisma.invoice.create({
         data: {
-          userId: demoUserId,
+          userId,
           clientId: validatedData.clientId,
           invoiceNumber,
           date: new Date(validatedData.date),
@@ -231,28 +170,8 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({ invoice: newInvoice }, { status: 201 })
     } catch (dbError) {
-      console.error("Database error, falling back to demo mode:", dbError)
-      
-      // Fallback to demo mode
-      const generateUniqueInvoiceNumber = (): string => {
-        const timestamp = Date.now()
-        const randomNum = Math.floor(Math.random() * 1000)
-        return `INV-${timestamp}-${randomNum}`
-      }
-
-      const newInvoice = {
-        id: `demo-invoice-${Date.now()}`,
-        ...validatedData,
-        invoiceNumber: generateUniqueInvoiceNumber(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        client: {
-          id: validatedData.clientId,
-          name: validatedData.clientId === "demo-client-1" ? "Acme Corporation" : "Global Tech Solutions"
-        }
-      }
-
-      return NextResponse.json({ invoice: newInvoice }, { status: 201 })
+      console.error("Database error creating invoice:", dbError)
+      return NextResponse.json({ error: 'Failed to create invoice' }, { status: 500 })
     }
   } catch (error) {
     console.error("Error creating invoice:", error)

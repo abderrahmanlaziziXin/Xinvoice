@@ -1,6 +1,7 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { resolveUserId } from '@/lib/request-user';
 
 const ClientSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -14,11 +15,14 @@ const ClientSchema = z.object({
 // GET /api/clients - Get user's clients
 export async function GET(request: NextRequest) {
   try {
-    const demoUserId = "demo-user-1"
+    const userId = resolveUserId();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     try {
       const clients = await prisma.client.findMany({
-        where: { userId: demoUserId },
+        where: { userId },
         include: {
           _count: {
             select: { invoices: true }
@@ -29,35 +33,8 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({ clients })
     } catch (dbError) {
-      console.error("Database error, falling back to demo data:", dbError)
-      
-      // Fallback demo data
-      return NextResponse.json({
-        clients: [
-          {
-            id: 'demo-client-1',
-            name: 'Acme Corporation',
-            email: 'contact@acme.com',
-            phone: '+1 (555) 123-4567',
-            address: '123 Business St, New York, NY 10001',
-            taxNumber: 'TAX123456',
-            contactPerson: 'John Smith',
-            createdAt: new Date().toISOString(),
-            _count: { invoices: 5 }
-          },
-        {
-          id: 'demo-client-2',
-          name: 'Global Tech Solutions',
-          email: 'info@globaltech.com',
-          phone: '+1 (555) 987-6543',
-          address: '456 Tech Avenue, San Francisco, CA 94102',
-          taxNumber: 'TAX789012',
-          contactPerson: 'Sarah Johnson',
-          createdAt: new Date().toISOString(),
-          _count: { invoices: 3 }
-        }
-      ]
-      })
+      console.error("Database error fetching clients:", dbError)
+      return NextResponse.json({ error: 'Failed to fetch clients' }, { status: 500 })
     }
   } catch (error) {
     console.error('Error fetching clients:', error);
@@ -70,12 +47,15 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validatedData = ClientSchema.parse(body);
-    const demoUserId = "demo-user-1"
+    const userId = resolveUserId();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     try {
       const newClient = await prisma.client.create({
         data: {
-          userId: demoUserId,
+          userId,
           name: validatedData.name,
           email: validatedData.email || null,
           phone: validatedData.phone || null,
@@ -92,18 +72,8 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({ client: newClient }, { status: 201 });
     } catch (dbError) {
-      console.error("Database error, falling back to demo mode:", dbError)
-      
-      // Fallback to demo mode
-      const newClient = {
-        id: `demo-client-${Date.now()}`,
-        ...validatedData,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        _count: { invoices: 0 }
-      };
-
-      return NextResponse.json({ client: newClient }, { status: 201 });
+      console.error("Database error creating client:", dbError)
+      return NextResponse.json({ error: 'Failed to create client' }, { status: 500 })
     }
   } catch (error) {
     console.error('Error creating client:', error);

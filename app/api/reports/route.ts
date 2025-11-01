@@ -1,8 +1,9 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { resolveUserId } from '@/lib/request-user';
 
 const prisma = new PrismaClient();
-const DEMO_USER_ID = 'demo-user-1';
+// No demo fallback; use resolver.
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,10 +14,15 @@ export async function GET(req: NextRequest) {
     const fromDate = new Date(from);
     const toDate = new Date(to);
 
+    const userId = resolveUserId();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     // Get all invoices for the date range
     const invoices = await prisma.invoice.findMany({
       where: {
-        userId: DEMO_USER_ID,
+        userId,
         date: {
           gte: fromDate,
           lte: toDate,
