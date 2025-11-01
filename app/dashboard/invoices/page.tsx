@@ -342,7 +342,7 @@ export default function InvoicesPage() {
                           {invoice.status === "DRAFT" && (
                             <>
                               <Link
-                                href={`/dashboard/invoices/${invoice.id}/edit`}
+                                href={`/dashboard/invoices/${invoice.id}`}
                                 className="text-gray-600 hover:text-gray-900"
                               >
                                 <PencilIcon className="w-4 h-4" />

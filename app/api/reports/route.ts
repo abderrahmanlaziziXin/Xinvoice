@@ -1,39 +1,118 @@
-﻿import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+const DEMO_USER_ID = 'demo-user-1';
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url)
-    const from = searchParams.get('from') || new Date(new Date().getFullYear(), 0, 1).toISOString()
-    const to = searchParams.get('to') || new Date().toISOString()
+    const { searchParams } = new URL(req.url);
+    const from = searchParams.get('from') || new Date(new Date().getFullYear(), 0, 1).toISOString();
+    const to = searchParams.get('to') || new Date().toISOString();
 
-    // Always return demo reports with proper structure
-    return NextResponse.json({
-      monthlyRevenue: [
-        { month: 'Jan', revenue: 2500, invoices: 3 },
-        { month: 'Feb', revenue: 1800, invoices: 2 },
-        { month: 'Mar', revenue: 3200, invoices: 4 },
-        { month: 'Apr', revenue: 2100, invoices: 2 },
-        { month: 'May', revenue: 2900, invoices: 1 }
-      ],
-      statusBreakdown: [
-        { status: 'paid', count: 8, amount: 8750.00 },
-        { status: 'sent', count: 3, amount: 2450.00 },
-        { status: 'overdue', count: 1, amount: 850.00 },
-        { status: 'draft', count: 2, amount: 450.00 }
-      ],
-      topClients: [
-        { name: 'Acme Corporation', email: 'contact@acme.com', totalAmount: 7500.00, invoiceCount: 5 },
-        { name: 'Tech Solutions Inc', email: 'hello@techsolutions.com', totalAmount: 3200.00, invoiceCount: 3 },
-        { name: 'Global Services LLC', email: 'info@globalservices.com', totalAmount: 1800.00, invoiceCount: 4 }
-      ],
-      overallStats: {
-        totalRevenue: 12500.00,
-        totalInvoices: 14,
-        averageInvoice: 892.86,
-        paidPercentage: 70.0
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+
+    // Get all invoices for the date range
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        userId: DEMO_USER_ID,
+        date: {
+          gte: fromDate,
+          lte: toDate,
+        },
       },
-      demoMode: true
-    })
+      include: {
+        client: true,
+        items: true,
+      },
+    });
+
+    // Calculate monthly revenue
+    const monthlyRevenue = [];
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    for (let month = 0; month < 12; month++) {
+      const monthStart = new Date(fromDate.getFullYear(), month, 1);
+      const monthEnd = new Date(fromDate.getFullYear(), month + 1, 0);
+      
+      const monthInvoices = invoices.filter(invoice => {
+        const invoiceDate = new Date(invoice.date);
+        return invoiceDate >= monthStart && invoiceDate <= monthEnd;
+      });
+      
+      const revenue = monthInvoices
+        .filter(invoice => invoice.status === 'PAID')
+        .reduce((sum, invoice) => sum + invoice.total, 0);
+      
+      if (monthInvoices.length > 0 || revenue > 0) {
+        monthlyRevenue.push({
+          month: monthNames[month],
+          revenue,
+          invoices: monthInvoices.length,
+        });
+      }
+    }
+
+    // Calculate status breakdown
+    const statusCounts = invoices.reduce((acc: any, invoice) => {
+      const status = invoice.status.toLowerCase();
+      if (!acc[status]) {
+        acc[status] = { count: 0, amount: 0 };
+      }
+      acc[status].count++;
+      acc[status].amount += invoice.total;
+      return acc;
+    }, {});
+
+    const statusBreakdown = Object.entries(statusCounts).map(([status, data]: [string, any]) => ({
+      status,
+      count: data.count,
+      amount: data.amount,
+    }));
+    // Calculate top clients
+    const clientTotals = invoices.reduce((acc: any, invoice) => {
+      if (!invoice.client) return acc;
+      
+      const clientKey = invoice.client.id;
+      if (!acc[clientKey]) {
+        acc[clientKey] = {
+          name: invoice.client.name,
+          email: invoice.client.email || '',
+          totalAmount: 0,
+          invoiceCount: 0,
+        };
+      }
+      acc[clientKey].totalAmount += invoice.total;
+      acc[clientKey].invoiceCount++;
+      return acc;
+    }, {});
+
+    const topClients = Object.values(clientTotals)
+      .sort((a: any, b: any) => b.totalAmount - a.totalAmount)
+      .slice(0, 5);
+
+    // Calculate overall stats
+    const totalRevenue = invoices
+      .filter(invoice => invoice.status === 'PAID')
+      .reduce((sum, invoice) => sum + invoice.total, 0);
+    
+    const totalInvoices = invoices.length;
+    const averageInvoice = totalInvoices > 0 ? totalRevenue / totalInvoices : 0;
+    const paidCount = invoices.filter(invoice => invoice.status === 'PAID').length;
+    const paidPercentage = totalInvoices > 0 ? (paidCount / totalInvoices) * 100 : 0;
+
+    return NextResponse.json({
+      monthlyRevenue,
+      statusBreakdown,
+      topClients,
+      overallStats: {
+        totalRevenue,
+        totalInvoices,
+        averageInvoice,
+        paidPercentage,
+      },
+    });
   } catch (error) {
     console.error('Error fetching reports:', error)
     return NextResponse.json(

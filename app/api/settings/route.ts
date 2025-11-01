@@ -1,69 +1,88 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+import { z } from 'zod';
 
-export async function GET(req: NextRequest) {
+const prisma = new PrismaClient();
+
+// For demo purposes, we'll use a hardcoded user ID
+const DEMO_USER_ID = 'demo-user-1';
+
+const UpdateSettingsSchema = z.object({
+  name: z.string().optional(),
+  email: z.string().email(),
+  companyName: z.string().optional(),
+  companyAddress: z.string().optional(),
+  companyPhone: z.string().optional(),
+  website: z.string().url().optional().or(z.literal('')),
+  taxNumber: z.string().optional(),
+  defaultCurrency: z.string().min(3).max(3),
+  defaultLocale: z.string(),
+  defaultTaxRate: z.number().min(0).max(1),
+  defaultTerms: z.string().optional(),
+});
+
+export async function GET() {
   try {
-    // Always return demo settings
-    return NextResponse.json({
-      companyName: 'Demo Company Inc',
-      email: 'demo@example.com',
-      companyPhone: '+1 (555) 123-4567',
-      companyAddress: '123 Demo Street, Demo City, DC 12345',
-      website: 'https://democompany.com',
-      taxNumber: 'TAX123456789',
-      currency: 'USD',
-      locale: 'en-US',
-      timezone: 'America/New_York',
-      invoicePrefix: 'INV',
-      demoMode: true
-    })
+    const user = await prisma.user.findUnique({
+      where: { id: DEMO_USER_ID },
+    });
 
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
 
+    return NextResponse.json({ user });
   } catch (error) {
-    console.error('Error fetching settings:', error)
+    console.error('Error fetching user settings:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch settings' },
+      { error: 'Internal server error' },
       { status: 500 }
-    )
+    );
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function PUT(request: NextRequest) {
   try {
-    const body = await req.json()
-    
-    // Validate required fields
-    if (!body.companyName || !body.email) {
-      return NextResponse.json(
-        { error: 'Company name and email are required' },
-        { status: 400 }
-      )
-    }
+    const body = await request.json();
+    const validatedData = UpdateSettingsSchema.parse(body);
 
-    // For demo mode, return the submitted settings as if they were saved
-    const formattedSettings = {
-      companyName: body.companyName || 'Demo Company Inc',
-      email: body.email || 'demo@example.com',
-      phone: body.phone || '+1 (555) 123-4567',
-      address: body.address || '123 Demo Street, Demo City, DC 12345',
-      city: '',
-      state: '',
-      zipCode: '',
-      country: 'US',
-      currency: body.currency || 'USD',
-      taxRate: parseFloat(body.taxRate) || 0,
-      invoicePrefix: 'INV',
-      invoiceNumberStart: 1000,
-      website: body.website || 'https://democompany.com',
-      taxId: body.taxId || 'TAX123456789',
-      demoMode: true
-    }
+    const updatedUser = await prisma.user.update({
+      where: { id: DEMO_USER_ID },
+      data: {
+        name: validatedData.name,
+        email: validatedData.email,
+        companyName: validatedData.companyName,
+        companyAddress: validatedData.companyAddress,
+        companyPhone: validatedData.companyPhone,
+        website: validatedData.website || null,
+        taxNumber: validatedData.taxNumber,
+        defaultCurrency: validatedData.defaultCurrency,
+        defaultLocale: validatedData.defaultLocale,
+        defaultTaxRate: validatedData.defaultTaxRate,
+        defaultTerms: validatedData.defaultTerms,
+      },
+    });
 
-    return NextResponse.json(formattedSettings)
+    return NextResponse.json({ 
+      success: true,
+      user: updatedUser 
+    });
   } catch (error) {
-    console.error('Error saving settings:', error)
+    console.error('Error updating user settings:', error);
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: error.errors[0].message },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Failed to save settings' },
+      { error: 'Internal server error' },
       { status: 500 }
-    )
+    );
   }
 }

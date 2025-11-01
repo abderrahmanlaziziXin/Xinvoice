@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
+import { prisma } from "@/lib/prisma"
 
 const InvoiceItemSchema = z.object({
   description: z.string().min(1, "Description is required"),
@@ -29,15 +30,59 @@ const InvoiceSchema = z.object({
   status: z.enum(["DRAFT", "SENT", "VIEWED", "PAID", "OVERDUE", "CANCELLED"]).default("DRAFT").optional()
 })
 
-// GET /api/invoices - Return demo invoices
+// GET /api/invoices - Get user's invoices
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get("status")
     const clientId = searchParams.get("clientId")
+    
+    // For demo purposes, use a demo user ID - in production, get from auth session
+    const demoUserId = "demo-user-1"
 
-    // Always return demo data
-    let mockInvoices = [
+    // Build where clause based on filters
+    const where: any = { userId: demoUserId }
+    
+    if (status && status !== "all") {
+      where.status = status.toUpperCase()
+    }
+    
+    if (clientId) {
+      where.clientId = clientId
+    }
+
+    try {
+      const invoices = await prisma.invoice.findMany({
+        where,
+        include: {
+          client: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          },
+          items: {
+            select: {
+              id: true,
+              description: true,
+              quantity: true,
+              rate: true,
+              amount: true,
+              taxRate: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      })
+
+      return NextResponse.json({ invoices })
+    } catch (dbError) {
+      console.error("Database error, falling back to demo data:", dbError)
+      // Fallback to demo data if database fails
+      let mockInvoices = [
       {
         id: "demo-invoice-1",
         invoiceNumber: "INV-001",
@@ -102,43 +147,113 @@ export async function GET(request: NextRequest) {
       mockInvoices = mockInvoices.filter(invoice => invoice.client.id === clientId)
     }
     
-    return NextResponse.json({ invoices: mockInvoices })
+      return NextResponse.json({ invoices: mockInvoices })
+    }
   } catch (error) {
     console.error("Error fetching invoices:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
 
-// POST /api/invoices - Create a new invoice (demo mode)  
+// POST /api/invoices - Create a new invoice
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     console.log("Received invoice data:", body)
     const validatedData = InvoiceSchema.parse(body)
 
-    // Generate unique invoice number for demo
-    const generateUniqueInvoiceNumber = (): string => {
-      const timestamp = Date.now()
-      const randomNum = Math.floor(Math.random() * 1000)
-      return `INV-${timestamp}-${randomNum}`
-    }
+    // For demo purposes, use a demo user ID
+    const demoUserId = "demo-user-1"
 
-    // Always generate a unique invoice number
-    validatedData.invoiceNumber = generateUniqueInvoiceNumber()
-
-    // For demo mode, return a mock created invoice
-    const newInvoice = {
-      id: `demo-invoice-${Date.now()}`,
-      ...validatedData,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      client: {
-        id: validatedData.clientId,
-        name: validatedData.clientId === "demo-client-1" ? "Acme Corporation" : "Global Tech Solutions"
+    // Generate unique invoice number
+    const generateInvoiceNumber = async (): Promise<string> => {
+      const lastInvoice = await prisma.invoice.findFirst({
+        where: { userId: demoUserId },
+        orderBy: { createdAt: 'desc' },
+        select: { invoiceNumber: true }
+      })
+      
+      if (lastInvoice) {
+        const match = lastInvoice.invoiceNumber.match(/INV-(\d+)/)
+        if (match) {
+          const nextNumber = parseInt(match[1]) + 1
+          return `INV-${nextNumber.toString().padStart(3, '0')}`
+        }
       }
+      return "INV-001"
     }
 
-    return NextResponse.json({ invoice: newInvoice }, { status: 201 })
+    try {
+      // Generate unique invoice number
+      const invoiceNumber = await generateInvoiceNumber()
+
+      // Create invoice with items in a transaction
+      const newInvoice = await prisma.invoice.create({
+        data: {
+          userId: demoUserId,
+          clientId: validatedData.clientId,
+          invoiceNumber,
+          date: new Date(validatedData.date),
+          dueDate: new Date(validatedData.dueDate),
+          subtotal: validatedData.subtotal,
+          taxRate: validatedData.taxRate,
+          taxAmount: validatedData.taxAmount,
+          discountAmount: validatedData.discountAmount || 0,
+          shippingAmount: validatedData.shippingAmount || 0,
+          total: validatedData.total,
+          currency: validatedData.currency,
+          locale: validatedData.locale,
+          status: validatedData.status || 'DRAFT',
+          terms: validatedData.terms,
+          notes: validatedData.notes,
+          paymentInstructions: validatedData.paymentInstructions,
+          items: {
+            create: validatedData.items.map(item => ({
+              description: item.description,
+              quantity: item.quantity,
+              rate: item.rate,
+              amount: item.amount,
+              taxRate: item.taxRate || 0
+            }))
+          }
+        },
+        include: {
+          client: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          },
+          items: true
+        }
+      })
+
+      return NextResponse.json({ invoice: newInvoice }, { status: 201 })
+    } catch (dbError) {
+      console.error("Database error, falling back to demo mode:", dbError)
+      
+      // Fallback to demo mode
+      const generateUniqueInvoiceNumber = (): string => {
+        const timestamp = Date.now()
+        const randomNum = Math.floor(Math.random() * 1000)
+        return `INV-${timestamp}-${randomNum}`
+      }
+
+      const newInvoice = {
+        id: `demo-invoice-${Date.now()}`,
+        ...validatedData,
+        invoiceNumber: generateUniqueInvoiceNumber(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        client: {
+          id: validatedData.clientId,
+          name: validatedData.clientId === "demo-client-1" ? "Acme Corporation" : "Global Tech Solutions"
+        }
+      }
+
+      return NextResponse.json({ invoice: newInvoice }, { status: 201 })
+    }
   } catch (error) {
     console.error("Error creating invoice:", error)
     

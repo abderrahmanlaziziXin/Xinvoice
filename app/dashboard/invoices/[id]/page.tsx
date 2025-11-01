@@ -155,6 +155,8 @@ export default function InvoiceDetailPage() {
     setInvoice((prev) => (prev ? { ...prev, items: newItems } : null));
   };
 
+
+
   const addItem = () => {
     if (!invoice) return;
 
@@ -340,6 +342,34 @@ export default function InvoiceDetailPage() {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    if (!invoice) return;
+
+    try {
+      const response = await fetch(`/api/invoices/${invoice.id}/pdf`);
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `invoice-${invoice.invoiceNumber}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        success('PDF downloaded successfully');
+      } else {
+        const errorData = await response.json();
+        error(errorData.error || 'Failed to generate PDF');
+      }
+    } catch (err) {
+      console.error('Error downloading PDF:', err);
+      error('Failed to download PDF');
+    }
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -482,12 +512,20 @@ export default function InvoiceDetailPage() {
                     New Invoice
                   </Link>
 
-                  <button
-                    onClick={() => setIsEditing(true)}
+                  <Link
+                    href={`/dashboard/invoices/${invoiceId}/edit`}
                     className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                   >
                     <PencilIcon className="w-4 h-4 mr-2" />
                     Edit
+                  </Link>
+
+                  <button
+                    onClick={handleDownloadPDF}
+                    className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    <PrinterIcon className="w-4 h-4 mr-2" />
+                    Download PDF
                   </button>
 
                   {invoice.status === "DRAFT" && (

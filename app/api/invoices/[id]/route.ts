@@ -1,5 +1,6 @@
 ﻿import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { prisma } from '@/lib/prisma'
 
 const InvoiceItemSchema = z.object({
   description: z.string().min(1, 'Description is required'),
@@ -29,25 +30,63 @@ const InvoiceUpdateSchema = z.object({
   status: z.enum(['DRAFT', 'SENT', 'VIEWED', 'PAID', 'OVERDUE', 'CANCELLED']).default('DRAFT').optional()
 })
 
-// GET /api/invoices/[id] - Get single invoice (demo mode)
+// GET /api/invoices/[id] - Get single invoice
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    // Always return demo invoice data
-    const demoInvoice = {
-      id: params.id,
-      invoiceNumber: 'INV-001',
-      client: { 
-        id: 'demo-client-1', 
-        name: 'Acme Corporation',
-        email: 'contact@acme.com',
-        phone: '+1 (555) 123-4567',
-        address: '123 Business St, New York, NY 10001'
-      },
-      total: 1500.00,
-      status: 'PAID',
+    const demoUserId = "demo-user-1"
+
+    try {
+      // Try to fetch from database first
+      const invoice = await prisma.invoice.findFirst({
+        where: {
+          id: params.id,
+          userId: demoUserId
+        },
+        include: {
+          client: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              address: true
+            }
+          },
+          items: {
+            select: {
+              id: true,
+              description: true,
+              quantity: true,
+              rate: true,
+              amount: true,
+              taxRate: true
+            }
+          }
+        }
+      })
+
+      if (invoice) {
+        return NextResponse.json({ invoice })
+      }
+
+      // If not found in database, check if it's a demo invoice
+      if (params.id.startsWith('demo-invoice-')) {
+        // Return demo invoice data
+        const demoInvoice = {
+          id: params.id,
+          invoiceNumber: 'INV-001',
+          client: { 
+            id: 'demo-client-1', 
+            name: 'Acme Corporation',
+            email: 'contact@acme.com',
+            phone: '+1 (555) 123-4567',
+            address: '123 Business St, New York, NY 10001'
+          },
+          total: 1500.00,
+          status: 'PAID',
       date: new Date(Date.now() - 86400000).toISOString(),
       dueDate: new Date(Date.now() + 86400000 * 7).toISOString(),
       subtotal: 1350.00,
@@ -70,14 +109,57 @@ export async function GET(
       emailEvents: []
     }
 
-    return NextResponse.json({ invoice: demoInvoice })
+        return NextResponse.json({ invoice: demoInvoice })
+      }
+
+      return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
+    } catch (dbError) {
+      console.error("Database error, falling back to demo mode:", dbError)
+      
+      // Fallback demo invoice
+      const demoInvoice = {
+        id: params.id,
+        invoiceNumber: 'INV-001',
+        client: { 
+          id: 'demo-client-1', 
+          name: 'Acme Corporation',
+          email: 'contact@acme.com',
+          phone: '+1 (555) 123-4567',
+          address: '123 Business St, New York, NY 10001'
+        },
+        total: 1500.00,
+        status: 'PAID',
+        date: new Date(Date.now() - 86400000).toISOString(),
+        dueDate: new Date(Date.now() + 86400000 * 7).toISOString(),
+        subtotal: 1350.00,
+        taxAmount: 150.00,
+        taxRate: 0.1,
+        currency: 'USD',
+        locale: 'en-US',
+        createdAt: new Date().toISOString(),
+        items: [
+          {
+            id: 'item-1',
+            description: 'Web Development Services',
+            quantity: 20,
+            rate: 75.00,
+            amount: 1500.00,
+            taxRate: 0.1
+          }
+        ],
+        paymentEvents: [],
+        emailEvents: []
+      }
+
+      return NextResponse.json({ invoice: demoInvoice })
+    }
   } catch (error) {
     console.error('Error fetching invoice:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-// PUT /api/invoices/[id] - Update invoice (demo mode)
+// PUT /api/invoices/[id] - Update invoice
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -85,20 +167,103 @@ export async function PUT(
   try {
     const body = await request.json()
     const validatedData = InvoiceUpdateSchema.parse(body)
+    const demoUserId = "demo-user-1"
 
-    // For demo mode, return updated invoice with submitted data
-    const updatedInvoice = {
-      id: params.id,
-      ...validatedData,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      client: {
-        id: validatedData.clientId,
-        name: validatedData.clientId === 'demo-client-1' ? 'Acme Corporation' : 'Global Tech Solutions'
+    try {
+      // First, check if invoice exists
+      const existingInvoice = await prisma.invoice.findFirst({
+        where: {
+          id: params.id,
+          userId: demoUserId
+        }
+      })
+
+      if (!existingInvoice) {
+        return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
       }
-    }
 
-    return NextResponse.json({ invoice: updatedInvoice })
+      // Update invoice with items in a transaction
+      const updatedInvoice = await prisma.invoice.update({
+        where: { id: params.id },
+        data: {
+          clientId: validatedData.clientId,
+          date: new Date(validatedData.date),
+          dueDate: new Date(validatedData.dueDate),
+          subtotal: validatedData.subtotal,
+          taxRate: validatedData.taxRate,
+          taxAmount: validatedData.taxAmount,
+          discountAmount: validatedData.discountAmount || 0,
+          shippingAmount: validatedData.shippingAmount || 0,
+          total: validatedData.total,
+          currency: validatedData.currency,
+          locale: validatedData.locale,
+          status: validatedData.status || 'DRAFT',
+          terms: validatedData.terms,
+          notes: validatedData.notes,
+          paymentInstructions: validatedData.paymentInstructions,
+          
+          // Handle status-specific updates
+          ...(validatedData.status === 'SENT' && !existingInvoice.sentAt && {
+            sentAt: new Date(),
+            viewToken: !existingInvoice.viewToken ? `view_${Date.now()}_${Math.random().toString(36).substring(2, 15)}` : existingInvoice.viewToken
+          }),
+          ...(validatedData.status === 'PAID' && !existingInvoice.paidAt && {
+            paidAt: new Date()
+          }),
+          
+          // Update items
+          items: {
+            deleteMany: {}, // Delete existing items
+            create: validatedData.items.map(item => ({
+              description: item.description,
+              quantity: item.quantity,
+              rate: item.rate,
+              amount: item.amount,
+              taxRate: item.taxRate || 0
+            }))
+          }
+        },
+        include: {
+          client: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              address: true
+            }
+          },
+          items: {
+            select: {
+              id: true,
+              description: true,
+              quantity: true,
+              rate: true,
+              amount: true,
+              taxRate: true
+            }
+          }
+        }
+      })
+
+      return NextResponse.json({ invoice: updatedInvoice })
+    } catch (dbError) {
+      console.error("Database error, falling back to demo mode:", dbError)
+      
+      // Fallback to demo mode
+      const updatedInvoice = {
+        id: params.id,
+        ...validatedData,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        client: {
+          id: validatedData.clientId,
+          name: validatedData.clientId === 'demo-client-1' ? 'Acme Corporation' : 'Global Tech Solutions'
+        }
+      }
+
+      return NextResponse.json({ invoice: updatedInvoice })
+    }
   } catch (error) {
     console.error('Error updating invoice:', error)
     
