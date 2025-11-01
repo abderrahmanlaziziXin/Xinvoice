@@ -51,8 +51,18 @@ export default function ReportsPage() {
   const fetchReportData = useCallback(async () => {
     try {
       setIsLoading(true);
+      // Add timestamp to prevent caching
+      const timestamp = new Date().getTime();
       const response = await fetch(
-        `/api/reports?from=${dateRange.from}&to=${dateRange.to}`
+        `/api/reports?from=${dateRange.from}&to=${dateRange.to}&_t=${timestamp}`,
+        {
+          cache: "no-cache",
+          headers: {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+            Expires: "0",
+          },
+        }
       );
       if (response.ok) {
         const data = await response.json();
@@ -70,6 +80,39 @@ export default function ReportsPage() {
 
   useEffect(() => {
     fetchReportData();
+  }, [fetchReportData]);
+
+  // Add event listeners for refresh events
+  useEffect(() => {
+    const handleRefresh = () => {
+      console.log("Reports: Refreshing data due to external update");
+      fetchReportData();
+    };
+
+    // Listen for various update events
+    window.addEventListener("invoiceUpdated", handleRefresh);
+    window.addEventListener("clientUpdated", handleRefresh);
+    window.addEventListener("refreshReports", handleRefresh);
+    window.addEventListener("refreshDashboard", handleRefresh); // Also refresh when dashboard refreshes
+
+    // Also refresh when window gains focus (user comes back)
+    window.addEventListener("focus", handleRefresh);
+
+    // Listen for visibility change events
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        handleRefresh();
+      }
+    });
+
+    return () => {
+      window.removeEventListener("invoiceUpdated", handleRefresh);
+      window.removeEventListener("clientUpdated", handleRefresh);
+      window.removeEventListener("refreshReports", handleRefresh);
+      window.removeEventListener("refreshDashboard", handleRefresh);
+      window.removeEventListener("focus", handleRefresh);
+      document.removeEventListener("visibilitychange", handleRefresh);
+    };
   }, [fetchReportData]);
 
   // Demo mode - no authentication required
