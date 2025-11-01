@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Document,
   Page,
@@ -6,25 +6,25 @@ import {
   View,
   StyleSheet,
   Font,
-} from '@react-pdf/renderer';
+} from "@react-pdf/renderer";
 
 // Register fonts
 Font.register({
-  family: 'Helvetica',
-  src: 'https://fonts.gstatic.com/s/opensans/v34/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4gaVIGxA.woff2',
+  family: "Helvetica",
+  src: "https://fonts.gstatic.com/s/opensans/v34/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4gaVIGxA.woff2",
 });
 
 const styles = StyleSheet.create({
   page: {
-    flexDirection: 'column',
-    backgroundColor: '#FFFFFF',
+    flexDirection: "column",
+    backgroundColor: "#FFFFFF",
     padding: 40,
-    fontFamily: 'Helvetica',
+    fontFamily: "Helvetica",
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: 40,
   },
   companyInfo: {
@@ -32,30 +32,30 @@ const styles = StyleSheet.create({
   },
   companyName: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1f2937',
+    fontWeight: "bold",
+    color: "#1f2937",
     marginBottom: 8,
   },
   companyDetails: {
     fontSize: 10,
-    color: '#6b7280',
+    color: "#6b7280",
     lineHeight: 1.4,
   },
   invoiceTitle: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#3b82f6',
-    textAlign: 'right',
+    fontWeight: "bold",
+    color: "#3b82f6",
+    textAlign: "right",
     marginBottom: 8,
   },
   invoiceNumber: {
     fontSize: 14,
-    color: '#6b7280',
-    textAlign: 'right',
+    color: "#6b7280",
+    textAlign: "right",
   },
   invoiceDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 40,
   },
   billTo: {
@@ -63,146 +63,146 @@ const styles = StyleSheet.create({
   },
   invoiceInfo: {
     flex: 1,
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   sectionTitle: {
     fontSize: 12,
-    fontWeight: 'bold',
-    color: '#374151',
+    fontWeight: "bold",
+    color: "#374151",
     marginBottom: 8,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 1,
   },
   clientInfo: {
     fontSize: 11,
-    color: '#1f2937',
+    color: "#1f2937",
     lineHeight: 1.5,
   },
   dateInfo: {
     fontSize: 11,
-    color: '#1f2937',
-    textAlign: 'right',
+    color: "#1f2937",
+    textAlign: "right",
     lineHeight: 1.5,
   },
   table: {
     marginBottom: 30,
   },
   tableHeader: {
-    flexDirection: 'row',
-    backgroundColor: '#f3f4f6',
+    flexDirection: "row",
+    backgroundColor: "#f3f4f6",
     padding: 12,
     borderTopLeftRadius: 4,
     borderTopRightRadius: 4,
   },
   tableHeaderCell: {
     fontSize: 10,
-    fontWeight: 'bold',
-    color: '#374151',
-    textTransform: 'uppercase',
+    fontWeight: "bold",
+    color: "#374151",
+    textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   tableRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: "#e5e7eb",
     padding: 12,
     minHeight: 40,
   },
   tableCell: {
     fontSize: 11,
-    color: '#1f2937',
-    justifyContent: 'center',
+    color: "#1f2937",
+    justifyContent: "center",
   },
   description: {
     flex: 3,
   },
   quantity: {
     flex: 1,
-    textAlign: 'center',
+    textAlign: "center",
   },
   rate: {
     flex: 1.5,
-    textAlign: 'right',
+    textAlign: "right",
   },
   amount: {
     flex: 1.5,
-    textAlign: 'right',
+    textAlign: "right",
   },
   totals: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
     marginTop: 20,
   },
   totalRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     width: 200,
     paddingVertical: 4,
   },
   totalLabel: {
     fontSize: 11,
-    color: '#6b7280',
+    color: "#6b7280",
   },
   totalValue: {
     fontSize: 11,
-    color: '#1f2937',
+    color: "#1f2937",
   },
   grandTotalRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     width: 200,
     paddingVertical: 6,
     borderTopWidth: 2,
-    borderTopColor: '#3b82f6',
+    borderTopColor: "#3b82f6",
     marginTop: 8,
   },
   grandTotalLabel: {
     fontSize: 13,
-    fontWeight: 'bold',
-    color: '#1f2937',
+    fontWeight: "bold",
+    color: "#1f2937",
   },
   grandTotalValue: {
     fontSize: 13,
-    fontWeight: 'bold',
-    color: '#3b82f6',
+    fontWeight: "bold",
+    color: "#3b82f6",
   },
   footer: {
     marginTop: 40,
     paddingTop: 20,
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    borderTopColor: "#e5e7eb",
   },
   footerTitle: {
     fontSize: 12,
-    fontWeight: 'bold',
-    color: '#374151',
+    fontWeight: "bold",
+    color: "#374151",
     marginBottom: 8,
   },
   footerText: {
     fontSize: 10,
-    color: '#6b7280',
+    color: "#6b7280",
     lineHeight: 1.5,
     marginBottom: 12,
   },
   statusBadge: {
-    position: 'absolute',
+    position: "absolute",
     top: 40,
     right: 40,
-    backgroundColor: '#10b981',
-    color: '#ffffff',
-    padding: '6 12',
+    backgroundColor: "#10b981",
+    color: "#ffffff",
+    padding: "6 12",
     borderRadius: 4,
     fontSize: 10,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
+    fontWeight: "bold",
+    textTransform: "uppercase",
   },
   watermark: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%) rotate(-45deg)',
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%) rotate(-45deg)",
     fontSize: 60,
-    color: '#f3f4f6',
-    fontWeight: 'bold',
+    color: "#f3f4f6",
+    fontWeight: "bold",
     zIndex: -1,
   },
 });
@@ -256,46 +256,52 @@ interface InvoicePDFProps {
   isFreeTier?: boolean;
 }
 
-const formatCurrency = (amount: number, currency: string = 'USD') => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
+const formatCurrency = (amount: number, currency: string = "USD") => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
     currency: currency,
   }).format(amount);
 };
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 };
 
 const getStatusColor = (status: string) => {
   switch (status.toUpperCase()) {
-    case 'PAID':
-      return '#10b981';
-    case 'SENT':
-      return '#3b82f6';
-    case 'OVERDUE':
-      return '#ef4444';
-    case 'DRAFT':
-      return '#6b7280';
+    case "PAID":
+      return "#10b981";
+    case "SENT":
+      return "#3b82f6";
+    case "OVERDUE":
+      return "#ef4444";
+    case "DRAFT":
+      return "#6b7280";
     default:
-      return '#6b7280';
+      return "#6b7280";
   }
 };
 
-export const InvoicePDF = ({ invoice, isFreeTier = false }: InvoicePDFProps) => (
+export const InvoicePDF = ({
+  invoice,
+  isFreeTier = false,
+}: InvoicePDFProps) => (
   <Document>
     <Page size="A4" style={styles.page}>
       {/* Watermark for free tier */}
-      {isFreeTier && (
-        <Text style={styles.watermark}>XINVOICE DEMO</Text>
-      )}
+      {isFreeTier && <Text style={styles.watermark}>XINVOICE DEMO</Text>}
 
       {/* Status Badge */}
-      <View style={[styles.statusBadge, { backgroundColor: getStatusColor(invoice.status) }]}>
+      <View
+        style={[
+          styles.statusBadge,
+          { backgroundColor: getStatusColor(invoice.status) },
+        ]}
+      >
         <Text>{invoice.status}</Text>
       </View>
 
@@ -303,11 +309,12 @@ export const InvoicePDF = ({ invoice, isFreeTier = false }: InvoicePDFProps) => 
       <View style={styles.header}>
         <View style={styles.companyInfo}>
           <Text style={styles.companyName}>
-            {invoice.user?.companyName || invoice.user?.name || 'Your Company'}
+            {invoice.user?.companyName || invoice.user?.name || "Your Company"}
           </Text>
           <Text style={styles.companyDetails}>
             {invoice.user?.companyAddress && `${invoice.user.companyAddress}\n`}
-            {invoice.user?.companyPhone && `Phone: ${invoice.user.companyPhone}\n`}
+            {invoice.user?.companyPhone &&
+              `Phone: ${invoice.user.companyPhone}\n`}
             {invoice.user?.email && `Email: ${invoice.user.email}`}
           </Text>
         </View>
@@ -322,8 +329,8 @@ export const InvoicePDF = ({ invoice, isFreeTier = false }: InvoicePDFProps) => 
         <View style={styles.billTo}>
           <Text style={styles.sectionTitle}>Bill To</Text>
           <Text style={styles.clientInfo}>
-            {invoice.client?.name || 'Client Name'}
-            {'\n'}
+            {invoice.client?.name || "Client Name"}
+            {"\n"}
             {invoice.client?.address && `${invoice.client.address}\n`}
             {invoice.client?.email && `${invoice.client.email}\n`}
             {invoice.client?.phone && invoice.client.phone}
@@ -343,7 +350,9 @@ export const InvoicePDF = ({ invoice, isFreeTier = false }: InvoicePDFProps) => 
       <View style={styles.table}>
         {/* Table Header */}
         <View style={styles.tableHeader}>
-          <Text style={[styles.tableHeaderCell, styles.description]}>Description</Text>
+          <Text style={[styles.tableHeaderCell, styles.description]}>
+            Description
+          </Text>
           <Text style={[styles.tableHeaderCell, styles.quantity]}>Qty</Text>
           <Text style={[styles.tableHeaderCell, styles.rate]}>Rate</Text>
           <Text style={[styles.tableHeaderCell, styles.amount]}>Amount</Text>
@@ -352,8 +361,12 @@ export const InvoicePDF = ({ invoice, isFreeTier = false }: InvoicePDFProps) => 
         {/* Table Rows */}
         {invoice.items.map((item, index) => (
           <View key={index} style={styles.tableRow}>
-            <Text style={[styles.tableCell, styles.description]}>{item.description}</Text>
-            <Text style={[styles.tableCell, styles.quantity]}>{item.quantity}</Text>
+            <Text style={[styles.tableCell, styles.description]}>
+              {item.description}
+            </Text>
+            <Text style={[styles.tableCell, styles.quantity]}>
+              {item.quantity}
+            </Text>
             <Text style={[styles.tableCell, styles.rate]}>
               {formatCurrency(item.rate, invoice.currency)}
             </Text>
@@ -372,7 +385,7 @@ export const InvoicePDF = ({ invoice, isFreeTier = false }: InvoicePDFProps) => 
             {formatCurrency(invoice.subtotal, invoice.currency)}
           </Text>
         </View>
-        
+
         {invoice.discountAmount && invoice.discountAmount > 0 && (
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Discount:</Text>
@@ -381,7 +394,7 @@ export const InvoicePDF = ({ invoice, isFreeTier = false }: InvoicePDFProps) => 
             </Text>
           </View>
         )}
-        
+
         {invoice.shippingAmount && invoice.shippingAmount > 0 && (
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Shipping:</Text>
@@ -390,14 +403,16 @@ export const InvoicePDF = ({ invoice, isFreeTier = false }: InvoicePDFProps) => 
             </Text>
           </View>
         )}
-        
+
         <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Tax ({(invoice.taxRate * 100).toFixed(1)}%):</Text>
+          <Text style={styles.totalLabel}>
+            Tax ({(invoice.taxRate * 100).toFixed(1)}%):
+          </Text>
           <Text style={styles.totalValue}>
             {formatCurrency(invoice.taxAmount, invoice.currency)}
           </Text>
         </View>
-        
+
         <View style={styles.grandTotalRow}>
           <Text style={styles.grandTotalLabel}>Total:</Text>
           <Text style={styles.grandTotalValue}>
@@ -414,14 +429,14 @@ export const InvoicePDF = ({ invoice, isFreeTier = false }: InvoicePDFProps) => 
             <Text style={styles.footerText}>{invoice.terms}</Text>
           </>
         )}
-        
+
         {invoice.notes && (
           <>
             <Text style={styles.footerTitle}>Notes</Text>
             <Text style={styles.footerText}>{invoice.notes}</Text>
           </>
         )}
-        
+
         {invoice.paymentInstructions && (
           <>
             <Text style={styles.footerTitle}>Payment Instructions</Text>
@@ -430,7 +445,17 @@ export const InvoicePDF = ({ invoice, isFreeTier = false }: InvoicePDFProps) => 
         )}
 
         {isFreeTier && (
-          <Text style={[styles.footerText, { textAlign: 'center', marginTop: 20, fontWeight: 'bold', color: '#3b82f6' }]}>
+          <Text
+            style={[
+              styles.footerText,
+              {
+                textAlign: "center",
+                marginTop: 20,
+                fontWeight: "bold",
+                color: "#3b82f6",
+              },
+            ]}
+          >
             Generated with Xinvoice - Upgrade to Pro to remove this watermark
           </Text>
         )}

@@ -1,18 +1,18 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { 
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import {
   PencilIcon,
   CheckIcon,
   XMarkIcon,
   UserIcon,
   EnvelopeIcon,
   PhoneIcon,
-  BuildingOfficeIcon
-} from '@heroicons/react/24/outline';
-import { useToast } from '../../../../hooks/use-toast';
+  BuildingOfficeIcon,
+} from "@heroicons/react/24/outline";
+import { useToast } from "../../../../hooks/use-toast";
 
 interface Client {
   id: string;
@@ -47,12 +47,12 @@ export default function EditClientPage() {
         const data = await response.json();
         setClient(data.client);
       } else {
-        error('Failed to load client');
-        router.push('/dashboard/clients');
+        error("Failed to load client");
+        router.push("/dashboard/clients");
       }
     } catch (err) {
-      error('Failed to load client');
-      router.push('/dashboard/clients');
+      error("Failed to load client");
+      router.push("/dashboard/clients");
     } finally {
       setIsLoading(false);
     }
@@ -68,41 +68,43 @@ export default function EditClientPage() {
 
     // Basic validation
     if (!client.name.trim()) {
-      error('Client name is required');
+      error("Client name is required");
       return;
     }
 
     if (client.email && !isValidEmail(client.email)) {
-      error('Please enter a valid email address');
+      error("Please enter a valid email address");
       return;
     }
 
     setIsSaving(true);
     try {
       const response = await fetch(`/api/clients/${clientId}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name: client.name.trim(),
-          email: client.email?.trim() || null,
-          address: client.address?.trim() || null,
-          phone: client.phone?.trim() || null,
-          taxNumber: client.taxNumber?.trim() || null,
-          contactPerson: client.contactPerson?.trim() || null,
+          email: client.email?.trim() || "",
+          address: client.address?.trim() || "",
+          phone: client.phone?.trim() || "",
+          taxNumber: client.taxNumber?.trim() || "",
+          contactPerson: client.contactPerson?.trim() || "",
         }),
       });
 
       if (response.ok) {
-        success('Client updated successfully!');
+        const result = await response.json();
+        success("Client updated successfully!");
         router.push(`/dashboard/clients`);
       } else {
         const data = await response.json();
-        error(data.error || 'Failed to update client');
+        error(data.error || "Failed to update client");
       }
     } catch (err) {
-      error('Failed to update client');
+      console.error("Client save error:", err);
+      error("Failed to update client");
     } finally {
       setIsSaving(false);
     }
@@ -129,7 +131,7 @@ export default function EditClientPage() {
             Client not found
           </h1>
           <button
-            onClick={() => router.push('/dashboard/clients')}
+            onClick={() => router.push("/dashboard/clients")}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
             Back to Clients
@@ -158,10 +160,10 @@ export default function EditClientPage() {
                 Update client information and contact details
               </p>
             </div>
-            
+
             <div className="flex space-x-3">
               <button
-                onClick={() => router.push('/dashboard/clients')}
+                onClick={() => router.push("/dashboard/clients")}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
               >
                 <XMarkIcon className="w-4 h-4 mr-2" />
@@ -170,10 +172,19 @@ export default function EditClientPage() {
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                <CheckIcon className="w-4 h-4 mr-2" />
-                {isSaving ? 'Saving...' : 'Save Changes'}
+                {isSaving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <CheckIcon className="w-4 h-4 mr-2" />
+                    Save Changes
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -196,7 +207,7 @@ export default function EditClientPage() {
               <input
                 type="text"
                 value={client.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
+                onChange={(e) => handleInputChange("name", e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-lg"
                 placeholder="Enter client name"
                 required
@@ -211,8 +222,8 @@ export default function EditClientPage() {
               </label>
               <input
                 type="email"
-                value={client.email || ''}
-                onChange={(e) => handleInputChange('email', e.target.value)}
+                value={client.email || ""}
+                onChange={(e) => handleInputChange("email", e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 placeholder="client@example.com"
               />
@@ -226,8 +237,8 @@ export default function EditClientPage() {
               </label>
               <input
                 type="tel"
-                value={client.phone || ''}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
+                value={client.phone || ""}
+                onChange={(e) => handleInputChange("phone", e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 placeholder="+1 (555) 123-4567"
               />
@@ -240,8 +251,8 @@ export default function EditClientPage() {
                 Address
               </label>
               <textarea
-                value={client.address || ''}
-                onChange={(e) => handleInputChange('address', e.target.value)}
+                value={client.address || ""}
+                onChange={(e) => handleInputChange("address", e.target.value)}
                 rows={3}
                 className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 placeholder="123 Main Street&#10;City, State 12345&#10;Country"
@@ -256,8 +267,10 @@ export default function EditClientPage() {
               </label>
               <input
                 type="text"
-                value={client.contactPerson || ''}
-                onChange={(e) => handleInputChange('contactPerson', e.target.value)}
+                value={client.contactPerson || ""}
+                onChange={(e) =>
+                  handleInputChange("contactPerson", e.target.value)
+                }
                 className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Primary contact person"
               />
@@ -270,8 +283,8 @@ export default function EditClientPage() {
               </label>
               <input
                 type="text"
-                value={client.taxNumber || ''}
-                onChange={(e) => handleInputChange('taxNumber', e.target.value)}
+                value={client.taxNumber || ""}
+                onChange={(e) => handleInputChange("taxNumber", e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 placeholder="TAX123456789"
               />
@@ -282,7 +295,7 @@ export default function EditClientPage() {
           <div className="mt-8 pt-6 border-t border-gray-200">
             <div className="flex justify-end space-x-3">
               <button
-                onClick={() => router.push('/dashboard/clients')}
+                onClick={() => router.push("/dashboard/clients")}
                 className="px-6 py-3 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
               >
                 Cancel
@@ -290,9 +303,16 @@ export default function EditClientPage() {
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="px-6 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                className="px-6 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                {isSaving ? 'Saving...' : 'Save Changes'}
+                {isSaving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Saving...
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
               </button>
             </div>
           </div>

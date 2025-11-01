@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { 
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
   BuildingOfficeIcon,
   CurrencyDollarIcon,
   CogIcon,
@@ -11,8 +11,8 @@ import {
   PhoneIcon,
   GlobeAltIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon
-} from '@heroicons/react/24/outline';
+  ExclamationTriangleIcon,
+} from "@heroicons/react/24/outline";
 
 interface UserSettings {
   id: string;
@@ -35,7 +35,10 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchSettings();
@@ -43,15 +46,15 @@ export default function SettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('/api/settings');
+      const response = await fetch("/api/settings");
       if (response.ok) {
         const data = await response.json();
         setSettings(data.user);
       } else {
-        setMessage({ type: 'error', text: 'Failed to load settings' });
+        setMessage({ type: "error", text: "Failed to load settings" });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to load settings' });
+      setMessage({ type: "error", text: "Failed to load settings" });
     } finally {
       setIsLoading(false);
     }
@@ -61,32 +64,70 @@ export default function SettingsPage() {
     e.preventDefault();
     if (!settings) return;
 
+    // Basic validation
+    if (!settings.email.trim()) {
+      setMessage({ type: "error", text: "Email is required" });
+      return;
+    }
+
+    if (!settings.defaultCurrency) {
+      setMessage({ type: "error", text: "Default currency is required" });
+      return;
+    }
+
+    if (!settings.defaultLocale) {
+      setMessage({ type: "error", text: "Default locale is required" });
+      return;
+    }
+
     setIsSaving(true);
     setMessage(null);
 
     try {
-      const response = await fetch('/api/settings', {
-        method: 'PUT',
+      const response = await fetch("/api/settings", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(settings),
+        body: JSON.stringify({
+          ...settings,
+          name: settings.name?.trim() || null,
+          email: settings.email.trim(),
+          companyName: settings.companyName?.trim() || null,
+          companyAddress: settings.companyAddress?.trim() || null,
+          companyPhone: settings.companyPhone?.trim() || null,
+          website: settings.website?.trim() || null,
+          taxNumber: settings.taxNumber?.trim() || null,
+          defaultTerms: settings.defaultTerms?.trim() || null,
+        }),
       });
 
       if (response.ok) {
-        setMessage({ type: 'success', text: 'Settings saved successfully!' });
+        const result = await response.json();
+        setMessage({ type: "success", text: "Settings saved successfully!" });
+        // Update local state with the returned data
+        if (result.user) {
+          setSettings(result.user);
+        }
       } else {
         const data = await response.json();
-        setMessage({ type: 'error', text: data.error || 'Failed to save settings' });
+        setMessage({
+          type: "error",
+          text: data.error || "Failed to save settings",
+        });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to save settings' });
+      console.error("Settings save error:", error);
+      setMessage({ type: "error", text: "Failed to save settings" });
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleInputChange = (field: keyof UserSettings, value: string | number) => {
+  const handleInputChange = (
+    field: keyof UserSettings,
+    value: string | number
+  ) => {
     if (!settings) return;
     setSettings({ ...settings, [field]: value });
   };
@@ -119,21 +160,21 @@ export default function SettingsPage() {
   }
 
   const currencies = [
-    { code: 'USD', name: 'US Dollar' },
-    { code: 'EUR', name: 'Euro' },
-    { code: 'GBP', name: 'British Pound' },
-    { code: 'CAD', name: 'Canadian Dollar' },
-    { code: 'AUD', name: 'Australian Dollar' },
-    { code: 'JPY', name: 'Japanese Yen' },
+    { code: "USD", name: "US Dollar" },
+    { code: "EUR", name: "Euro" },
+    { code: "GBP", name: "British Pound" },
+    { code: "CAD", name: "Canadian Dollar" },
+    { code: "AUD", name: "Australian Dollar" },
+    { code: "JPY", name: "Japanese Yen" },
   ];
 
   const locales = [
-    { code: 'en-US', name: 'English (US)' },
-    { code: 'en-GB', name: 'English (UK)' },
-    { code: 'fr-FR', name: 'French' },
-    { code: 'de-DE', name: 'German' },
-    { code: 'es-ES', name: 'Spanish' },
-    { code: 'it-IT', name: 'Italian' },
+    { code: "en-US", name: "English (US)" },
+    { code: "en-GB", name: "English (UK)" },
+    { code: "fr-FR", name: "French" },
+    { code: "de-DE", name: "German" },
+    { code: "es-ES", name: "Spanish" },
+    { code: "it-IT", name: "Italian" },
   ];
 
   return (
@@ -160,13 +201,13 @@ export default function SettingsPage() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className={`mb-6 p-4 rounded-md border ${
-              message.type === 'success'
-                ? 'bg-green-50 border-green-200 text-green-800'
-                : 'bg-red-50 border-red-200 text-red-800'
+              message.type === "success"
+                ? "bg-green-50 border-green-200 text-green-800"
+                : "bg-red-50 border-red-200 text-red-800"
             }`}
           >
             <div className="flex items-center">
-              {message.type === 'success' ? (
+              {message.type === "success" ? (
                 <CheckCircleIcon className="w-5 h-5 mr-2" />
               ) : (
                 <ExclamationTriangleIcon className="w-5 h-5 mr-2" />
@@ -196,8 +237,8 @@ export default function SettingsPage() {
                 </label>
                 <input
                   type="text"
-                  value={settings.name || ''}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  value={settings.name || ""}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Your full name"
                 />
@@ -212,7 +253,7 @@ export default function SettingsPage() {
                   <input
                     type="email"
                     value={settings.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                     placeholder="your@email.com"
                   />
@@ -225,8 +266,10 @@ export default function SettingsPage() {
                 </label>
                 <input
                   type="text"
-                  value={settings.companyName || ''}
-                  onChange={(e) => handleInputChange('companyName', e.target.value)}
+                  value={settings.companyName || ""}
+                  onChange={(e) =>
+                    handleInputChange("companyName", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Your Company LLC"
                 />
@@ -240,8 +283,10 @@ export default function SettingsPage() {
                   <PhoneIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                   <input
                     type="tel"
-                    value={settings.companyPhone || ''}
-                    onChange={(e) => handleInputChange('companyPhone', e.target.value)}
+                    value={settings.companyPhone || ""}
+                    onChange={(e) =>
+                      handleInputChange("companyPhone", e.target.value)
+                    }
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                     placeholder="+1 (555) 123-4567"
                   />
@@ -253,8 +298,10 @@ export default function SettingsPage() {
                   Company Address
                 </label>
                 <textarea
-                  value={settings.companyAddress || ''}
-                  onChange={(e) => handleInputChange('companyAddress', e.target.value)}
+                  value={settings.companyAddress || ""}
+                  onChange={(e) =>
+                    handleInputChange("companyAddress", e.target.value)
+                  }
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   placeholder="123 Main Street&#10;City, State 12345&#10;Country"
@@ -269,8 +316,10 @@ export default function SettingsPage() {
                   <GlobeAltIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                   <input
                     type="url"
-                    value={settings.website || ''}
-                    onChange={(e) => handleInputChange('website', e.target.value)}
+                    value={settings.website || ""}
+                    onChange={(e) =>
+                      handleInputChange("website", e.target.value)
+                    }
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                     placeholder="https://yourcompany.com"
                   />
@@ -283,8 +332,10 @@ export default function SettingsPage() {
                 </label>
                 <input
                   type="text"
-                  value={settings.taxNumber || ''}
-                  onChange={(e) => handleInputChange('taxNumber', e.target.value)}
+                  value={settings.taxNumber || ""}
+                  onChange={(e) =>
+                    handleInputChange("taxNumber", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   placeholder="TAX123456789"
                 />
@@ -313,7 +364,9 @@ export default function SettingsPage() {
                   <CurrencyDollarIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                   <select
                     value={settings.defaultCurrency}
-                    onChange={(e) => handleInputChange('defaultCurrency', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("defaultCurrency", e.target.value)
+                    }
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   >
                     {currencies.map((currency) => (
@@ -331,7 +384,9 @@ export default function SettingsPage() {
                 </label>
                 <select
                   value={settings.defaultLocale}
-                  onChange={(e) => handleInputChange('defaultLocale', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("defaultLocale", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 >
                   {locales.map((locale) => (
@@ -352,7 +407,12 @@ export default function SettingsPage() {
                   max="100"
                   step="0.01"
                   value={settings.defaultTaxRate * 100}
-                  onChange={(e) => handleInputChange('defaultTaxRate', parseFloat(e.target.value) / 100)}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "defaultTaxRate",
+                      parseFloat(e.target.value) / 100
+                    )
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   placeholder="8.00"
                 />
@@ -364,8 +424,10 @@ export default function SettingsPage() {
                 Default Terms & Conditions
               </label>
               <textarea
-                value={settings.defaultTerms || ''}
-                onChange={(e) => handleInputChange('defaultTerms', e.target.value)}
+                value={settings.defaultTerms || ""}
+                onChange={(e) =>
+                  handleInputChange("defaultTerms", e.target.value)
+                }
                 rows={4}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Payment is due within 30 days of invoice date. Late payments may incur additional fees."
@@ -393,17 +455,20 @@ export default function SettingsPage() {
               </div>
 
               <div className="bg-gray-50 rounded-lg p-4">
-                <div className="text-sm text-gray-600 mb-1">Invoices Created</div>
+                <div className="text-sm text-gray-600 mb-1">
+                  Invoices Created
+                </div>
                 <div className="text-xl font-semibold text-gray-900">
                   {settings.invoiceCount}
                 </div>
               </div>
             </div>
 
-            {settings.plan === 'free' && (
+            {settings.plan === "free" && (
               <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  You're on the free plan. Upgrade to Pro for unlimited invoices and advanced features.
+                  You're on the free plan. Upgrade to Pro for unlimited invoices
+                  and advanced features.
                 </p>
                 <button className="mt-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
                   Upgrade to Pro
@@ -424,7 +489,14 @@ export default function SettingsPage() {
               disabled={isSaving}
               className="px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSaving ? 'Saving...' : 'Save Settings'}
+              {isSaving ? (
+                <>
+                  <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Saving...
+                </>
+              ) : (
+                "Save Settings"
+              )}
             </button>
           </motion.div>
         </form>

@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { 
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import {
   PencilIcon,
   CheckIcon,
   XMarkIcon,
   TrashIcon,
-  PlusIcon
-} from '@heroicons/react/24/outline';
-import { useToast } from '../../../../hooks/use-toast';
-import { DateInput } from '../../../../components/date-input';
+  PlusIcon,
+} from "@heroicons/react/24/outline";
+import { useToast } from "../../../../hooks/use-toast";
+import { DateInput } from "../../../../components/date-input";
 
 interface InvoiceItem {
   id?: string;
@@ -72,17 +72,17 @@ export default function EditInvoicePage() {
         // Format dates for input fields
         const formattedInvoice = {
           ...data.invoice,
-          date: new Date(data.invoice.date).toISOString().split('T')[0],
-          dueDate: new Date(data.invoice.dueDate).toISOString().split('T')[0],
+          date: new Date(data.invoice.date).toISOString().split("T")[0],
+          dueDate: new Date(data.invoice.dueDate).toISOString().split("T")[0],
         };
         setInvoice(formattedInvoice);
       } else {
-        error('Failed to load invoice');
-        router.push('/dashboard/invoices');
+        error("Failed to load invoice");
+        router.push("/dashboard/invoices");
       }
     } catch (err) {
-      error('Failed to load invoice');
-      router.push('/dashboard/invoices');
+      error("Failed to load invoice");
+      router.push("/dashboard/invoices");
     } finally {
       setIsLoading(false);
     }
@@ -90,13 +90,13 @@ export default function EditInvoicePage() {
 
   const fetchClients = async () => {
     try {
-      const response = await fetch('/api/clients');
+      const response = await fetch("/api/clients");
       if (response.ok) {
         const data = await response.json();
         setClients(data.clients || []);
       }
     } catch (err) {
-      console.error('Failed to fetch clients:', err);
+      console.error("Failed to fetch clients:", err);
     }
   };
 
@@ -105,21 +105,25 @@ export default function EditInvoicePage() {
     setInvoice({ ...invoice, [field]: value });
   };
 
-  const handleItemChange = (index: number, field: keyof InvoiceItem, value: any) => {
+  const handleItemChange = (
+    index: number,
+    field: keyof InvoiceItem,
+    value: any
+  ) => {
     if (!invoice) return;
     const newItems = [...invoice.items];
     newItems[index] = { ...newItems[index], [field]: value };
-    
+
     // Recalculate amount for this item
-    if (field === 'quantity' || field === 'rate') {
+    if (field === "quantity" || field === "rate") {
       newItems[index].amount = newItems[index].quantity * newItems[index].rate;
     }
-    
+
     // Recalculate totals
     const subtotal = newItems.reduce((sum, item) => sum + item.amount, 0);
     const taxAmount = subtotal * invoice.taxRate;
     const total = subtotal + taxAmount;
-    
+
     setInvoice({
       ...invoice,
       items: newItems,
@@ -132,7 +136,7 @@ export default function EditInvoicePage() {
   const addItem = () => {
     if (!invoice) return;
     const newItem: InvoiceItem = {
-      description: '',
+      description: "",
       quantity: 1,
       rate: 0,
       amount: 0,
@@ -149,7 +153,7 @@ export default function EditInvoicePage() {
     const subtotal = newItems.reduce((sum, item) => sum + item.amount, 0);
     const taxAmount = subtotal * invoice.taxRate;
     const total = subtotal + taxAmount;
-    
+
     setInvoice({
       ...invoice,
       items: newItems,
@@ -162,43 +166,78 @@ export default function EditInvoicePage() {
   const handleSave = async () => {
     if (!invoice) return;
 
+    // Validation
+    if (!invoice.clientId) {
+      error("Please select a client");
+      return;
+    }
+
+    if (!invoice.items.length) {
+      error("Please add at least one item");
+      return;
+    }
+
+    // Validate all items have required fields
+    for (let i = 0; i < invoice.items.length; i++) {
+      const item = invoice.items[i];
+      if (!item.description.trim()) {
+        error(`Item ${i + 1} description is required`);
+        return;
+      }
+      if (item.quantity <= 0) {
+        error(`Item ${i + 1} quantity must be greater than 0`);
+        return;
+      }
+      if (item.rate <= 0) {
+        error(`Item ${i + 1} rate must be greater than 0`);
+        return;
+      }
+    }
+
     setIsSaving(true);
     try {
       const response = await fetch(`/api/invoices/${invoiceId}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           clientId: invoice.clientId,
+          invoiceNumber: invoice.invoiceNumber,
           date: invoice.date,
           dueDate: invoice.dueDate,
           items: invoice.items,
+          subtotal: invoice.subtotal,
           taxRate: invoice.taxRate,
+          taxAmount: invoice.taxAmount,
+          total: invoice.total,
           notes: invoice.notes,
           terms: invoice.terms,
           currency: invoice.currency,
+          locale: invoice.currency === "USD" ? "en-US" : "en-GB",
         }),
       });
 
       if (response.ok) {
-        success('Invoice updated successfully!');
+        const result = await response.json();
+        success("Invoice updated successfully!");
         router.push(`/dashboard/invoices/${invoiceId}`);
       } else {
         const data = await response.json();
-        error(data.error || 'Failed to update invoice');
+        error(data.error || "Failed to update invoice");
       }
     } catch (err) {
-      error('Failed to update invoice');
+      console.error("Save error:", err);
+      error("Failed to update invoice");
     } finally {
       setIsSaving(false);
     }
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: invoice?.currency || 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: invoice?.currency || "USD",
     }).format(amount);
   };
 
@@ -218,7 +257,7 @@ export default function EditInvoicePage() {
             Invoice not found
           </h1>
           <button
-            onClick={() => router.push('/dashboard/invoices')}
+            onClick={() => router.push("/dashboard/invoices")}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
             Back to Invoices
@@ -247,7 +286,7 @@ export default function EditInvoicePage() {
                 Modify invoice details and items
               </p>
             </div>
-            
+
             <div className="flex space-x-3">
               <button
                 onClick={() => router.push(`/dashboard/invoices/${invoiceId}`)}
@@ -259,10 +298,19 @@ export default function EditInvoicePage() {
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                <CheckIcon className="w-4 h-4 mr-2" />
-                {isSaving ? 'Saving...' : 'Save Changes'}
+                {isSaving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <CheckIcon className="w-4 h-4 mr-2" />
+                    Save Changes
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -278,8 +326,10 @@ export default function EditInvoicePage() {
               transition={{ delay: 0.1 }}
               className="bg-white shadow-lg rounded-lg p-6"
             >
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Invoice Details</h2>
-              
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                Invoice Details
+              </h2>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -287,7 +337,9 @@ export default function EditInvoicePage() {
                   </label>
                   <select
                     value={invoice.clientId}
-                    onChange={(e) => handleInputChange('clientId', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("clientId", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="">Select a client</option>
@@ -305,7 +357,9 @@ export default function EditInvoicePage() {
                   </label>
                   <select
                     value={invoice.currency}
-                    onChange={(e) => handleInputChange('currency', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("currency", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="USD">USD - US Dollar</option>
@@ -318,7 +372,7 @@ export default function EditInvoicePage() {
                   <DateInput
                     label="Invoice Date"
                     value={invoice.date}
-                    onChange={(date: string) => handleInputChange('date', date)}
+                    onChange={(date: string) => handleInputChange("date", date)}
                     required
                   />
                 </div>
@@ -327,7 +381,9 @@ export default function EditInvoicePage() {
                   <DateInput
                     label="Due Date"
                     value={invoice.dueDate}
-                    onChange={(date: string) => handleInputChange('dueDate', date)}
+                    onChange={(date: string) =>
+                      handleInputChange("dueDate", date)
+                    }
                     required
                   />
                 </div>
@@ -354,7 +410,10 @@ export default function EditInvoicePage() {
 
               <div className="space-y-4">
                 {invoice.items.map((item, index) => (
-                  <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                  <div
+                    key={index}
+                    className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end"
+                  >
                     <div className="md:col-span-5">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Description
@@ -362,7 +421,9 @@ export default function EditInvoicePage() {
                       <input
                         type="text"
                         value={item.description}
-                        onChange={(e) => handleItemChange(index, 'description', e.target.value)}
+                        onChange={(e) =>
+                          handleItemChange(index, "description", e.target.value)
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Item description"
                       />
@@ -376,7 +437,13 @@ export default function EditInvoicePage() {
                         min="0"
                         step="0.01"
                         value={item.quantity}
-                        onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
+                        onChange={(e) =>
+                          handleItemChange(
+                            index,
+                            "quantity",
+                            parseFloat(e.target.value) || 0
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
@@ -389,7 +456,13 @@ export default function EditInvoicePage() {
                         min="0"
                         step="0.01"
                         value={item.rate}
-                        onChange={(e) => handleItemChange(index, 'rate', parseFloat(e.target.value) || 0)}
+                        onChange={(e) =>
+                          handleItemChange(
+                            index,
+                            "rate",
+                            parseFloat(e.target.value) || 0
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
@@ -421,16 +494,18 @@ export default function EditInvoicePage() {
               transition={{ delay: 0.3 }}
               className="bg-white shadow-lg rounded-lg p-6"
             >
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Additional Information</h2>
-              
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                Additional Information
+              </h2>
+
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Notes
                   </label>
                   <textarea
-                    value={invoice.notes || ''}
-                    onChange={(e) => handleInputChange('notes', e.target.value)}
+                    value={invoice.notes || ""}
+                    onChange={(e) => handleInputChange("notes", e.target.value)}
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Internal notes or additional information"
@@ -442,8 +517,8 @@ export default function EditInvoicePage() {
                     Terms & Conditions
                   </label>
                   <textarea
-                    value={invoice.terms || ''}
-                    onChange={(e) => handleInputChange('terms', e.target.value)}
+                    value={invoice.terms || ""}
+                    onChange={(e) => handleInputChange("terms", e.target.value)}
                     rows={4}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Payment terms and conditions"
@@ -461,14 +536,18 @@ export default function EditInvoicePage() {
               transition={{ delay: 0.4 }}
               className="bg-white shadow-lg rounded-lg p-6 sticky top-8"
             >
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Summary</h2>
-              
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                Summary
+              </h2>
+
               <div className="space-y-4">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal:</span>
-                  <span className="font-medium">{formatCurrency(invoice.subtotal)}</span>
+                  <span className="font-medium">
+                    {formatCurrency(invoice.subtotal)}
+                  </span>
                 </div>
-                
+
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-gray-600">Tax Rate:</span>
@@ -480,7 +559,8 @@ export default function EditInvoicePage() {
                         step="0.01"
                         value={invoice.taxRate * 100}
                         onChange={(e) => {
-                          const newTaxRate = parseFloat(e.target.value) / 100 || 0;
+                          const newTaxRate =
+                            parseFloat(e.target.value) / 100 || 0;
                           const taxAmount = invoice.subtotal * newTaxRate;
                           const total = invoice.subtotal + taxAmount;
                           setInvoice({
@@ -497,14 +577,20 @@ export default function EditInvoicePage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Tax Amount:</span>
-                    <span className="font-medium">{formatCurrency(invoice.taxAmount)}</span>
+                    <span className="font-medium">
+                      {formatCurrency(invoice.taxAmount)}
+                    </span>
                   </div>
                 </div>
-                
+
                 <div className="pt-4 border-t border-gray-200">
                   <div className="flex justify-between">
-                    <span className="text-lg font-semibold text-gray-900">Total:</span>
-                    <span className="text-lg font-bold text-blue-600">{formatCurrency(invoice.total)}</span>
+                    <span className="text-lg font-semibold text-gray-900">
+                      Total:
+                    </span>
+                    <span className="text-lg font-bold text-blue-600">
+                      {formatCurrency(invoice.total)}
+                    </span>
                   </div>
                 </div>
               </div>

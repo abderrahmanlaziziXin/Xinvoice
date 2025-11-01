@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { 
-  PrinterIcon, 
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { motion } from "framer-motion";
+import {
+  PrinterIcon,
   ArrowDownTrayIcon,
   CreditCardIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
-  ClockIcon
-} from '@heroicons/react/24/outline';
+  ClockIcon,
+} from "@heroicons/react/24/outline";
 
 interface Invoice {
   id: string;
@@ -64,10 +64,10 @@ export default function PublicInvoicePage() {
         const data = await response.json();
         setInvoice(data.invoice);
       } else {
-        setError('Invoice not found or access denied');
+        setError("Invoice not found or access denied");
       }
     } catch (err) {
-      setError('Failed to load invoice');
+      setError("Failed to load invoice");
     } finally {
       setIsLoading(false);
     }
@@ -79,27 +79,27 @@ export default function PublicInvoicePage() {
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
         a.download = `invoice-${invoice?.invoiceNumber}.pdf`;
         a.click();
         window.URL.revokeObjectURL(url);
       }
     } catch (err) {
-      console.error('Failed to download PDF:', err);
+      console.error("Failed to download PDF:", err);
     }
   };
 
   const handlePayNow = async () => {
-    if (invoice?.status === 'PAID') {
+    if (invoice?.status === "PAID") {
       return;
     }
 
     try {
-      const response = await fetch('/api/payment/create-session', {
-        method: 'POST',
+      const response = await fetch("/api/payment/create-session", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           invoiceId: invoice?.id,
@@ -112,48 +112,48 @@ export default function PublicInvoicePage() {
         // Redirect to Stripe Checkout
         window.location.href = data.url;
       } else {
-        alert('Failed to create payment session. Please try again.');
+        alert("Failed to create payment session. Please try again.");
       }
     } catch (error) {
-      console.error('Payment error:', error);
-      alert('Payment initialization failed. Please try again.');
+      console.error("Payment error:", error);
+      alert("Payment initialization failed. Please try again.");
     }
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: invoice?.currency || 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: invoice?.currency || "USD",
     }).format(amount);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PAID':
-        return 'bg-green-100 text-green-800';
-      case 'OVERDUE':
-        return 'bg-red-100 text-red-800';
-      case 'SENT':
-      case 'VIEWED':
-        return 'bg-blue-100 text-blue-800';
+      case "PAID":
+        return "bg-green-100 text-green-800";
+      case "OVERDUE":
+        return "bg-red-100 text-red-800";
+      case "SENT":
+      case "VIEWED":
+        return "bg-blue-100 text-blue-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'PAID':
+      case "PAID":
         return <CheckCircleIcon className="w-5 h-5" />;
-      case 'OVERDUE':
+      case "OVERDUE":
         return <ExclamationTriangleIcon className="w-5 h-5" />;
       default:
         return <ClockIcon className="w-5 h-5" />;
@@ -174,7 +174,7 @@ export default function PublicInvoicePage() {
         <div className="text-center">
           <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-500 mb-4" />
           <h1 className="text-xl font-semibold text-gray-900 mb-2">
-            {error || 'Invoice not found'}
+            {error || "Invoice not found"}
           </h1>
           <p className="text-gray-600">
             The invoice you're looking for doesn't exist or has been removed.
@@ -184,7 +184,8 @@ export default function PublicInvoicePage() {
     );
   }
 
-  const isOverdue = new Date(invoice.dueDate) < new Date() && invoice.status !== 'PAID';
+  const isOverdue =
+    new Date(invoice.dueDate) < new Date() && invoice.status !== "PAID";
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -204,14 +205,18 @@ export default function PublicInvoicePage() {
                 From {invoice.user.companyName || invoice.user.name}
               </p>
             </div>
-            
+
             <div className="mt-4 md:mt-0 flex items-center space-x-4">
-              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(invoice.status)}`}>
+              <span
+                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                  invoice.status
+                )}`}
+              >
                 {getStatusIcon(invoice.status)}
                 <span className="ml-2">{invoice.status}</span>
               </span>
-              
-              {invoice.status !== 'PAID' && (
+
+              {invoice.status !== "PAID" && (
                 <button
                   onClick={handlePayNow}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
@@ -220,7 +225,7 @@ export default function PublicInvoicePage() {
                   Pay Now
                 </button>
               )}
-              
+
               <button
                 onClick={handleDownloadPDF}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
@@ -240,7 +245,8 @@ export default function PublicInvoicePage() {
                     Payment Overdue
                   </h3>
                   <p className="text-sm text-red-700 mt-1">
-                    This invoice was due on {formatDate(invoice.dueDate)}. Please make payment as soon as possible.
+                    This invoice was due on {formatDate(invoice.dueDate)}.
+                    Please make payment as soon as possible.
                   </p>
                 </div>
               </div>
@@ -260,16 +266,20 @@ export default function PublicInvoicePage() {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">From</h3>
               <div className="text-gray-600">
-                <p className="font-medium">{invoice.user.companyName || invoice.user.name}</p>
+                <p className="font-medium">
+                  {invoice.user.companyName || invoice.user.name}
+                </p>
                 {invoice.user.companyAddress && (
-                  <p className="mt-1 whitespace-pre-line">{invoice.user.companyAddress}</p>
+                  <p className="mt-1 whitespace-pre-line">
+                    {invoice.user.companyAddress}
+                  </p>
                 )}
                 {invoice.user.companyPhone && (
                   <p className="mt-1">{invoice.user.companyPhone}</p>
                 )}
               </div>
             </div>
-            
+
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">To</h3>
               <div className="text-gray-600">
@@ -278,7 +288,9 @@ export default function PublicInvoicePage() {
                   <p className="mt-1">{invoice.client.email}</p>
                 )}
                 {invoice.client.address && (
-                  <p className="mt-1 whitespace-pre-line">{invoice.client.address}</p>
+                  <p className="mt-1 whitespace-pre-line">
+                    {invoice.client.address}
+                  </p>
                 )}
               </div>
             </div>
@@ -288,17 +300,25 @@ export default function PublicInvoicePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 pb-8 border-b border-gray-200">
             <div>
               <p className="text-sm font-medium text-gray-500">Invoice Date</p>
-              <p className="text-lg font-semibold text-gray-900">{formatDate(invoice.date)}</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {formatDate(invoice.date)}
+              </p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Due Date</p>
-              <p className={`text-lg font-semibold ${isOverdue ? 'text-red-600' : 'text-gray-900'}`}>
+              <p
+                className={`text-lg font-semibold ${
+                  isOverdue ? "text-red-600" : "text-gray-900"
+                }`}
+              >
                 {formatDate(invoice.dueDate)}
               </p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Amount Due</p>
-              <p className="text-2xl font-bold text-blue-600">{formatCurrency(invoice.total)}</p>
+              <p className="text-2xl font-bold text-blue-600">
+                {formatCurrency(invoice.total)}
+              </p>
             </div>
           </div>
 
@@ -309,19 +329,33 @@ export default function PublicInvoicePage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 text-sm font-medium text-gray-500">Description</th>
-                    <th className="text-right py-3 text-sm font-medium text-gray-500">Qty</th>
-                    <th className="text-right py-3 text-sm font-medium text-gray-500">Rate</th>
-                    <th className="text-right py-3 text-sm font-medium text-gray-500">Amount</th>
+                    <th className="text-left py-3 text-sm font-medium text-gray-500">
+                      Description
+                    </th>
+                    <th className="text-right py-3 text-sm font-medium text-gray-500">
+                      Qty
+                    </th>
+                    <th className="text-right py-3 text-sm font-medium text-gray-500">
+                      Rate
+                    </th>
+                    <th className="text-right py-3 text-sm font-medium text-gray-500">
+                      Amount
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {invoice.items.map((item, index) => (
                     <tr key={index} className="border-b border-gray-100">
                       <td className="py-4 text-gray-900">{item.description}</td>
-                      <td className="py-4 text-right text-gray-600">{item.quantity}</td>
-                      <td className="py-4 text-right text-gray-600">{formatCurrency(item.rate)}</td>
-                      <td className="py-4 text-right font-medium text-gray-900">{formatCurrency(item.amount)}</td>
+                      <td className="py-4 text-right text-gray-600">
+                        {item.quantity}
+                      </td>
+                      <td className="py-4 text-right text-gray-600">
+                        {formatCurrency(item.rate)}
+                      </td>
+                      <td className="py-4 text-right font-medium text-gray-900">
+                        {formatCurrency(item.amount)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -354,14 +388,22 @@ export default function PublicInvoicePage() {
             <div className="mt-8 pt-6 border-t border-gray-200">
               {invoice.notes && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Notes</h4>
-                  <p className="text-gray-600 whitespace-pre-line">{invoice.notes}</p>
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">
+                    Notes
+                  </h4>
+                  <p className="text-gray-600 whitespace-pre-line">
+                    {invoice.notes}
+                  </p>
                 </div>
               )}
               {invoice.terms && (
                 <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Terms</h4>
-                  <p className="text-gray-600 whitespace-pre-line">{invoice.terms}</p>
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">
+                    Terms
+                  </h4>
+                  <p className="text-gray-600 whitespace-pre-line">
+                    {invoice.terms}
+                  </p>
                 </div>
               )}
             </div>

@@ -155,8 +155,6 @@ export default function InvoiceDetailPage() {
     setInvoice((prev) => (prev ? { ...prev, items: newItems } : null));
   };
 
-
-
   const addItem = () => {
     if (!invoice) return;
 
@@ -347,26 +345,26 @@ export default function InvoiceDetailPage() {
 
     try {
       const response = await fetch(`/api/invoices/${invoice.id}/pdf`);
-      
+
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
+        const a = document.createElement("a");
+        a.style.display = "none";
         a.href = url;
         a.download = `invoice-${invoice.invoiceNumber}.pdf`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        success('PDF downloaded successfully');
+        success("PDF downloaded successfully");
       } else {
         const errorData = await response.json();
-        error(errorData.error || 'Failed to generate PDF');
+        error(errorData.error || "Failed to generate PDF");
       }
     } catch (err) {
-      console.error('Error downloading PDF:', err);
-      error('Failed to download PDF');
+      console.error("Error downloading PDF:", err);
+      error("Failed to download PDF");
     }
   };
 

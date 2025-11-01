@@ -1,22 +1,22 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { 
+import { useState, useEffect } from "react";
+import { useParams, useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
+import {
   CheckCircleIcon,
   ArrowDownTrayIcon,
   HomeIcon,
-  ExclamationTriangleIcon
-} from '@heroicons/react/24/outline';
-import Link from 'next/link';
+  ExclamationTriangleIcon,
+} from "@heroicons/react/24/outline";
+import Link from "next/link";
 
 export default function PaymentSuccessPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const token = params.token as string;
-  const sessionId = searchParams.get('session_id');
-  
+  const sessionId = searchParams.get("session_id");
+
   const [invoice, setInvoice] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,10 +34,10 @@ export default function PaymentSuccessPage() {
         const data = await response.json();
         setInvoice(data.invoice);
       } else {
-        setError('Invoice not found');
+        setError("Invoice not found");
       }
     } catch (err) {
-      setError('Failed to load invoice');
+      setError("Failed to load invoice");
     } finally {
       setIsLoading(false);
     }
@@ -49,21 +49,21 @@ export default function PaymentSuccessPage() {
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
         a.download = `invoice-${invoice?.invoiceNumber}.pdf`;
         a.click();
         window.URL.revokeObjectURL(url);
       }
     } catch (err) {
-      console.error('Failed to download PDF:', err);
+      console.error("Failed to download PDF:", err);
     }
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: invoice?.currency || 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: invoice?.currency || "USD",
     }).format(amount);
   };
 
@@ -81,7 +81,7 @@ export default function PaymentSuccessPage() {
         <div className="max-w-md mx-auto text-center">
           <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-500 mb-4" />
           <h1 className="text-xl font-semibold text-gray-900 mb-2">
-            {error || 'Invoice not found'}
+            {error || "Invoice not found"}
           </h1>
           <p className="text-gray-600 mb-6">
             We couldn't find the invoice you're looking for.
@@ -110,15 +110,15 @@ export default function PaymentSuccessPage() {
           <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
             <CheckCircleIcon className="h-8 w-8 text-green-600" />
           </div>
-          
+
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Payment Successful!
           </h1>
-          
+
           <p className="text-lg text-gray-600 mb-6">
             Thank you for your payment. Your invoice has been marked as paid.
           </p>
-          
+
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium text-green-800">
@@ -138,7 +138,7 @@ export default function PaymentSuccessPage() {
               <ArrowDownTrayIcon className="w-5 h-5 mr-2" />
               Download Receipt
             </button>
-            
+
             <Link
               href={`/invoice/${token}`}
               className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -158,34 +158,38 @@ export default function PaymentSuccessPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Payment Details
           </h2>
-          
+
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-gray-600">Invoice Number:</span>
-              <span className="font-medium text-gray-900">{invoice.invoiceNumber}</span>
+              <span className="font-medium text-gray-900">
+                {invoice.invoiceNumber}
+              </span>
             </div>
-            
+
             <div className="flex justify-between">
               <span className="text-gray-600">Amount Paid:</span>
-              <span className="font-medium text-gray-900">{formatCurrency(invoice.total)}</span>
+              <span className="font-medium text-gray-900">
+                {formatCurrency(invoice.total)}
+              </span>
             </div>
-            
+
             <div className="flex justify-between">
               <span className="text-gray-600">Payment Date:</span>
               <span className="font-medium text-gray-900">
-                {new Date().toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
+                {new Date().toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
                 })}
               </span>
             </div>
-            
+
             <div className="flex justify-between">
               <span className="text-gray-600">Payment Method:</span>
               <span className="font-medium text-gray-900">Credit Card</span>
             </div>
-            
+
             <div className="flex justify-between">
               <span className="text-gray-600">Status:</span>
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -197,7 +201,9 @@ export default function PaymentSuccessPage() {
             {sessionId && (
               <div className="flex justify-between">
                 <span className="text-gray-600">Transaction ID:</span>
-                <span className="font-mono text-sm text-gray-900">{sessionId}</span>
+                <span className="font-mono text-sm text-gray-900">
+                  {sessionId}
+                </span>
               </div>
             )}
           </div>
@@ -216,8 +222,12 @@ export default function PaymentSuccessPage() {
           <ul className="text-sm text-blue-800 space-y-1">
             <li>• You will receive a payment confirmation email shortly</li>
             <li>• This invoice is now marked as paid in our system</li>
-            <li>• You can download your receipt anytime using the link above</li>
-            <li>• If you have any questions, please contact the invoice sender</li>
+            <li>
+              • You can download your receipt anytime using the link above
+            </li>
+            <li>
+              • If you have any questions, please contact the invoice sender
+            </li>
           </ul>
         </motion.div>
 

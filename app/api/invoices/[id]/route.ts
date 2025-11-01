@@ -1,6 +1,6 @@
 ﻿import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '../../../../lib/prisma'
 
 const InvoiceItemSchema = z.object({
   description: z.string().min(1, 'Description is required'),
@@ -12,7 +12,7 @@ const InvoiceItemSchema = z.object({
 
 const InvoiceUpdateSchema = z.object({
   clientId: z.string().min(1, 'Client selection is required'),
-  invoiceNumber: z.string().min(1, 'Invoice number is required'),
+  invoiceNumber: z.string().optional(),
   date: z.string().min(1, 'Date is required'),
   dueDate: z.string().min(1, 'Due date is required'),
   items: z.array(InvoiceItemSchema).min(1, 'At least one item is required'),
@@ -22,8 +22,8 @@ const InvoiceUpdateSchema = z.object({
   total: z.number(),
   currency: z.string().default('USD'),
   locale: z.string().default('en-US'),
-  terms: z.string().optional(),
-  notes: z.string().optional(),
+  terms: z.string().optional().or(z.literal('')),
+  notes: z.string().optional().or(z.literal('')),
   paymentInstructions: z.string().optional(),
   discountAmount: z.number().default(0).optional(),
   shippingAmount: z.number().default(0).optional(),
@@ -197,9 +197,9 @@ export async function PUT(
           total: validatedData.total,
           currency: validatedData.currency,
           locale: validatedData.locale,
-          status: validatedData.status || 'DRAFT',
-          terms: validatedData.terms,
-          notes: validatedData.notes,
+          status: validatedData.status || existingInvoice.status,
+          terms: validatedData.terms || null,
+          notes: validatedData.notes || null,
           paymentInstructions: validatedData.paymentInstructions,
           
           // Handle status-specific updates
