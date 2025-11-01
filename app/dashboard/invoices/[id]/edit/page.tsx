@@ -221,7 +221,11 @@ export default function EditInvoicePage() {
       if (response.ok) {
         const result = await response.json();
         success("Invoice updated successfully!");
-        router.push(`/dashboard/invoices/${invoiceId}`);
+        // Refresh the router cache and navigate
+        router.refresh();
+        setTimeout(() => {
+          router.push(`/dashboard/invoices/${invoiceId}`);
+        }, 100);
       } else {
         const data = await response.json();
         error(data.error || "Failed to update invoice");

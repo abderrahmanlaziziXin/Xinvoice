@@ -97,7 +97,11 @@ export default function EditClientPage() {
       if (response.ok) {
         const result = await response.json();
         success("Client updated successfully!");
-        router.push(`/dashboard/clients`);
+        // Refresh the router cache and navigate
+        router.refresh();
+        setTimeout(() => {
+          router.push(`/dashboard/clients`);
+        }, 100);
       } else {
         const data = await response.json();
         error(data.error || "Failed to update client");
