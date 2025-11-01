@@ -1,9 +1,19 @@
 import Stripe from 'stripe';
 
-// Initialize Stripe with API key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
-});
+// Safe lazy initialization: avoid throwing at build time when env vars are absent.
+// We intentionally do NOT assert (!) the presence of STRIPE_SECRET_KEY.
+// Instead we create a tiny wrapper that returns configuration errors gracefully.
+const STRIPE_KEY = process.env.STRIPE_SECRET_KEY;
+let stripe: Stripe | null = null;
+
+function getStripe(): Stripe | null {
+  if (!STRIPE_KEY) return null;
+  if (!stripe) {
+    // Rely on default API version configured for the key; avoid hardcoding invalid union.
+    stripe = new Stripe(STRIPE_KEY);
+  }
+  return stripe;
+}
 
 export interface CreatePaymentSessionData {
   invoiceId: string;
@@ -31,7 +41,14 @@ export async function createPaymentSession(
   data: CreatePaymentSessionData
 ): Promise<PaymentSessionResult> {
   try {
-    const session = await stripe.checkout.sessions.create({
+    const s = getStripe();
+    if (!s) {
+      return {
+        success: false,
+        error: 'Stripe not configured (missing STRIPE_SECRET_KEY)'
+      };
+    }
+    const session = await s.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
       line_items: [
@@ -82,7 +99,11 @@ export async function createPaymentSession(
  */
 export async function getPaymentSession(sessionId: string) {
   try {
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const s = getStripe();
+    if (!s) {
+      return { success: false, error: 'Stripe not configured' };
+    }
+    const session = await s.checkout.sessions.retrieve(sessionId);
     return { success: true, session };
   } catch (error) {
     console.error('Error retrieving Stripe session:', error);
@@ -101,7 +122,11 @@ export async function handleStripeWebhook(
   signature: string
 ): Promise<{ success: boolean; event?: Stripe.Event; error?: string }> {
   try {
-    const event = stripe.webhooks.constructEvent(
+    const s = getStripe();
+    if (!s) {
+      return { success: false, error: 'Stripe not configured' };
+    }
+    const event = s.webhooks.constructEvent(
       body,
       signature,
       process.env.STRIPE_WEBHOOK_SECRET!
@@ -126,7 +151,11 @@ export async function createStripeCustomer(data: {
   metadata?: Record<string, string>;
 }) {
   try {
-    const customer = await stripe.customers.create({
+    const s = getStripe();
+    if (!s) {
+      return { success: false, error: 'Stripe not configured' };
+    }
+    const customer = await s.customers.create({
       email: data.email,
       name: data.name,
       metadata: data.metadata,
@@ -147,7 +176,11 @@ export async function createStripeCustomer(data: {
  */
 export async function getPaymentIntent(paymentIntentId: string) {
   try {
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    const s = getStripe();
+    if (!s) {
+      return { success: false, error: 'Stripe not configured' };
+    }
+    const paymentIntent = await s.paymentIntents.retrieve(paymentIntentId);
     return { success: true, paymentIntent };
   } catch (error) {
     console.error('Error retrieving payment intent:', error);
@@ -158,4 +191,5 @@ export async function getPaymentIntent(paymentIntentId: string) {
   }
 }
 
-export { stripe };
+// Export accessor for rare direct usage; prefer helper functions above.
+export { getStripe };

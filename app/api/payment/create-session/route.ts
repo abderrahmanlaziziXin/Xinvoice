@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { createPaymentSession } from '@/app/lib/stripe-service';
+import { createPaymentSession, getStripe } from '@/app/lib/stripe-service';
 import { z } from 'zod';
 
 const prisma = new PrismaClient();
@@ -46,6 +46,14 @@ export async function POST(request: NextRequest) {
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
     const defaultSuccessUrl = `${baseUrl}/invoice/${invoice.viewToken}/success`;
     const defaultCancelUrl = `${baseUrl}/invoice/${invoice.viewToken}`;
+
+    // Guard against missing Stripe configuration
+    if (!getStripe()) {
+      return NextResponse.json(
+        { error: 'Stripe not configured. Set STRIPE_SECRET_KEY in environment.' },
+        { status: 503 }
+      );
+    }
 
     // Create Stripe checkout session
     const paymentResult = await createPaymentSession({
