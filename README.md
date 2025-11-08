@@ -41,6 +41,7 @@ A Next.js 14 application for generating professional documents (invoices, NDAs) 
 ## 🌍 Multilingual Features
 
 ### Supported Languages
+
 - **English (US)**: `en-US` - Business English with US formatting
 - **French (France)**: `fr-FR` - Professional French with EU standards
 - **German (Germany)**: `de-DE` - Formal German business language
@@ -54,6 +55,7 @@ A Next.js 14 application for generating professional documents (invoices, NDAs) 
 - **Hindi (India)**: `hi-IN` - Hindi with Indian business context
 
 ### Key Capabilities
+
 - **Cultural Context Integration**: AI adapts language to local business practices
 - **RTL Language Support**: Proper text direction for Arabic documents
 - **Localized PDF Generation**: Currency, date, and number formatting per region
@@ -61,34 +63,36 @@ A Next.js 14 application for generating professional documents (invoices, NDAs) 
 - **Interactive Demo**: Test multilingual features at `/demo/multilang-pdf`
 
 ### API Endpoints
+
 - `POST /api/generate-multilingual` - Single document in any language
 - `POST /api/generate-multilingual-batch` - Batch documents with language support
 
 ### Usage Example
+
 ```typescript
 // Generate French invoice
-const response = await fetch('/api/generate-multilingual', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+const response = await fetch("/api/generate-multilingual", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    prompt: 'Créer une facture pour des services de développement web',
-    documentType: 'invoice',
-    locale: 'fr-FR',
-    culturalContext: true
-  })
-})
+    prompt: "Créer une facture pour des services de développement web",
+    documentType: "invoice",
+    locale: "fr-FR",
+    culturalContext: true,
+  }),
+});
 
 // Generate Arabic NDA with RTL support
-const response = await fetch('/api/generate-multilingual', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+const response = await fetch("/api/generate-multilingual", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    prompt: 'إنشاء اتفاقية عدم إفشاء للمشروع',
-    documentType: 'nda',
-    locale: 'ar-SA',
-    culturalContext: true
-  })
-})
+    prompt: "إنشاء اتفاقية عدم إفشاء للمشروع",
+    documentType: "nda",
+    locale: "ar-SA",
+    culturalContext: true,
+  }),
+});
 ```
 
 ## Tech Stack
