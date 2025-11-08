@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { resolveUserId } from '../../../../../../lib/request-user'
-import { prisma } from '../../../../../../lib/prisma'
-import { invoiceDOCXGenerator, DOCXInvoiceData } from '../../../../../lib/docx-generator'
+import { resolveUserId } from '@/lib/request-user'
+import { prisma } from '@/lib/prisma'
+import { invoiceDOCXGenerator, DOCXInvoiceData } from '@/app/lib/docx-generator'
 
 export async function GET(
   request: NextRequest,
