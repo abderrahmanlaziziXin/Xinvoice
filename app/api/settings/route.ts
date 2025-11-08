@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
-import { resolveUserId } from '../../../lib/request-user';
+import { getUserIdWithFallback } from '../../../lib/auth-utils';
 
 const prisma = new PrismaClient();
 
@@ -23,11 +23,11 @@ export async function GET() {
   try {
     console.log('Settings GET - Resolving user...');
     
-    const userId = resolveUserId();
+    const userId = await getUserIdWithFallback();
     if (!userId) {
       console.log('Settings GET - No user ID found');
       return NextResponse.json({ 
-        error: 'Unauthorized: set DEFAULT_USER_ID or enable DEMO_MODE=true.' 
+        error: 'Authentication required. Please sign in to access your settings.' 
       }, { status: 401 });
     }
 
@@ -70,11 +70,11 @@ export async function PUT(request: NextRequest) {
   try {
     console.log('Settings PUT - Starting update process...');
     
-    const userId = resolveUserId();
+    const userId = await getUserIdWithFallback();
     if (!userId) {
       console.log('Settings PUT - No user ID found');
       return NextResponse.json({ 
-        error: 'Unauthorized: set DEFAULT_USER_ID or enable DEMO_MODE=true.' 
+        error: 'Authentication required. Please sign in to save your settings.' 
       }, { status: 401 });
     }
 

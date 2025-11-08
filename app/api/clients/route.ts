@@ -1,7 +1,7 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { resolveUserId } from '@/lib/request-user';
+import { getUserIdWithFallback } from '@/lib/auth-utils';
 
 const ClientSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -15,10 +15,10 @@ const ClientSchema = z.object({
 // GET /api/clients - Get user's clients
 export async function GET(request: NextRequest) {
   try {
-    const userId = resolveUserId();
+    const userId = await getUserIdWithFallback();
     if (!userId) {
       return NextResponse.json({ 
-        error: 'Unauthorized: missing DEFAULT_USER_ID or DEMO_MODE=true. Set DEFAULT_USER_ID in environment.' 
+        error: 'Authentication required. Please sign in to access your clients.' 
       }, { status: 401 });
     }
 
@@ -49,10 +49,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validatedData = ClientSchema.parse(body);
-    const userId = resolveUserId();
+    const userId = await getUserIdWithFallback();
     if (!userId) {
       return NextResponse.json({ 
-        error: 'Unauthorized: missing DEFAULT_USER_ID or DEMO_MODE=true. Set DEFAULT_USER_ID in environment.' 
+        error: 'Authentication required. Please sign in to create clients.' 
       }, { status: 401 });
     }
 

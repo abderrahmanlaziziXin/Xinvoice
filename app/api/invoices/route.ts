@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
-import { resolveUserId } from '@/lib/request-user';
+import { getUserIdWithFallback } from '@/lib/auth-utils';
 
 const InvoiceItemSchema = z.object({
   description: z.string().min(1, "Description is required"),
@@ -38,9 +38,9 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status")
     const clientId = searchParams.get("clientId")
     
-    const userId = resolveUserId();
+    const userId = await getUserIdWithFallback();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized: set DEFAULT_USER_ID or enable DEMO_MODE=true.' }, { status: 401 })
+      return NextResponse.json({ error: 'Authentication required. Please sign in to access your invoices.' }, { status: 401 })
     }
 
     // Build where clause based on filters
@@ -99,9 +99,9 @@ export async function POST(request: NextRequest) {
     console.log("Received invoice data:", body)
     const validatedData = InvoiceSchema.parse(body)
 
-    const userId = resolveUserId();
+    const userId = await getUserIdWithFallback();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized: set DEFAULT_USER_ID or enable DEMO_MODE=true.' }, { status: 401 })
+      return NextResponse.json({ error: 'Authentication required. Please sign in to create invoices.' }, { status: 401 })
     }
 
     // Generate unique invoice number

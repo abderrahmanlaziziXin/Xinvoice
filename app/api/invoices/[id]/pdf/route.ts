@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { InvoicePDFGenerator } from '@/app/lib/pdf-generator';
-import { resolveUserId } from '@/lib/request-user';
+import { getUserIdWithFallback } from '@/lib/auth-utils';
 
 const prisma = new PrismaClient();
 
@@ -13,10 +13,10 @@ export async function GET(
     const invoiceId = params.id;
     
     // Resolve user ID using the same logic as other routes
-    const userId = resolveUserId();
+    const userId = await getUserIdWithFallback(request);
     if (!userId) {
       return NextResponse.json({ 
-        error: 'Unauthorized: set DEFAULT_USER_ID or enable DEMO_MODE=true.' 
+        error: 'Unauthorized: Authentication required.' 
       }, { status: 401 });
     }
 
@@ -60,8 +60,8 @@ export async function GET(
       from: {
         name: invoice.user?.companyName || invoice.user?.name || 'Your Company',
         email: invoice.user?.email || '',
-        address: '',
-        phone: ''
+        address: invoice.user?.companyAddress || '',
+        phone: invoice.user?.companyPhone || ''
       },
       to: {
         name: invoice.client?.name || 'Client',
@@ -120,10 +120,10 @@ export async function POST(
     const invoiceId = params.id;
     
     // Resolve user ID using the same logic as other routes
-    const userId = resolveUserId();
+    const userId = await getUserIdWithFallback(request);
     if (!userId) {
       return NextResponse.json({ 
-        error: 'Unauthorized: set DEFAULT_USER_ID or enable DEMO_MODE=true.' 
+        error: 'Unauthorized: Authentication required.' 
       }, { status: 401 });
     }
 
@@ -159,10 +159,10 @@ export async function POST(
     const invoiceData = {
       ...invoice,
       from: {
-        name: invoice.user?.name || 'Your Company',
+        name: invoice.user?.companyName || invoice.user?.name || 'Your Company',
         email: invoice.user?.email || '',
-        address: invoice.user?.address || '',
-        phone: invoice.user?.phone || ''
+        address: invoice.user?.companyAddress || '',
+        phone: invoice.user?.companyPhone || ''
       },
       to: {
         name: invoice.client?.name || 'Client',

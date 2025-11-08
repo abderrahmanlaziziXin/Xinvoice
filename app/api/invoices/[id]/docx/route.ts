@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { resolveUserId } from '@/lib/request-user'
+import { getUserIdWithFallback } from '@/lib/auth-utils'
 import { prisma } from '@/lib/prisma'
 import { invoiceDOCXGenerator, DOCXInvoiceData } from '@/app/lib/docx-generator'
 
@@ -11,7 +11,7 @@ export async function GET(
     console.log('DOCX generation - Invoice ID:', params.id)
 
     // Resolve user
-    const userId = resolveUserId()
+    const userId = await getUserIdWithFallback()
     if (!userId) {
       console.log('DOCX generation - No user ID found')
       return NextResponse.json({ error: 'User not found' }, { status: 401 })

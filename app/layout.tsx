@@ -5,7 +5,7 @@ import { NavigationHeader } from "./components/navigation-header";
 import { Footer } from "./components/footer";
 import { DocumentProvider } from "./context/document-context";
 import { LocaleProvider } from "./lib/i18n/context";
-// Removed AuthProvider - no authentication needed
+import { AuthProvider } from "./components/auth-provider";
 import { Analytics } from "@vercel/analytics/next";
 import { Metadata, Viewport } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -205,20 +205,22 @@ export default function RootLayout({
           `}
         </Script>
 
-        <QueryProvider>
-          <DocumentProvider>
-            <LocaleProvider>
-              <NavigationHeader />
-              <main id="main-content" className="min-h-screen" role="main">
-                {children}
-              </main>
-              <Footer />
-              <ToastProvider />
-            </LocaleProvider>
-          </DocumentProvider>
-          <Analytics />
-          <SpeedInsights />
-        </QueryProvider>
+        <AuthProvider>
+          <QueryProvider>
+            <DocumentProvider>
+              <LocaleProvider>
+                <NavigationHeader />
+                <main id="main-content" className="min-h-screen" role="main">
+                  {children}
+                </main>
+                <Footer />
+                <ToastProvider />
+              </LocaleProvider>
+            </DocumentProvider>
+            <Analytics />
+            <SpeedInsights />
+          </QueryProvider>
+        </AuthProvider>
       </body>
     </html>
   );

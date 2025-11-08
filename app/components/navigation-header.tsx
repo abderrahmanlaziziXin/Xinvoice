@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-// Removed authentication - demo mode
+import { useSession, signIn, signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   HomeIcon,
@@ -34,10 +34,13 @@ interface NavigationItem {
 export function NavigationHeader() {
   const router = useRouter();
   const pathname = usePathname();
-  // Demo mode - no authentication
+  const { data: session, status } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const { t } = useTranslations();
+
+  const isAuthenticated = !!session;
+  const isLoading = status === "loading";
 
   const publicNavigation: NavigationItem[] = [
     {
@@ -208,8 +211,8 @@ export function NavigationHeader() {
             {/* Language Selector */}
             <LanguageSelector variant="compact" />
 
-            {/* Always show user menu in demo mode */}
-            {true ? (
+            {/* Authentication-aware user menu */}
+            {isAuthenticated ? (
               /* Authenticated User Menu */
               <div className="relative">
                 <motion.button
@@ -218,8 +221,16 @@ export function NavigationHeader() {
                   onClick={() => handleDropdownToggle("user")}
                   className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200"
                 >
-                  <UserCircleIcon className="w-5 h-5 mr-2" />
-                  Demo User
+                  {session?.user?.image ? (
+                    <img
+                      src={session.user.image}
+                      alt={session.user.name || "User"}
+                      className="w-5 h-5 mr-2 rounded-full"
+                    />
+                  ) : (
+                    <UserCircleIcon className="w-5 h-5 mr-2" />
+                  )}
+                  {session?.user?.name || "User"}
                   <ChevronDownIcon className="w-4 h-4 ml-1" />
                 </motion.button>
 
@@ -243,7 +254,7 @@ export function NavigationHeader() {
                       <button
                         onClick={() => {
                           setOpenDropdown(null);
-                          // No sign out in demo mode
+                          signOut({ callbackUrl: "/" });
                         }}
                         className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:text-red-600 hover:bg-white/50 transition-all duration-200"
                       >
@@ -269,22 +280,31 @@ export function NavigationHeader() {
                   Support
                 </motion.button>
 
-                {/* Sign In Button */}
-                <Link
-                  href="/auth/signin"
-                  className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200"
-                >
-                  <UserCircleIcon className="w-4 h-4 mr-2" />
-                  Sign In
-                </Link>
+                {/* Loading state */}
+                {isLoading ? (
+                  <div className="flex items-center px-3 py-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Sign In Button */}
+                    <button
+                      onClick={() => signIn()}
+                      className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200"
+                    >
+                      <UserCircleIcon className="w-4 h-4 mr-2" />
+                      Sign In
+                    </button>
 
-                {/* Sign Up Button */}
-                <Link
-                  href="/auth/signup"
-                  className="xinfinity-button text-sm px-4 py-2"
-                >
-                  Get Started
-                </Link>
+                    {/* Get Started Button */}
+                    <button
+                      onClick={() => signIn()}
+                      className="xinfinity-button text-sm px-4 py-2"
+                    >
+                      Get Started
+                    </button>
+                  </>
+                )}
               </>
             )}
           </div>
