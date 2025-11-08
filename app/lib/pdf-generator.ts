@@ -2,7 +2,6 @@ import jsPDF from 'jspdf'
 import autoTable, { UserOptions } from 'jspdf-autotable'
 import { Invoice } from '../../packages/core'
 import { formatCurrency, formatDate, formatNumber } from './currency'
-import { downloadEnhancedInvoicePDF, previewEnhancedInvoicePDF } from './pdf-generator-enhanced'
 import { getTranslation } from './i18n'
 import JSZip from 'jszip'
 
@@ -568,18 +567,24 @@ export class InvoicePDFGenerator {
 
 // Utility function for bulk PDF download (individual files)
 export function downloadMultiplePDFs(invoices: Invoice[], zipName: string = 'invoices') {
-  // Use the enhanced PDF generator function that we've already fixed
+  // Use the basic PDF generator for batch downloads
   invoices.forEach((invoice, index) => {
     setTimeout(() => {
-      downloadEnhancedInvoicePDF(
-        invoice, 
-        `${zipName}-${invoice.invoiceNumber}.pdf`,
-        {
-          theme: 'primary', // Use primary theme with your brand colors
-          includeWatermark: false,
-          customTemplate: 'modern'
-        }
-      )
+      const generator = new InvoicePDFGenerator({ includeWatermark: false, customTemplate: 'modern' })
+      const pdfDataUri = generator.generateInvoicePDF(invoice)
+      
+      // Convert data URI to blob and download
+      const base64Data = pdfDataUri.split(',')[1]
+      const pdfBlob = new Blob([Uint8Array.from(atob(base64Data), c => c.charCodeAt(0))], { type: 'application/pdf' })
+      const url = URL.createObjectURL(pdfBlob)
+      
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${zipName}-${invoice.invoiceNumber}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
     }, index * 500) // Stagger downloads to avoid browser blocking
   })
 }
@@ -590,9 +595,7 @@ export async function downloadMultiplePDFsAsZip(invoices: Invoice[], zipName: st
   
   // Generate all PDFs and add to ZIP
   for (const invoice of invoices) {
-    const { EnhancedInvoicePDFGenerator } = await import('./pdf-generator-enhanced')
-    const generator = new EnhancedInvoicePDFGenerator({
-      theme: 'primary', // Use primary theme with your brand colors
+    const generator = new InvoicePDFGenerator({
       includeWatermark: false,
       customTemplate: 'modern'
     })
@@ -623,11 +626,12 @@ export async function downloadMultiplePDFsAsZip(invoices: Invoice[], zipName: st
 
 // Preview function for displaying PDF in modal
 export function previewInvoicePDF(invoice: Invoice, options?: PDFGenerationOptions): string {
-  // Use the enhanced preview function that we've already fixed
-  return previewEnhancedInvoicePDF(invoice, {
-    theme: 'primary', // Use primary theme with your brand colors
+  // Use the basic PDF generator for preview
+  const generator = new InvoicePDFGenerator({
     includeWatermark: false,
     customTemplate: 'modern',
     ...options
   })
+  
+  return generator.generateInvoicePDF(invoice)
 }
