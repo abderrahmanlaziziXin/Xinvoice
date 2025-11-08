@@ -135,6 +135,10 @@ OPENAI_API_KEY=sk-proj-...
 GEMINI_API_KEY=AIz...
 ```
 
+## 🚀 Production Deployment Notes
+
+The application previously included a "demo mode" with hardcoded user ID `demo-user-1` and mock data fallbacks. These have been removed from core API routes (invoices, clients, reports, dashboard stats). To run in production you MUST supply real environment configuration:
+
 ## Enhanced Features
 
 ### ✨ Enhanced AI Prompt System

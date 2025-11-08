@@ -11,6 +11,7 @@ import {
   PencilIcon,
   EyeIcon,
   PrinterIcon,
+  DocumentTextIcon,
   EnvelopeIcon,
   CheckCircleIcon,
   XCircleIcon,
@@ -377,6 +378,34 @@ export default function InvoiceDetailPage() {
     }
   };
 
+  const handleDownloadDOCX = async () => {
+    if (!invoice) return;
+
+    try {
+      const response = await fetch(`/api/invoices/${invoice.id}/docx`);
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+        a.download = `invoice-${invoice.invoiceNumber}.docx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        success("DOCX downloaded successfully");
+      } else {
+        const errorData = await response.json();
+        error(errorData.error || "Failed to generate DOCX");
+      }
+    } catch (err) {
+      console.error("Error downloading DOCX:", err);
+      error("Failed to download DOCX");
+    }
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -562,6 +591,14 @@ export default function InvoiceDetailPage() {
                   >
                     <PrinterIcon className="w-4 h-4 mr-2" />
                     Download PDF
+                  </button>
+                  
+                  <button
+                    onClick={handleDownloadDOCX}
+                    className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    <DocumentTextIcon className="w-4 h-4 mr-2" />
+                    Download DOCX
                   </button>
 
                   {invoice.status === "DRAFT" && (

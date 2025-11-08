@@ -61,7 +61,39 @@ export default function SettingsPage() {
       const response = await fetch("/api/settings");
       if (response.ok) {
         const data = await response.json();
-        setSettings((prev) => ({ ...prev, ...data }));
+        console.log('Fetched settings data:', data);
+        
+        if (data.user) {
+          // Map backend user data to frontend settings structure
+          const backendUser = data.user;
+          const mappedSettings: CompanySettings = {
+            companyName: backendUser.companyName || '',
+            email: backendUser.email || '',
+            phone: backendUser.companyPhone || '',
+            address: backendUser.companyAddress || '',
+            city: '', // These will need to be parsed from companyAddress if needed
+            state: '',
+            zipCode: '',
+            country: 'US', // Default
+            currency: backendUser.defaultCurrency || 'USD',
+            taxRate: (backendUser.defaultTaxRate || 0) * 100, // Convert decimal to percentage
+            invoicePrefix: 'INV', // Default values
+            invoiceNumberStart: 1000,
+            website: backendUser.website || '',
+            taxId: backendUser.taxNumber || '',
+          };
+          
+          console.log('Mapped settings:', mappedSettings);
+          setSettings(mappedSettings);
+        }
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to fetch settings:', errorData);
+        if (response.status === 401) {
+          error("Authentication required. Please check your environment configuration.");
+        } else {
+          error("Failed to load settings");
+        }
       }
     } catch (err) {
       console.error("Error fetching settings:", err);
@@ -90,22 +122,44 @@ export default function SettingsPage() {
 
     try {
       setIsSaving(true);
+      
+      // Map frontend data structure to backend expected structure
+      const payload = {
+        name: settings.companyName || 'Demo User',
+        email: settings.email,
+        companyName: settings.companyName,
+        companyAddress: `${settings.address}${settings.city ? `, ${settings.city}` : ''}${settings.state ? `, ${settings.state}` : ''}${settings.zipCode ? ` ${settings.zipCode}` : ''}${settings.country ? `, ${settings.country}` : ''}`.trim(),
+        companyPhone: settings.phone,
+        website: settings.website || '',
+        taxNumber: settings.taxId,
+        defaultCurrency: settings.currency,
+        defaultLocale: 'en-US', // You can make this configurable later
+        defaultTaxRate: settings.taxRate / 100, // Convert percentage to decimal
+        defaultTerms: '', // You can add this field later if needed
+      };
+
+      console.log('Settings submission payload:', payload);
+
       const response = await fetch("/api/settings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(settings),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
+        const responseData = await response.json();
+        console.log('Settings saved successfully:', responseData);
         success("Settings saved successfully!");
       } else {
-        throw new Error("Failed to save settings");
+        const errorData = await response.json();
+        console.error('Settings save failed:', errorData);
+        throw new Error(errorData.error || errorData.details || "Failed to save settings");
       }
     } catch (err) {
       console.error("Error saving settings:", err);
-      error("Failed to save settings");
+      error(err instanceof Error ? err.message : "Failed to save settings");
     } finally {
       setIsSaving(false);
     }

@@ -39,7 +39,7 @@ export async function GET(
   try {
     const userId = resolveUserId();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized: set DEFAULT_USER_ID or enable DEMO_MODE=true.' }, { status: 401 })
     }
 
     try {
@@ -97,7 +97,7 @@ export async function PUT(
     const validatedData = InvoiceUpdateSchema.parse(body)
     const userId = resolveUserId();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized: set DEFAULT_USER_ID or enable DEMO_MODE=true.' }, { status: 401 })
     }
 
     try {
@@ -204,7 +204,7 @@ export async function DELETE(
   try {
     const userId = resolveUserId();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized: set DEFAULT_USER_ID or enable DEMO_MODE=true.' }, { status: 401 })
     }
     try {
       const existing = await prisma.invoice.findFirst({ where: { id: params.id, userId } });

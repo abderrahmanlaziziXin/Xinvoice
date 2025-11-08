@@ -17,7 +17,9 @@ export async function GET(request: NextRequest) {
   try {
     const userId = resolveUserId();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ 
+        error: 'Unauthorized: missing DEFAULT_USER_ID or DEMO_MODE=true. Set DEFAULT_USER_ID in environment.' 
+      }, { status: 401 });
     }
 
     try {
@@ -49,7 +51,9 @@ export async function POST(request: NextRequest) {
     const validatedData = ClientSchema.parse(body);
     const userId = resolveUserId();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ 
+        error: 'Unauthorized: missing DEFAULT_USER_ID or DEMO_MODE=true. Set DEFAULT_USER_ID in environment.' 
+      }, { status: 401 });
     }
 
     try {

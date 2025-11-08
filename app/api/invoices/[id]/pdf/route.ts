@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { createInvoicePDF } from '@/app/lib/pdf-generator-enhanced';
+import { InvoicePDFGenerator } from '@/app/lib/pdf-generator';
+import { resolveUserId } from '@/lib/request-user';
 
 const prisma = new PrismaClient();
 
@@ -11,8 +12,13 @@ export async function GET(
   try {
     const invoiceId = params.id;
     
-    // Get user ID from authentication (simplified for demo)
-    const userId = 'demo-user-1'; // Match the userId from our seed data
+    // Resolve user ID using the same logic as other routes
+    const userId = resolveUserId();
+    if (!userId) {
+      return NextResponse.json({ 
+        error: 'Unauthorized: set DEFAULT_USER_ID or enable DEMO_MODE=true.' 
+      }, { status: 401 });
+    }
 
     // Fetch invoice with all related data
     const invoice = await prisma.invoice.findFirst({
@@ -37,8 +43,52 @@ export async function GET(
     // Check if user is on free tier
     const isFreeTier = invoice.user?.plan === 'free';
 
-    // Generate PDF buffer using the enhanced generator
-    const pdfBuffer = await createInvoicePDF(invoice, isFreeTier);
+    // Generate PDF using the PDF generator
+    const generator = new InvoicePDFGenerator({ 
+      includeWatermark: isFreeTier,
+      customTemplate: 'modern' 
+    });
+    
+    // Convert invoice to expected format for PDF generator
+    const invoiceData = {
+      type: 'invoice' as const,
+      invoiceNumber: invoice.invoiceNumber,
+      date: invoice.date.toISOString().split('T')[0],
+      dueDate: invoice.dueDate.toISOString().split('T')[0],
+      currency: (invoice.currency as any) || 'USD',
+      locale: (invoice.locale as any) || 'en-US',
+      from: {
+        name: invoice.user?.companyName || invoice.user?.name || 'Your Company',
+        email: invoice.user?.email || '',
+        address: '',
+        phone: ''
+      },
+      to: {
+        name: invoice.client?.name || 'Client',
+        email: invoice.client?.email || '',
+        address: invoice.client?.address || '',
+        phone: invoice.client?.phone || ''
+      },
+      items: invoice.items?.map(item => ({
+        description: item.description,
+        quantity: item.quantity,
+        rate: item.rate,
+        amount: item.amount,
+        taxRate: item.taxRate || 0
+      })) || [],
+      subtotal: invoice.subtotal,
+      taxRate: invoice.taxRate,
+      taxAmount: invoice.taxAmount,
+      total: invoice.total,
+      terms: invoice.terms || '',
+      notes: invoice.notes || ''
+    };
+    
+    const pdfDataUri = generator.generateInvoicePDF(invoiceData);
+    
+    // Convert data URI to buffer
+    const base64Data = pdfDataUri.split(',')[1];
+    const pdfBuffer = Buffer.from(base64Data, 'base64');
 
     // Return PDF with proper headers
     return new NextResponse(new Uint8Array(pdfBuffer), {
@@ -68,7 +118,14 @@ export async function POST(
 ) {
   try {
     const invoiceId = params.id;
-    const userId = 'user_1'; // In real app, get from auth
+    
+    // Resolve user ID using the same logic as other routes
+    const userId = resolveUserId();
+    if (!userId) {
+      return NextResponse.json({ 
+        error: 'Unauthorized: set DEFAULT_USER_ID or enable DEMO_MODE=true.' 
+      }, { status: 401 });
+    }
 
     // Fetch invoice data
     const invoice = await prisma.invoice.findFirst({
@@ -92,11 +149,33 @@ export async function POST(
 
     const isFreeTier = invoice.user?.plan === 'free';
 
-    // Generate PDF buffer
-    const pdfBuffer = await createInvoicePDF(invoice, isFreeTier);
-
-    // Convert buffer to base64 for JSON response
-    const pdfBase64 = pdfBuffer.toString('base64');
+    // Generate PDF using the PDF generator
+    const generator = new InvoicePDFGenerator({ 
+      includeWatermark: isFreeTier,
+      customTemplate: 'modern' 
+    });
+    
+    // Convert invoice to expected format
+    const invoiceData = {
+      ...invoice,
+      from: {
+        name: invoice.user?.name || 'Your Company',
+        email: invoice.user?.email || '',
+        address: invoice.user?.address || '',
+        phone: invoice.user?.phone || ''
+      },
+      to: {
+        name: invoice.client?.name || 'Client',
+        email: invoice.client?.email || '',
+        address: invoice.client?.address || '',
+        phone: invoice.client?.phone || ''
+      }
+    };
+    
+    const pdfDataUri = generator.generateInvoicePDF(invoiceData);
+    
+    // Extract base64 data from data URI
+    const pdfBase64 = pdfDataUri.split(',')[1];
 
     return NextResponse.json({
       success: true,
