@@ -138,7 +138,8 @@ export default function Dashboard() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              Welcome back, {session?.user?.name || session?.user?.email || "User"}! 👋
+              Welcome back,{" "}
+              {session?.user?.name || session?.user?.email || "User"}! 👋
             </h1>
             <p className="text-gray-600 mt-2">
               Here&apos;s what&apos;s happening with your invoices today.

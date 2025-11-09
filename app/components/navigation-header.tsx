@@ -437,7 +437,9 @@ export function NavigationHeader() {
                 {isLoading ? (
                   <div className="flex items-center justify-center px-4 py-3">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>
-                    <span className="ml-2 text-sm text-gray-600">Loading...</span>
+                    <span className="ml-2 text-sm text-gray-600">
+                      Loading...
+                    </span>
                   </div>
                 ) : isAuthenticated ? (
                   <>
@@ -448,10 +450,12 @@ export function NavigationHeader() {
                         <p className="text-sm font-medium text-gray-800">
                           {session?.user?.name || session?.user?.email}
                         </p>
-                        <p className="text-xs text-gray-600">{session?.user?.email}</p>
+                        <p className="text-xs text-gray-600">
+                          {session?.user?.email}
+                        </p>
                       </div>
                     </div>
-                    
+
                     {/* Mobile Sign Out Button */}
                     <button
                       onClick={() => {
