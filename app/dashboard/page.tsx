@@ -1,9 +1,9 @@
 "use client";
 
-// Removed useSession - no authentication required
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useEffect } from "react";
+import { useSession } from "next-auth/react";
 import {
   PlusIcon,
   DocumentTextIcon,
@@ -25,7 +25,7 @@ import {
 } from "../components/dashboard-skeleton";
 
 export default function Dashboard() {
-  // No authentication required - demo mode
+  const { data: session, status } = useSession();
   const { data: dashboardData, isLoading, error, refetch } = useDashboardData();
 
   // Trigger data refresh when component mounts (user navigates back to dashboard)
@@ -34,10 +34,10 @@ export default function Dashboard() {
     window.dispatchEvent(new CustomEvent("dashboardFocus"));
   }, []);
 
-  // Temporarily disabled authentication check for AI agent testing
-  // if (!session) {
-  //   redirect("/auth/signin");
-  // }
+  // Show loading while checking authentication
+  if (status === "loading") {
+    return <DashboardSkeleton />;
+  }
 
   if (isLoading) {
     return <DashboardSkeleton />;
@@ -138,7 +138,7 @@ export default function Dashboard() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              Welcome back, Demo User! 👋
+              Welcome back, {session?.user?.name || session?.user?.email || "User"}! 👋
             </h1>
             <p className="text-gray-600 mt-2">
               Here&apos;s what&apos;s happening with your invoices today.

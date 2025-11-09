@@ -2,6 +2,7 @@
 
 import { motion, Variants } from "framer-motion";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
   DocumentTextIcon,
   SparklesIcon,
@@ -17,6 +18,9 @@ import { LanguageSelector } from "./language-selector";
 
 export function Hero() {
   const { t } = useTranslations();
+  const { data: session, status } = useSession();
+  const isAuthenticated = !!session;
+  const isLoading = status === "loading";
 
   const features = [
     {
@@ -161,22 +165,52 @@ export function Hero() {
             variants={itemVariants}
             className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-16"
           >
-            <Link
-              href="/auth/signup"
-              className="xinfinity-button group text-lg px-10 py-4"
-            >
-              <DocumentTextIcon className="w-6 h-6 mr-3" />
-              Create Your First Invoice
-              <ArrowRightIcon className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform duration-200" />
-            </Link>
-            <Link
-              href="/dashboard"
-              className="bg-white border-2 border-gray-200 text-gray-700 hover:border-blue-300 hover:text-blue-600 font-semibold rounded-xl px-10 py-4 transition-all duration-200 group text-lg"
-            >
-              <ChatBubbleLeftRightIcon className="w-6 h-6 mr-3" />
-              Go to Dashboard
-              <ArrowRightIcon className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform duration-200" />
-            </Link>
+            {isLoading ? (
+              <div className="flex items-center px-10 py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3"></div>
+                <span className="text-lg text-gray-600">Loading...</span>
+              </div>
+            ) : isAuthenticated ? (
+              // Authenticated user buttons
+              <>
+                <Link
+                  href="/dashboard"
+                  className="xinfinity-button group text-lg px-10 py-4"
+                >
+                  <DocumentTextIcon className="w-6 h-6 mr-3" />
+                  Go to Dashboard
+                  <ArrowRightIcon className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform duration-200" />
+                </Link>
+                <Link
+                  href="/dashboard/invoices/new"
+                  className="bg-white border-2 border-gray-200 text-gray-700 hover:border-blue-300 hover:text-blue-600 font-semibold rounded-xl px-10 py-4 transition-all duration-200 group text-lg"
+                >
+                  <ChatBubbleLeftRightIcon className="w-6 h-6 mr-3" />
+                  Create New Invoice
+                  <ArrowRightIcon className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform duration-200" />
+                </Link>
+              </>
+            ) : (
+              // Non-authenticated user buttons
+              <>
+                <Link
+                  href="/auth/signin"
+                  className="xinfinity-button group text-lg px-10 py-4"
+                >
+                  <DocumentTextIcon className="w-6 h-6 mr-3" />
+                  Get Started
+                  <ArrowRightIcon className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform duration-200" />
+                </Link>
+                <Link
+                  href="/auth/signin?mode=demo"
+                  className="bg-white border-2 border-gray-200 text-gray-700 hover:border-blue-300 hover:text-blue-600 font-semibold rounded-xl px-10 py-4 transition-all duration-200 group text-lg"
+                >
+                  <ChatBubbleLeftRightIcon className="w-6 h-6 mr-3" />
+                  Try Demo
+                  <ArrowRightIcon className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform duration-200" />
+                </Link>
+              </>
+            )}
           </motion.div>
 
           {/* Features Grid with Fibonacci proportions */}

@@ -1,7 +1,8 @@
 "use client";
 
-import { signIn, getProviders } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { signIn, getProviders, useSession } from "next-auth/react";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -10,13 +11,23 @@ import {
   LockClosedIcon,
 } from "@heroicons/react/24/outline";
 
-export default function SignIn() {
+function SignInContent() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [providers, setProviders] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (status === "authenticated" && session) {
+      router.push("/dashboard");
+    }
+  }, [session, status, router]);
 
   useEffect(() => {
     const setUpProviders = async () => {
@@ -25,6 +36,14 @@ export default function SignIn() {
     };
     setUpProviders();
   }, []);
+
+  // Handle demo mode from URL parameter
+  useEffect(() => {
+    const mode = searchParams?.get('mode');
+    if (mode === 'demo' && !isLoading && !session) {
+      handleSignIn('demo');
+    }
+  }, [searchParams, isLoading, session]);
 
   const handleSignIn = async (providerId: string) => {
     setIsLoading(true);
@@ -63,6 +82,11 @@ export default function SignIn() {
 
       if (result?.error) {
         setError("Invalid email or password");
+      } else if (result?.ok) {
+        // Success! Redirect to dashboard
+        console.log("Email sign-in successful, redirecting to dashboard...");
+        router.push("/dashboard");
+        return;
       }
     } catch (error) {
       console.error("Email sign in error:", error);
@@ -71,6 +95,18 @@ export default function SignIn() {
       setIsLoading(false);
     }
   };
+
+  // Show loading while checking authentication
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -302,5 +338,13 @@ export default function SignIn() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignIn() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>}>
+      <SignInContent />
+    </Suspense>
   );
 }

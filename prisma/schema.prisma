@@ -1,6 +1,3 @@
-// Xinvoice Database Schema
-// Revenue-ready invoice management system
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User accounts and authentication
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -24,8 +20,7 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -39,39 +34,31 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  
-  // Company settings
-  companyName    String?
-  companyAddress String?
-  companyPhone   String?
-  logoUrl        String?
-  website        String?
-  taxNumber      String?
-  
-  // Default settings
-  defaultCurrency String @default("USD")
-  defaultLocale   String @default("en-US")
-  defaultTaxRate  Float  @default(0.08)
+  id              String    @id @default(cuid())
+  name            String?
+  email           String    @unique
+  emailVerified   DateTime?
+  image           String?
+  password        String?
+  companyName     String?
+  companyAddress  String?
+  companyPhone    String?
+  logoUrl         String?
+  website         String?
+  taxNumber       String?
+  defaultCurrency String    @default("USD")
+  defaultLocale   String    @default("en-US")
+  defaultTaxRate  Float     @default(0.08)
   defaultTerms    String?
-  
-  // Subscription
-  plan           String   @default("free") // free, pro, business
-  planExpiresAt  DateTime?
-  invoiceCount   Int      @default(0)
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  accounts Account[]
-  sessions Session[]
-  clients  Client[]
-  invoices Invoice[]
+  plan            String    @default("free")
+  planExpiresAt   DateTime?
+  invoiceCount    Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  accounts        Account[]
+  clients         Client[]
+  invoices        Invoice[]
+  sessions        Session[]
 }
 
 model VerificationToken {
@@ -82,68 +69,54 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// Client management
 model Client {
-  id           String  @id @default(cuid())
-  userId       String
-  name         String
-  email        String?
-  address      String?
-  phone        String?
-  taxNumber    String?
+  id            String    @id @default(cuid())
+  userId        String
+  name          String
+  email         String?
+  address       String?
+  phone         String?
+  taxNumber     String?
   contactPerson String?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  invoices Invoice[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoices      Invoice[]
 
   @@index([userId])
 }
 
-// Invoice management
 model Invoice {
-  id            String        @id @default(cuid())
-  userId        String
-  clientId      String?
-  invoiceNumber String        @unique
-  status        InvoiceStatus @default(DRAFT)
-  
-  // Invoice details
-  date           DateTime
-  dueDate        DateTime
-  currency       String        @default("USD")
-  locale         String        @default("en-US")
-  
-  // Amounts
-  subtotal       Float
-  taxRate        Float         @default(0)
-  taxAmount      Float
-  discountAmount Float         @default(0)
-  shippingAmount Float         @default(0)
-  total          Float
-  
-  // Content
+  id                  String         @id @default(cuid())
+  userId              String
+  clientId            String?
+  invoiceNumber       String         @unique
+  status              InvoiceStatus  @default(DRAFT)
+  date                DateTime
+  dueDate             DateTime
+  currency            String         @default("USD")
+  locale              String         @default("en-US")
+  subtotal            Float
+  taxRate             Float          @default(0)
+  taxAmount           Float
+  discountAmount      Float          @default(0)
+  shippingAmount      Float          @default(0)
+  total               Float
   notes               String?
   terms               String?
   paymentInstructions String?
-  
-  // Tracking
-  viewToken    String?   @unique
-  viewedAt     DateTime?
-  sentAt       DateTime?
-  paidAt       DateTime?
-  reminderSent DateTime?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client         Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  items          InvoiceItem[]
-  paymentEvents  PaymentEvent[]
-  emailEvents    EmailEvent[]
+  viewToken           String?        @unique
+  viewedAt            DateTime?
+  sentAt              DateTime?
+  paidAt              DateTime?
+  reminderSent        DateTime?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  emailEvents         EmailEvent[]
+  client              Client?        @relation(fields: [clientId], references: [id])
+  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items               InvoiceItem[]
+  paymentEvents       PaymentEvent[]
 
   @@index([userId])
   @@index([status])
@@ -151,42 +124,36 @@ model Invoice {
 }
 
 model InvoiceItem {
-  id          String @id @default(cuid())
+  id          String   @id @default(cuid())
   invoiceId   String
   description String
   quantity    Float
   rate        Float
   amount      Float
-  taxRate     Float  @default(0)
+  taxRate     Float    @default(0)
   category    String?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@index([invoiceId])
 }
 
-// Payment tracking
 model PaymentEvent {
-  id               String        @id @default(cuid())
-  invoiceId        String
-  stripePaymentId  String?       @unique
-  amount           Float
-  currency         String
-  status           PaymentStatus
-  paymentMethod    String?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  id              String        @id @default(cuid())
+  invoiceId       String
+  stripePaymentId String?       @unique
+  amount          Float
+  currency        String
+  status          PaymentStatus
+  paymentMethod   String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  invoice         Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@index([invoiceId])
 }
 
-// Email tracking
 model EmailEvent {
   id        String    @id @default(cuid())
   invoiceId String
@@ -196,13 +163,11 @@ model EmailEvent {
   sentAt    DateTime  @default(now())
   viewedAt  DateTime?
   clickedAt DateTime?
-  
-  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoice   Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@index([invoiceId])
 }
 
-// Enums
 enum InvoiceStatus {
   DRAFT
   SENT

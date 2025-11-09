@@ -425,10 +425,72 @@ export function NavigationHeader() {
               </button>
 
               {/* Mobile Settings */}
-              <button className="flex items-center w-full px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200">
-                <CogIcon className="w-5 h-5 mr-3" />
-                {t("nav.companySettings")}
-              </button>
+              {isAuthenticated && (
+                <button className="flex items-center w-full px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200">
+                  <CogIcon className="w-5 h-5 mr-3" />
+                  {t("nav.companySettings")}
+                </button>
+              )}
+
+              {/* Mobile Authentication Buttons */}
+              <div className="border-t border-white/20 pt-4 mt-4">
+                {isLoading ? (
+                  <div className="flex items-center justify-center px-4 py-3">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>
+                    <span className="ml-2 text-sm text-gray-600">Loading...</span>
+                  </div>
+                ) : isAuthenticated ? (
+                  <>
+                    {/* Mobile User Info */}
+                    <div className="flex items-center px-4 py-3 rounded-lg bg-white/20 mb-2">
+                      <UserCircleIcon className="w-5 h-5 mr-3 text-xinfinity-primary" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-800">
+                          {session?.user?.name || session?.user?.email}
+                        </p>
+                        <p className="text-xs text-gray-600">{session?.user?.email}</p>
+                      </div>
+                    </div>
+                    
+                    {/* Mobile Sign Out Button */}
+                    <button
+                      onClick={() => {
+                        signOut({ callbackUrl: "/" });
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="flex items-center w-full px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200"
+                    >
+                      <ArrowRightOnRectangleIcon className="w-5 h-5 mr-3" />
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {/* Mobile Sign In Button */}
+                    <button
+                      onClick={() => {
+                        signIn();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="flex items-center w-full px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:text-xinfinity-primary hover:bg-white/50 transition-all duration-200 mb-2"
+                    >
+                      <UserCircleIcon className="w-5 h-5 mr-3" />
+                      Sign In
+                    </button>
+
+                    {/* Mobile Get Started Button */}
+                    <button
+                      onClick={() => {
+                        signIn();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full xinfinity-button text-sm px-4 py-3 text-center"
+                    >
+                      Get Started
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </motion.div>
         )}

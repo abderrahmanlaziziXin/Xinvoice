@@ -30,7 +30,7 @@ const errorMessages: Record<string, string> = {
 
 function AuthErrorContent() {
   const searchParams = useSearchParams();
-  const error = searchParams.get("error") || "Default";
+  const error = searchParams?.get("error") || "Default";
   const message = errorMessages[error] || errorMessages.Default;
 
   return (
