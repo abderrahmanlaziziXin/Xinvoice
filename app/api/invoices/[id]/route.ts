@@ -1,7 +1,7 @@
 ﻿import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '../../../../lib/prisma'
-import { resolveUserId } from '@/lib/request-user';
+import { getUserIdWithFallback } from '@/lib/auth-utils';
 
 const InvoiceItemSchema = z.object({
   description: z.string().min(1, 'Description is required'),
@@ -23,9 +23,9 @@ const InvoiceUpdateSchema = z.object({
   total: z.number(),
   currency: z.string().default('USD'),
   locale: z.string().default('en-US'),
-  terms: z.string().optional().or(z.literal('')),
-  notes: z.string().optional().or(z.literal('')),
-  paymentInstructions: z.string().optional(),
+  terms: z.string().nullable().optional().transform(val => val || ''),
+  notes: z.string().nullable().optional().transform(val => val || ''),
+  paymentInstructions: z.string().nullable().optional().transform(val => val || ''),
   discountAmount: z.number().default(0).optional(),
   shippingAmount: z.number().default(0).optional(),
   status: z.enum(['DRAFT', 'SENT', 'VIEWED', 'PAID', 'OVERDUE', 'CANCELLED']).default('DRAFT').optional()
@@ -37,9 +37,9 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const userId = resolveUserId();
+    const userId = await getUserIdWithFallback();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized: set DEFAULT_USER_ID or enable DEMO_MODE=true.' }, { status: 401 })
+      return NextResponse.json({ error: 'Authentication required. Please sign in to access invoices.' }, { status: 401 })
     }
 
     try {
@@ -95,9 +95,9 @@ export async function PUT(
   try {
     const body = await request.json()
     const validatedData = InvoiceUpdateSchema.parse(body)
-    const userId = resolveUserId();
+    const userId = await getUserIdWithFallback();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized: set DEFAULT_USER_ID or enable DEMO_MODE=true.' }, { status: 401 })
+      return NextResponse.json({ error: 'Authentication required. Please sign in to access invoices.' }, { status: 401 })
     }
 
     try {
@@ -202,9 +202,9 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const userId = resolveUserId();
+    const userId = await getUserIdWithFallback();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized: set DEFAULT_USER_ID or enable DEMO_MODE=true.' }, { status: 401 })
+      return NextResponse.json({ error: 'Authentication required. Please sign in to access invoices.' }, { status: 401 })
     }
     try {
       const existing = await prisma.invoice.findFirst({ where: { id: params.id, userId } });

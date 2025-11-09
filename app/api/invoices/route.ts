@@ -23,9 +23,9 @@ const InvoiceSchema = z.object({
   total: z.number(),
   currency: z.string().default("USD"),
   locale: z.string().default("en-US"),
-  terms: z.string().optional(),
-  notes: z.string().optional(),
-  paymentInstructions: z.string().optional(),
+  terms: z.string().nullable().optional().transform(val => val || ''),
+  notes: z.string().nullable().optional().transform(val => val || ''),
+  paymentInstructions: z.string().nullable().optional().transform(val => val || ''),
   discountAmount: z.number().default(0).optional(),
   shippingAmount: z.number().default(0).optional(),
   status: z.enum(["DRAFT", "SENT", "VIEWED", "PAID", "OVERDUE", "CANCELLED"]).default("DRAFT").optional()
@@ -104,29 +104,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Authentication required. Please sign in to create invoices.' }, { status: 401 })
     }
 
-    // Generate unique invoice number
+    // Generate unique invoice number using timestamp to ensure uniqueness
     const generateInvoiceNumber = async (): Promise<string> => {
-      const lastInvoice = await prisma.invoice.findFirst({
-  where: { userId },
-        orderBy: { createdAt: 'desc' },
-        select: { invoiceNumber: true }
-      })
-      
-      if (lastInvoice) {
-        const match = lastInvoice.invoiceNumber.match(/INV-(\d+)/)
-        if (match) {
-          const nextNumber = parseInt(match[1]) + 1
-          return `INV-${nextNumber.toString().padStart(3, '0')}`
-        }
-      }
-      return "INV-001"
+      const timestamp = Date.now()
+      const randomSuffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
+      return `INV-${timestamp}-${randomSuffix}`
     }
 
     try {
-      // Generate unique invoice number
+      // Generate unique invoice number (ignore client-provided number)
+      console.log('Generating invoice number...')
       const invoiceNumber = await generateInvoiceNumber()
+      console.log('Generated invoice number:', invoiceNumber)
 
       // Create invoice with items in a transaction
+      console.log('Creating invoice in database...')
       const newInvoice = await prisma.invoice.create({
         data: {
           userId,
@@ -168,6 +160,7 @@ export async function POST(request: NextRequest) {
         }
       })
 
+      console.log('Invoice created successfully:', newInvoice.id)
       return NextResponse.json({ invoice: newInvoice }, { status: 201 })
     } catch (dbError) {
       console.error("Database error creating invoice:", dbError)

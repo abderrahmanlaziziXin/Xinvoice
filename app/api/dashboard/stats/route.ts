@@ -1,13 +1,13 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
-import { resolveUserId } from '@/lib/request-user';
+import { getUserIdWithFallback } from '@/lib/auth-utils';
 
 // GET /api/dashboard/stats - Get dashboard overview statistics
 export async function GET(request: NextRequest) {
   try {
-    const userId = resolveUserId();
+    const userId = await getUserIdWithFallback();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Authentication required. Please sign in to access dashboard.' }, { status: 401 });
     }
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);

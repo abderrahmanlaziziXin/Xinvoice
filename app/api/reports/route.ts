@@ -1,6 +1,6 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { resolveUserId } from '@/lib/request-user';
+import { getUserIdWithFallback } from '@/lib/auth-utils';
 
 const prisma = new PrismaClient();
 // No demo fallback; use resolver.
@@ -14,9 +14,9 @@ export async function GET(req: NextRequest) {
     const fromDate = new Date(from);
     const toDate = new Date(to);
 
-    const userId = resolveUserId();
+    const userId = await getUserIdWithFallback();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Authentication required. Please sign in to access reports.' }, { status: 401 });
     }
 
     // Get all invoices for the date range

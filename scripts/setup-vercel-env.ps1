@@ -19,7 +19,8 @@ Write-Host "`n🔗 Checking Vercel project link..." -ForegroundColor Yellow
 $linkResult = vercel link --confirm 2>&1
 if ($LASTEXITCODE -eq 0) {
     Write-Host "✅ Project linked successfully" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "❌ Failed to link project. Please run 'vercel link' manually." -ForegroundColor Red
     exit 1
 }
@@ -41,7 +42,8 @@ function Set-VercelEnv {
             Write-Host "❌ $name is required. Skipping..." -ForegroundColor Red
             return
         }
-    } else {
+    }
+    else {
         $value = Read-Host "Enter value for $name (optional, press Enter to skip)"
         if ([string]::IsNullOrEmpty($value)) {
             Write-Host "⏭️ Skipping $name" -ForegroundColor Yellow
@@ -53,7 +55,8 @@ function Set-VercelEnv {
     $result = echo $value | vercel env add $name production 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-Host "✅ $name set for production" -ForegroundColor Green
-    } else {
+    }
+    else {
         Write-Host "❌ Failed to set $name. Error: $result" -ForegroundColor Red
     }
 }
