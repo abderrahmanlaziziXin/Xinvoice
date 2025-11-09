@@ -104,7 +104,8 @@ export default function RootLayout({
         <meta name="publisher" content="Xinfinity Labs" />
         <link rel="publisher" href="https://www.xinfinitylabs.com" />
 
-        {/* Apple-specific meta tags */}
+        {/* Mobile web app meta tags */}
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Xinvoice" />
