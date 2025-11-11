@@ -14,6 +14,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useToast } from "../../../hooks/use-toast";
 import { useNavigationRefresh } from "../../../hooks/use-navigation-refresh";
+import AIInvoiceItemsGenerator from "../../../components/ai-invoice-items-generator";
 
 interface InvoiceItem {
   description: string;
@@ -220,6 +221,13 @@ function NewInvoicePage() {
         items: prev.items.filter((_, i) => i !== index),
       }));
     }
+  };
+
+  const handleAIItemsGenerated = (aiItems: InvoiceItem[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      items: [...prev.items, ...aiItems],
+    }));
   };
 
   const validateForm = () => {
@@ -540,6 +548,14 @@ function NewInvoicePage() {
                   Add Item
                 </button>
               </div>
+
+              {/* AI Invoice Items Generator */}
+              <AIInvoiceItemsGenerator
+                onItemsGenerated={handleAIItemsGenerated}
+                currency={formData.currency}
+                defaultTaxRate={formData.taxRate}
+                className="mb-6"
+              />
 
               <div className="space-y-4">
                 {formData.items.map((item, index) => (
